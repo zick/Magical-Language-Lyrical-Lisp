@@ -1,0 +1,39 @@
+= Magical Language Lyrical Lisp
+
+Let's play in Lisp!
+
+
+== Introduction
+
+This repository has only text-data.
+In order to execute the game,
+download ``lyricallisp_free-X.X.zip'' from following URL:
+
+  http://lyrical.bugyo.tk/download.html
+
+Unzip it and ``lyricallisp_free'' directory is created.
+
+
+== Execution
+
+In order to execute the game with your data,
+you must make ``nscript.dat'' and put it to ``lyricallisp_free'' directory.
+
+You can convert text-data (``X.txt'') into ``nscript.dat'' with ``nscmake.exe''.
+``nscmake.exe'' can be downloaded from following URL:
+
+  http://www.nscripter.com/
+
+Or you can also make ``nscript.dat'' with following commands:
+
+% vi a.c
+#include <stdio.h>
+int main() {
+  char b;
+  while (fread(&b,1,1,stdin)) printf("%c",b^0x84);
+  return 0;
+}
+% gcc -o a a.c
+% cat *.txt > cat_data
+% ./a < cat_data > nscript.dat
+

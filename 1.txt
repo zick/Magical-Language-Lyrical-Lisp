@@ -1,0 +1,7516 @@
+
+;;呼ばれるとき自動的にsaveoff
+;;;;setwindow 20, 20, 24, 31, 14, 14, 0, 2, 20, 1, 1, "img/msgbox.bmp", 10, 10 
+;;;;setwindow 95, 480, 21, 3, 29, 29, 0, 4, 20, 0, 1, "img/msgbox2.bmp", 80, 470 
+*text_cw
+	erasetextwindow 0
+	getcursorpos %tmp1, %tmp2
+	amsp SP_CLICK, %tmp1, %tmp2
+	amsp SP_CLICK_MINI, %tmp1, %tmp2
+	if %adv_talkmode == 1 amsp SP_CLICK, 675, 546 ;talkmodeなら、右下に星を表示
+	vsp SP_CLICK, 1
+	if %adv_talkmode == 100 vsp SP_CLICK_MINI, 1 : vsp SP_CLICK, 0  ;speakmodeなら小さい星を表示
+	print 1
+;;;
+	btndef clear
+	if %adv_talkmode == 0 goto *text_cw_l1        ;not talk mode
+	if %adv_talkmode == 100 goto *text_cw_l1      ;speak mode
+	if %adv_noroi_off == 1 goto *text_cw_l1
+	exbtn_d "P816C817"  ;816=SP_USAGI, 817=SP_USAGI_R
+	exbtn SP_USAGI, 1001, "C816P817"
+*text_cw_l1
+;;;
+	if %save_flag == 1 saveon
+*text_cw_loop
+	getpage  ;PageUp, PageDownを拾う
+	textbtnwait %ret
+	if %ret == 0 goto *text_cw_next  ;left click
+	if %ret == -1 gosub *text_cw_rclick  ;right click
+	if %ret == -12 gosub *text_cw_pageup
+	if %ret == -2 gosub *text_cw_pageup
+	if %ret == 101 gosub *text_cw_pageup
+	if %ret == 1001 gosub *noroi_loop
+	goto *text_cw_loop
+*text_cw_next
+	vsp SP_USAGI, 0
+	vsp SP_USAGI_R, 0
+	vsp SP_CLICK, 0
+	vsp SP_CLICK_MINI, 0
+	print 1
+	texec  ;改ページの場合テキストを消す
+	erasetextwindow 1
+	saveoff
+	return
+*text_cw_pageup
+	vsp SP_CLICK, 0
+	vsp SP_CLICK_MINI, 0
+	print 1
+	systemcall lookback
+	vsp SP_CLICK, 1
+	if %adv_talkmode == 100 vsp SP_CLICK, 0 : vsp SP_CLICK_MINI, 1
+	print 1
+	return
+*text_cw_rclick
+	if %adv_rmode == 0 return
+	vsp SP_CLICK, 0
+	vsp SP_CLICK_MINI, 0
+	print 1
+	gosub *rclick_menu
+;;	systemcall rmenu
+	vsp SP_CLICK, 1
+	if %adv_talkmode == 100 vsp SP_CLICK, 0 : vsp SP_CLICK_MINI, 1
+	print 1
+	return
+
+*rclick_menu
+	lsp SP_RC_BACK, ":c;img/black.bmp", 0, 0, 150
+	lsp SP_RC_1, ":s/30,30,1;#DDDDDD#FFFFFF文字を消す", 300, 140
+	lsp SP_RC_2, ":s/30,30,1;#DDDDDD#FFFFFF回想", 300, 170
+	lsp SP_RC_3, ":s/30,30,1;#DDDDDD#FFFFFFセーブする", 300, 200
+	lsp SP_RC_4, ":s/30,30,1;#DDDDDD#FFFFFFロードする", 300, 230
+	lsp SP_RC_5, ":s/30,30,1;#DDDDDD#FFFFFFインタプリタを起動", 300, 260
+	print 1
+	btndef clear
+	spbtn SP_RC_1, 1
+	spbtn SP_RC_2, 2
+	spbtn SP_RC_3, 3
+	spbtn SP_RC_4, 4
+	spbtn SP_RC_5, 5
+*rclick_menu_loop
+	btnwait2 %ret
+	if %ret == 0 goto *rclick_menu_loop
+	csp SP_RC_1
+	csp SP_RC_2
+	csp SP_RC_3
+	csp SP_RC_4
+	csp SP_RC_5
+	csp SP_RC_BACK
+	if %ret == 1 systemcall windowerase
+	if %ret == 2 systemcall lookback
+	if %ret == 3 systemcall save
+	if %ret == 4 systemcall load
+	if %ret == 5 gosub *free_eval
+	btndef clear
+	print 1
+	return
+
+*free_eval
+	mov %gc_silent, 1
+	mov %adv_rmode, 0         ;右クリック無効
+	lsp SP_RC_BACK, ":c;img/black.bmp", 0, 0, 240
+	print 1
+	skipoff
+	mov %save_flag, 0  ;セーブ不能
+	gosub *create_new_env  ;自由にいじれるように新しい環境を作る
+	mov %arg0, %ret
+	mov %adv_tmp3, %arg0
+	gosub *push  ;GC対策
+	mov %arg1, %global_env
+	gosub *nconc
+*free_eval_loop
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	lsp SP_RC_1, ":s/14,14,1;#FFFFFFＴａｂキーでゲームに戻ります", 40, 100
+	print 1
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *free_eval_end  ;Tab
+	if $sarg0 == "" goto *free_eval_loop
+	lsp SP_RC_1, ":s/14,14,1;#FFFFFF計算中……", 40, 100
+	print 1
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *free_eval_parenthesis_error : goto *free_eval_loop
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *lobject_to_string
+	;;改行表示処理
+	mov $stmp1, ":s/14,14,1;#FFFFFF"
+	mov $stmp2, ":s/14,14,1;#FFFFFF"
+	mov $stmp3, ":s/14,14,1;#FFFFFF"
+	mov $sret, "結果は『" + $sret + "』です"
+	len %tmp, $sret
+	if %tmp <= 80 mov $stmp, ":s/14,14,1;#FFFFFF"+$sret : goto *free_eval_l1
+	;;2行目突入
+	mid $stmp, $sret, 0, 80
+	mid $sret, $sret, 80, %tmp-80
+	mov $stmp, ":s/14,14,1;#FFFFFF"+$stmp
+	len %tmp, $sret
+	if %tmp <= 80 mov $stmp1, ":s/14,14,1;#FFFFFF"+$sret : goto *free_eval_l1
+	;;3行目突入
+	mid $stmp1, $sret, 0, 80
+	mid $sret, $sret, 80, %tmp-80
+	mov $stmp1, ":s/14,14,1;#FFFFFF"+$stmp1
+	len %tmp, $sret
+	if %tmp <= 80 mov $stmp2, ":s/14,14,1;#FFFFFF"+$sret : goto *free_eval_l1
+	;;4行目突入
+	mid $stmp2, $sret, 0, 80
+	mid $sret, $sret, 80, %tmp-80
+	mov $stmp2, ":s/14,14,1;#FFFFFF"+$stmp2
+	mov $stmp3, ":s/14,14,1;#FFFFFF"+$sret
+*free_eval_l1
+	lsp SP_RC_1, $stmp, 40, 180
+	lsp SP_RC_2, $stmp1, 40, 194
+	lsp SP_RC_3, $stmp2, 40, 208
+	lsp SP_RC_4, $stmp3, 40, 222
+	print 1
+	click
+	csp SP_RC_2
+	csp SP_RC_3
+	csp SP_RC_4
+	goto *free_eval_loop
+*free_eval_end
+	mov %gc_silent, 0
+	mov %adv_rmode, 1        ;右クリック有効
+	gosub *pop
+	saveon
+	mov %save_flag, 1  ;セーブ可能
+	csp SP_RC_1
+	csp SP_RC_BACK
+	print 1
+	return
+*free_eval_parenthesis_error
+	lsp SP_RC_1, ":s/14,14,1;#FFFFFF括弧の開く数と、閉じる数が一致していません", 40, 100
+	print 1
+	click
+	return
+
+
+
+;;呼ばれるとき自動的にsaveoff
+*customsel
+	btndef clear
+	getcselnum %tmp
+	getnextline %tmp1, %tmp3
+	getcursorpos %tmp1, %tmp2
+	sub %tmp3, %tmp2
+	for %i=0 to %tmp-1
+		cselbtn %i, %i+1, %tmp1, %tmp2
+		add %tmp2, %tmp3  ;文字の高さ
+	next
+*customsel_loop
+	getpage  ;PageUp, PageDownを拾う
+	selectbtnwait %ret
+	if %ret == -12 gosub *text_cw_pageup2 : goto *customsel
+	if %ret == -2 gosub *text_cw_pageup2 : goto *customsel
+	if %ret <= 0 goto *customsel_loop
+	if %ret > %tmp goto *customsel_loop
+	saveon
+	cselgoto %ret-1
+*text_cw_pageup2
+	systemcall lookback
+	return
+
+
+
+*noroi_loop
+	rnd %adv_noroi, 530
+	add %adv_noroi, 85
+	amsp SP_NOROI_HALF, %adv_noroi, 338
+	amsp SP_NOROI, %adv_noroi, 338
+	amsp SP_NOROI_D1, %adv_noroi, 338
+	amsp SP_NOROI_D2, %adv_noroi, 338
+	amsp SP_NOROI_HD1, %adv_noroi, 338
+	amsp SP_NOROI_HD2, %adv_noroi, 338
+	lsph SP_TMP, ":s/30,30,1;#FFFFFF撃破数", 550, 40
+	itoa2 $sarg0, %adv_noroi_kill
+	if %adv_noroi_kill < 10 mov $sarg0, ":s/50,50,0;#FFFFFF" + $sarg0
+	if %adv_noroi_kill >= 10 mov $sarg0, ":s/30,50,0;#FFFFFF" + $sarg0
+	lsph SP_TMP1, $sarg0, 650, 20
+	vsp SP_NOROI_HALF, 1
+	vsp SP_TMP, 1
+	vsp SP_TMP1, 1
+	mov %adv_noroi_frame, 0
+*noroi_loop_l1
+	resettimer
+	print 1
+	waittimer 33
+;;
+	trap off
+	inc %adv_noroi_frame
+	if %adv_noroi_frame == 10 vsp SP_NOROI_HALF, 0 : vsp SP_NOROI, 1
+	if %adv_noroi_frame == 20 vsp SP_NOROI_HALF, 1 : vsp SP_NOROI, 0
+	trap *noroi_loop_judge
+;;
+	if %adv_noroi_frame < 30 goto *noroi_loop_l1
+	vsp SP_NOROI_HALF, 0
+	csp SP_TMP
+	csp SP_TMP1
+	trap off
+	delay 200
+	print 1
+	return
+
+*noroi_loop_judge
+	getmousepos %adv_noroi_mx, %adv_noroi_my
+	if %adv_noroi_frame <10 goto *noroi_loop_judge_h
+	if %adv_noroi_frame >=20 goto *noroi_loop_judge_h
+	if %adv_noroi_mx > %adv_noroi+20 && %adv_noroi_mx < %adv_noroi+85 && %adv_noroi_my > 388 && %adv_noroi_my < 470 goto *noroi_loop_hit
+	goto *noroi_loop_l1
+*noroi_loop_judge_h
+	if %adv_noroi_mx > %adv_noroi+20 && %adv_noroi_mx < %adv_noroi+85 && %adv_noroi_my > 403 && %adv_noroi_my < 470 goto *noroi_loop_hit_h
+	goto *noroi_loop_l1
+
+*noroi_loop_hit
+	inc %adv_noroi_kill
+	mov %adv_noroi_frame, 0
+	vsp SP_NOROI, 0
+	vsp SP_NOROI_D1, 1
+	csp SP_TMP1
+	itoa2 $sarg0, %adv_noroi_kill
+	if %adv_noroi_kill < 10 mov $sarg0, ":s/50,50,1;#FFFFFF" + $sarg0
+	if %adv_noroi_kill >= 10 mov $sarg0, ":s/30,50,0;#FFFFFF" + $sarg0
+	lsp SP_TMP1, $sarg0, 650, 20
+*noroi_loop_hit_loop
+	resettimer
+	if %adv_noroi_frame == 6 vsp SP_NOROI_D1, 0 : vsp SP_NOROI_D2, 1
+	inc %adv_noroi_frame
+	print 1
+	waittimer 33
+	if %adv_noroi_frame < 12 goto *noroi_loop_hit_loop
+	vsp SP_NOROI_D2, 0
+	csp SP_TMP
+	csp SP_TMP1
+	print 1
+	return
+
+*noroi_loop_hit_h
+	inc %adv_noroi_kill
+	mov %adv_noroi_frame, 0
+	vsp SP_NOROI_HALF, 0
+	vsp SP_NOROI_HD1, 1
+	itoa2 $sarg0, %adv_noroi_kill
+	if %adv_noroi_kill < 10 mov $sarg0, ":s/50,50,1;#FFFFFF" + $sarg0
+	if %adv_noroi_kill >= 10 mov $sarg0, ":s/30,50,0;#FFFFFF" + $sarg0
+	lsp SP_TMP1, $sarg0, 650, 20
+*noroi_loop_hit_loop_h
+	resettimer
+	if %adv_noroi_frame == 6 vsp SP_NOROI_HD1, 0 : vsp SP_NOROI_HD2, 1
+	inc %adv_noroi_frame
+	print 1
+	waittimer 33
+	if %adv_noroi_frame < 12 goto *noroi_loop_hit_loop_h
+	vsp SP_NOROI_HD2, 0
+	csp SP_TMP
+	csp SP_TMP1
+	print 1
+	return
+
+
+
+
+*gclimit
+アリサ「やけに時間がかかるわね……無限ループの可能性があるわ。計算を中止する？」
+csel "中止", *gclimit_stop, "続行", *gclimit_cont
+
+*gclimit_cont
+	mov %gc_run, 0
+	goto *gc_l1
+*gclimit_stop
+	textclear
+	talk_mode
+	r_load ":l;img/arin.bmp"
+	l_load suzu_n
+	print E_FAST
+アリサ「すずかくん、すずかくん、強制終了し
+　　　　ないかい？」\
+すずか「それはこれからするでしょ」\
+アリサ「ありーん」\
+	end
+
+*parenthesis_error
+textclear
+	r_show ari_die
+アリサ「括弧の開く数と、閉じる数が一致していないわよ」\
+	r_show ari_n
+	return
+
+*trap_init
+	trap *trap_init_l1
+*trap_init_l1
+	trap off
+	return
+
+
+
+
+
+
+*img_init
+	lsph SP_CLICK, ":l/4,<200,200,200,200>,0;img/click.bmp", 0, 0
+	lsph SP_CLICK_MINI, ":l/4,<200,200,200,200>,0;img/click_m.bmp", 0, 0;;;
+	lsph SP_USAGI, ":c;img/usagi.bmp", 0, 445
+	lsph SP_USAGI_R, ":c;img/usagi_r.bmp", 0, 445
+	lsph SP_NOROI_HALF, ":l;img/noroi_half.bmp", 0, 338
+	lsph SP_NOROI, ":l;img/noroi.bmp", 0, 338
+	lsph SP_NOROI_D1, ":l;img/noroi_d1.bmp", 0, 338
+	lsph SP_NOROI_D2, ":l;img/noroi_d2.bmp", 0, 338
+	lsph SP_NOROI_HD1, ":l;img/noroi_hd1.bmp", 0, 338
+	lsph SP_NOROI_HD2, ":l;img/noroi_hd2.bmp", 0, 338
+	lsph SP_DUMMY, ":s#000000な", 1000, 1000
+	return
+
+
+
+
+
+
+*show_wait_picture
+	csp SP_TMP
+	rnd %adv_tmp, 2
+	if %adv_tmp == 0 lsp SP_TMP, ":c;img/moji.bmp", 0, 0
+	if %adv_tmp == 1 lsp SP_TMP, ":c;img/nanyano.bmp", 0, 0
+	getspsize SP_TMP, %adv_tmp1, %adv_tmp2
+	div %adv_tmp1, 2
+	mov %adv_tmp1, 400 - %adv_tmp1
+	mov %adv_tmp2, 590 - %adv_tmp2
+	amsp SP_TMP, %adv_tmp1, %adv_tmp2
+	print 1
+	return
+
+
+
+
+;;;;;;;;;;
+;;;すべてはここから始まる……
+;;;;;;;;;;
+*main_game_start
+	mov %adv_rmode, 1  ;;正直かなり苦しい……
+	bgmfadeout 100
+	gosub *get_vol
+	!sd
+	gosub *img_init
+saveoff
+
+
+
+
+;;;;;ロゴ開始
+	lsph SP_LOGO0, ":l;img/magic1.bmp", 0, 0
+	lsph SP_LOGO1, ":l;img/magic2.bmp", 0, 0
+	lsph SP_LOGO_LAMBDA, ":l;img/lambda.bmp", 0, 0
+	lsph SP_LOGO_KUMI, ":l;img/kumi.bmp", 0, 0
+	lsph SP_LOGO_SAKURA, ":l;img/sakura.bmp", 0, 0
+	lsph SP_LOGO_KARASU, ":l;img/karasu.bmp", 0, 0
+	mov %adv_tmp, 0  ;角度*100
+	mov %adv_tmp1, 50 ;角速度
+	gosub *trap_init
+	trap *logo_loop_end
+*logo_loop
+	resettimer
+	mov %adv_tmp2, %adv_tmp
+	div %adv_tmp2, 100
+	drawfill 0, 0, 0
+
+mov %adv_tmp3, %adv_tmp-25500
+if %adv_tmp3 < 0 mov %adv_tmp3, 0
+	drawsp2 SP_LOGO0, 0, 255-%adv_tmp3/200, 400, 300, 125, 125, %adv_tmp2
+	drawsp2 SP_LOGO1, 0, 255-%adv_tmp3/200, 400, 300, 125, 125, -%adv_tmp2
+	drawsp2 SP_LOGO_LAMBDA, 0, %adv_tmp3/200, 400, 300, 125, 125, 0
+	draw
+	gettimer %adv_tmp3
+	if %adv_tmp3 > 33 goto *logo_loop_l1
+	wait 33-%adv_tmp3
+	goto *logo_loop_l2
+*logo_loop_l1
+	wait 0
+*logo_loop_l2
+	add %adv_tmp1, 2
+	add %adv_tmp, %adv_tmp1
+	if %adv_tmp < 76500 goto *logo_loop
+
+	mov %adv_tmp, 400
+*logo_loop2
+	resettimer
+	drawfill 0, 0, 0
+	drawsp2 SP_LOGO_LAMBDA, 0, 255, %adv_tmp, 300, 125, 125, 0
+	draw
+	sub %adv_tmp, 15
+	gettimer %adv_tmp3
+	if %adv_tmp3 > 33 goto *logo_loop2_l1
+	wait 33-%adv_tmp3
+	goto *logo_loop2_l2
+*logo_loop2_l1
+	wait 0
+*logo_loop2_l2
+	if %adv_tmp > 100 goto *logo_loop2
+
+	mov %adv_tmp, 0
+*logo_loop3
+	resettimer
+	drawfill 0, 0, 0
+	drawsp2 SP_LOGO_LAMBDA, 0, 255, 100, 300, 125, 125, 0
+	drawsp2 SP_LOGO_KUMI, 0, %adv_tmp, 208, 300, 125, 125, 0
+	drawsp2 SP_LOGO_KARASU, 0, %adv_tmp, 550, 300, 125, 125, 0
+	draw
+	add %adv_tmp, 6
+	gettimer %adv_tmp3
+	if %adv_tmp3 > 33 goto *logo_loop3_l1
+	wait 33-%adv_tmp3
+	goto *logo_loop3_l2
+*logo_loop3_l1
+	wait 0
+*logo_loop3_l2
+	if %adv_tmp < 255 goto *logo_loop3
+
+	mov %adv_tmp, -40
+*logo_loop4
+	mov %adv_tmp2, %adv_tmp
+	mul %adv_tmp2, 125
+	div %adv_tmp2, 100
+	resettimer
+	drawfill 0, 0, 0
+	drawsp2 SP_LOGO_LAMBDA, 0, 255, 100, 300, 125, 125, 0
+	drawsp2 SP_LOGO_KUMI, 0, 255, 208, 300, 125, 125, 0
+	drawsp2 SP_LOGO_SAKURA, 0, 255, 319, %adv_tmp2, 125, 125, -120-%adv_tmp
+	drawsp2 SP_LOGO_KARASU, 0, 255, 550, 300, 125, 125, 0
+	draw
+	add %adv_tmp, 4
+	gettimer %adv_tmp3
+	if %adv_tmp3 > 33 goto *logo_loop4_l1
+	wait 33-%adv_tmp3
+	goto *logo_loop4_l2
+*logo_loop4_l1
+	wait 0
+*logo_loop4_l2
+	if %adv_tmp < 240 goto *logo_loop4
+
+*logo_loop_end
+	trap off
+	drawfill 0, 0, 0
+	drawsp2 SP_LOGO_LAMBDA, 0, 255, 100, 300, 125, 125, 0
+	drawsp2 SP_LOGO_KUMI, 0, 255, 208, 300, 125, 125, 0
+	drawsp2 SP_LOGO_SAKURA, 0, 255, 319, 300, 125, 125, 0
+	drawsp2 SP_LOGO_KARASU, 0, 255, 550, 300, 125, 125, 0
+	draw
+delay 1500
+	csp SP_LOGO0
+	csp SP_LOGO1
+	csp SP_LOGO_LAMBDA
+	csp SP_LOGO_KUMI
+	csp SP_LOGO_SAKURA
+	csp SP_LOGO_KARASU
+
+
+
+	setwindow 8,16,29,20,26,26,0,2,20,1,1,#FFFFFF,0,0,799,599
+	gosub *show_wait_picture
+!s0
+初期化中・・・
+
+このゲームは起動にかなり時間がかかります。
+入力に応答しませんので気長にお待ちください。
+Ｐｌｅａｓｅ　ｈａｖｅ　ａ　ｃｏｆｆｅｅ　ｂｒｅａｋ．
+!sd
+	gosub *mem_init
+	mov %gc_limit, 3  ;一回の入力で3回GCが起こると、中断するか問い合わせる。
+	mov %adv_additional, 0
+	mov %save_flag, 1  ;セーブ可能
+textclear
+	csp SP_TMP
+
+
+
+
+
+
+;;;;;タイトルの処理
+*title
+	textoff
+mov %adv_miss, 0
+mov %adv_noroi_kill, 0
+;;共通記録のロード
+	fileexist %adv_tmp,"arisa.szk"
+	if %adv_tmp == 0 filecreate "arisa.szk"
+	csvopen "arisa.szk", "rc"
+	csvread %adv_clear
+	csvclose
+;;83+40~~120
+	lsph SP_TITLE, ":l;img/title.bmp", 40, 30
+	lsph SP_TITLE_SEN, ":l;img/sen.bmp", 10, 266 ;215
+	lsph SP_TITLE_HOSHI, ":l;img/hoshi.bmp", 175, -30
+	lsph SP_BACKGROUND, ":c;img/yama.bmp", 0, 0
+	mov %adv_tmp, 300
+	gosub *trap_init
+	trap *title_menu_pre
+*title_loop
+	resettimer
+	drawsp2 SP_BACKGROUND, 0, 255, 400, 600, 100, 100, 0
+	drawsp2 SP_TITLE_HOSHI, 0, 255, 365, 160, %adv_tmp, %adv_tmp, 0
+	drawsp2 SP_TITLE, 0, 255, 422, 167, %adv_tmp, %adv_tmp, 0
+	draw
+	gettimer %adv_tmp3
+	if %adv_tmp3 > 33 goto *title_loop_l1
+	wait 33 - %adv_tmp3
+	goto *title_loop_l2
+*title_loop_l1
+	wait 0
+*title_loop_l2
+	sub %adv_tmp, 5
+	if %adv_tmp > 100 goto *title_loop
+
+
+	drawsp2 SP_BACKGROUND, 0, 255, 400, 600, 100, 100, 0
+	drawsp2 SP_TITLE_HOSHI, 0, 255, 364, 159, 100, 100, 0
+	drawsp2 SP_TITLE, 0, 255, 422, 166, 100, 100, 0
+	draw
+	vsp SP_TITLE, 1
+	vsp SP_TITLE_SEN, 1
+	vsp SP_TITLE_HOSHI, 1
+	vsp SP_BACKGROUND, 1
+	print E_RWIPE_SLOW
+
+	mov %adv_tmp, 0
+*title_loop2
+	resettimer
+	amsp SP_BACKGROUND, 0, %adv_tmp, 255
+	print 1
+	gettimer %adv_tmp3
+	if %adv_tmp3 > 33 goto *title_loop2_l1
+	wait 33 - %adv_tmp3
+	goto *title_loop2_l2
+*title_loop2_l1
+	wait 0
+*title_loop2_l2
+	sub %adv_tmp, 10
+	if %adv_tmp > -480 goto *title_loop2
+	goto *title_menu
+
+
+*title_menu_pre
+
+*title_menu
+	trap off
+	amsp SP_BACKGROUND, 0, -480, 255
+	vsp SP_TITLE, 1
+	vsp SP_TITLE_SEN, 1
+	vsp SP_TITLE_HOSHI, 1
+	vsp SP_BACKGROUND, 1
+	print 1
+	;setwindow2 #FFFFFF
+;;	setwindow 8,16,20,23,26,26,0,2,20,1,1,#FFFFFF,0,0,639,479
+	setwindow 8,16,29,20,26,26,0,2,20,1,1,#FFFFFF,0,0,799,599
+*title_menu_l1
+	bgm ms_title
+	texton
+	locate 11, 12
+if %adv_clear >= 12 csel "最初から", *title_story, "続きから", *title_load, "補足説明", *title_condicil, "用語集", *title_glossary, "フリーモード", *free_mode, "おまけ", *title_omake, "音量調整", *title_set_vol, "終了", *end
+csel "最初から", *title_story, "続きから", *title_load, "補足説明", *title_condicil, "用語集", *title_glossary, "フリーモード", *free_mode, "音量調整", *title_set_vol, "終了", *end
+
+
+*title_set_vol
+	gosub *set_vol
+	goto *title_menu_l1
+
+*title_load
+	systemcall load
+	goto *title_menu_l1
+
+*title_story
+	locate 11, 12
+if %adv_clear == 0 csel "第１話", *story01_pre, "戻る", *title_menu_l1
+if %adv_clear == 1 csel "第１話", *story01_pre, "第２話", *story02_pre, "戻る", *title_menu_l1
+if %adv_clear == 2 csel "第１話", *story01_pre, "第２話", *story02_pre, "第３話", *story03_pre, "戻る", *title_menu_l1
+if %adv_clear == 3 csel "第１話", *story01_pre, "第２話", *story02_pre, "第３話", *story03_pre, "第４話", *story04_pre, "戻る", *title_menu_l1
+if %adv_clear == 4 csel "第１話", *story01_pre, "第２話", *story02_pre, "第３話", *story03_pre, "第４話", *story04_pre, "第５話", *story05_pre, "戻る", *title_menu_l1
+if %adv_clear == 5 csel "第１話", *story01_pre, "第２話", *story02_pre, "第３話", *story03_pre, "第４話", *story04_pre, "第５話", *story05_pre, "第６話", *story06_pre, "戻る", *title_menu_l1
+if %adv_clear >= 6 csel "第１話", *story01_pre, "第２話", *story02_pre, "第３話", *story03_pre, "第４話", *story04_pre, "第５話", *story05_pre, "第６話", *story06_pre, "次へ", *title_story2, "戻る", *title_menu_l1
+;;7話以降は [1話, …, 6話, 次へ] [7話, …, 12話, 戻る] の二つに分割
+
+*title_story2
+	locate 11, 12
+if %adv_clear == 6 csel "第７話", *story07_pre, "前へ", *title_story, "戻る", *title_menu_l1
+if %adv_clear == 7 csel "第７話", *story07_pre, "第８話", *story08_pre, "前へ", *title_story, "戻る", *title_menu_l1
+if %adv_clear == 8 csel "第７話", *story07_pre, "第８話", *story08_pre, "第９話", *story09_pre, "前へ", *title_story, "戻る", *title_menu_l1
+if %adv_clear == 9 csel "第７話", *story07_pre, "第８話", *story08_pre, "第９話", *story09_pre, "第１０話", *story10_pre, "前へ", *title_story, "戻る", *title_menu_l1
+if %adv_clear == 10 csel "第７話", *story07_pre, "第８話", *story08_pre, "第９話", *story09_pre, "第１０話", *story10_pre, "第１１話", *story11_pre, "前へ", *title_story, "戻る", *title_menu_l1
+if %adv_clear == 11 csel "第７話", *story07_pre, "第８話", *story08_pre, "第９話", *story09_pre, "第１０話", *story10_pre, "第１１話", *story11_pre, "第１２話", *story12_pre, "前へ", *title_story, "戻る", *title_menu_l1
+if %adv_clear >= 12 csel "第７話", *story07_pre, "第８話", *story08_pre, "第９話", *story09_pre, "第１０話", *story10_pre, "第１１話", *story11_pre, "第１２話", *story12_pre, "前へ", *title_story, "戻る", *title_menu_l1
+
+*title_omake
+	locate 9, 15
+csel "ラムダ山の合戦", *yakyu, "八神家のストーカーズ！？", *komiyan_start, "エンディングについて", *hint_start, "　　戻る", *title_menu_l1
+
+*komiyan_start
+	gosub *destroy_title
+	goto *komiyan
+
+*hint_start
+	gosub *destroy_title
+	gosub *hint
+
+
+*title_condicil
+	gosub *destroy_title
+bgm ms_setsume
+	gosub *condicil
+stop
+	goto *title
+
+*title_glossary
+	gosub *destroy_title
+bgm ms_setsume
+	gosub *glossary
+stop
+	goto *title
+
+*story01_pre
+	gosub *destroy_title
+	goto *story01
+*story02_pre
+	gosub *destroy_title
+	goto *story02
+*story03_pre
+	gosub *destroy_title
+	goto *story03
+*story04_pre
+	gosub *destroy_title
+	goto *story04
+*story05_pre
+	gosub *destroy_title
+	goto *story05
+*story06_pre
+	gosub *destroy_title
+	goto *story06
+*story07_pre
+	gosub *destroy_title
+	goto *story07
+*story08_pre
+	gosub *destroy_title
+	goto *story08
+*story09_pre
+	gosub *destroy_title
+	goto *story09
+*story10_pre
+	gosub *destroy_title
+	goto *story10
+*story11_pre
+	gosub *destroy_title
+	goto *story11
+*story12_pre
+	gosub *destroy_title
+	goto *story12
+
+
+*destroy_title
+	csp SP_BACKGROUND
+	csp SP_TITLE
+	csp SP_TITLE_HOSHI
+	csp SP_TITLE_SEN
+	return
+
+
+
+
+*end
+	end
+
+
+
+
+
+
+
+
+
+
+
+*r_in
+	getparam $sarg0
+	csp SP_R
+	print E_FAST
+	lsph SP_R, $sarg0, 0, 0
+	getspsize SP_R, %tmp1, %tmp2
+	mov %tmp2, 600-%tmp2
+	mov %tmp1, 790-%tmp1
+	mov %tmp, 800
+	vsp SP_R, 1
+	trap *r_in_l1
+*r_in_loop
+	resettimer
+	amsp SP_R, %tmp, %tmp2
+	print 1
+	sub %tmp, 30
+	if %tmp < %tmp1 goto *r_in_l1
+	gettimer %tmp3
+	if %tmp3 > 33 goto *r_in_loop_l1
+	wait 33-%tmp3
+	goto *r_in_loop_l2
+*r_in_loop_l1
+	wait 0
+*r_in_loop_l2
+	goto *r_in_loop
+*r_in_l1
+	trap off
+	amsp SP_R, %tmp1, %tmp2
+	print 1
+	return
+
+*r_out
+	getspsize SP_R, %tmp1, %tmp2
+	mov %tmp2, 600-%tmp2
+	mov %tmp1, 790-%tmp1
+	vsp SP_R, 1
+	trap *r_out_l1
+*r_out_loop
+	resettimer
+	amsp SP_R, %tmp1, %tmp2
+	print 1
+	add %tmp1, 30
+	if %tmp1 > 800 goto *r_out_l1
+	gettimer %tmp3
+	if %tmp3 > 33 goto *r_out_loop_l1
+	wait 33-%tmp3
+	goto *r_out_loop_l2
+*r_out_loop_l1
+	wait 0
+*r_out_loop_l2
+	goto *r_out_loop
+*r_out_l1
+	trap off
+	csp SP_R
+	print 1
+	return
+
+
+
+*l_rout
+	getspsize SP_L, %tmp1, %tmp2
+	mov %tmp2, 600-%tmp2
+	mov %tmp1, 30
+	vsp SP_L, 1
+	trap *l_rout_l1
+*l_rout_loop
+	resettimer
+	amsp SP_L, %tmp1, %tmp2
+	print 1
+	add %tmp1, 30
+	if %tmp1 > 800 goto *l_rout_l1
+	gettimer %tmp3
+	if %tmp3 > 33 goto *l_rout_loop_l1
+	wait 33-%tmp3
+	goto *l_rout_loop_l2
+*l_rout_loop_l1
+	wait 0
+*l_rout_loop_l2
+	goto *l_rout_loop
+*l_rout_l1
+	trap off
+	csp SP_L
+	print 1
+	return
+
+
+
+*l_in
+	getparam $sarg0
+	lsph SP_L, $sarg0, 0, 0
+	getspsize SP_L, %tmp1, %tmp2
+	mov %tmp2, 600-%tmp2
+	mov %tmp, 0-%tmp1
+	vsp SP_L, 1
+	trap *l_in_l1
+*l_in_loop
+	resettimer
+	amsp SP_L, %tmp, %tmp2
+	print 1
+	add %tmp, 30
+	if %tmp > 30 goto *l_in_l1
+	gettimer %tmp3
+	if %tmp3 > 33 goto *l_in_loop_l1
+	wait 33-%tmp3
+	goto *l_in_loop_l2
+*l_in_loop_l1
+	wait 0
+*l_in_loop_l2
+	goto *l_in_loop
+*l_in_l1
+	trap off
+	amsp SP_L, 30, %tmp2
+	print 1
+	return
+
+*l_out
+	getspsize SP_L, %tmp1, %tmp2
+	mov %tmp2, 600-%tmp2
+	mov %tmp, 0-%tmp1
+	mov %tmp1, 30
+	vsp SP_R, 1
+	trap *l_out_l1
+*l_out_loop
+	resettimer
+	amsp SP_L, %tmp1, %tmp2
+	print 1
+	sub %tmp1, 30
+	if %tmp1 < %tmp goto *l_out_l1
+	gettimer %tmp3
+	if %tmp3 > 33 goto *l_out_loop_l1
+	wait 33-%tmp3
+	goto *l_out_loop_l2
+*l_out_loop_l1
+	wait 0
+*l_out_loop_l2
+	goto *l_out_loop
+*l_out_l1
+	trap off
+	csp SP_L
+	print 1
+	return
+
+*talk_mode
+	mov %adv_talkmode, 1
+	erasetextwindow 1
+	setwindow 95, 480, 21, 3, 29, 29, 0, 4, 20, 0, 1, "img/msgbox2.bmp", 80, 470 
+	return
+
+*speak_mode
+	mov %adv_talkmode, 100
+	erasetextwindow 0
+	setwindow 20, 20, 24, 31, 14, 14, 0, 2, 20, 1, 1, "img/msgbox.bmp", 10, 10 
+	return
+
+*r_show
+	getparam $sarg0
+	r_load $sarg0
+	print E_FAST
+	return
+
+*l_show
+	getparam $sarg0
+	l_load $sarg0
+	print E_FAST
+	return
+
+*r_load
+	getparam $sarg0
+	csp SP_R
+	lsph SP_R, $sarg0, 0, 0
+	getspsize SP_R, %tmp1, %tmp2
+	mov %tmp2, 600-%tmp2
+	mov %tmp1, 790-%tmp1
+	amsp SP_R, %tmp1, %tmp2
+	vsp SP_R, 1
+	return
+
+*l_load
+	getparam $sarg0
+	csp SP_L
+	lsph SP_L, $sarg0, 0, 0
+	getspsize SP_L, %tmp1, %tmp2
+	mov %tmp2, 600-%tmp2
+	amsp SP_L, 30, %tmp2
+	vsp SP_L, 1
+	return
+
+*c_show
+	getparam $sarg0
+	c_load $sarg0
+	print E_FAST
+	return
+
+*c_load
+	getparam $sarg0
+	csp SP_C
+	lsph SP_C, $sarg0, 0, 0
+	getspsize SP_C, %tmp1, %tmp2
+	mov %tmp2, 600-%tmp2
+	mov %tmp1, %tmp1/2
+	mov %tmp1, 400-%tmp1
+	amsp SP_C, %tmp1, %tmp2
+	vsp SP_C, 1
+	return
+
+
+*show_dgm
+	getparam $sarg0
+	load_dgm $sarg0
+	wait_dgm
+	return
+
+*load_dgm
+	getparam $sarg0
+	csp SP_DGM0
+	lsp SP_DGM0, $sarg0, 200, 200
+	print E_FAST
+	return
+
+*wait_dgm
+	getspmode %tmp1, SP_R
+	getspmode %tmp2, SP_L
+	textoff
+	vsp SP_R, 0
+	vsp SP_L, 0
+	print E_FAST
+	click
+	vsp SP_R, %tmp1
+	vsp SP_L, %tmp2
+	print E_FAST
+	texton
+	return
+
+
+*set_vol
+	fileexist %adv_vol,"suzuka.ars"
+	if %adv_vol == 0 filecreate "suzuka.ars"
+	csvopen "suzuka.ars", "rc"
+	csvread %adv_vol
+	csvclose
+	itoa $sadv_vol, %adv_vol
+	input $sadv_vol, "音量を0～100の間で半角文字で入力してください（0=消音、100=最大）", $sadv_vol, 3, 0
+	atoi %adv_vol, $sadv_vol
+	if %adv_vol > 100 mov %adv_vol, 100
+	if %adv_vol < 0 mov %adv_vol, 0
+	bgmvol %adv_vol
+	csvopen "suzuka.ars", "wc"
+	csvwrite %adv_vol
+	csvclose
+	return
+
+*get_vol
+	fileexist %adv_vol,"suzuka.ars"
+	if %adv_vol == 0 filecreate "suzuka.ars"
+	csvopen "suzuka.ars", "rc"
+	csvread %adv_vol
+	csvclose
+	bgmvol %adv_vol
+	return
+
+
+
+
+*story01
+	mov %adv_noroi_off, 0
+	stop
+	csp SP_R : csp SP_L : print E_FAST
+	print E_FAST
+	mov %adv_clear, 0
+	textclear
+	bgm ms_narumi
+	bg "img/blackboard.bmp", E_FAST
+
+	talk_mode
+	r_in ari_n
+アリサ「アリサ参上！」\
+	l_in suzu_n
+	l_show suzu_dere
+すずか「！？　アリサちゃん、参上だなんて、
+　　　　今時の仮面ラ○ダーじゃあるまいし、
+　　　　恥ずかしいよ」\
+	r_show ":l;img/arin.bmp"
+アリサ「ありーん」\
+;;	lsp SP_DGM0, ":l;img/dgm0201a.bmp", 200, 200
+アリサ「別にそんなことどうでもいいのよ」\
+	l_show suzu_exc
+すずか「うわ、なんかちっちゃくなった！」\
+	r_show ari_n
+アリサ「ちっちゃいといえば、プログラミング
+　　　　言語の#FFFF33Ｌｉｓｐ#FFFFFFよね」\
+	l_show suzu_nc
+すずか「Ｌｉｓｐといったら、一つのプログラ
+　　　　ミング言語を指すんじゃなくて、複数
+　　　　の言語の総称なんだよね」\
+アリサ「Ｌｉｓｐは、ＭＩＴを始め、いろんな
+　　　　ところが独自の拡張を加えて、いろん
+　　　　な#FFFF33方言#FFFFFFがあるの」\
+すずか「#FFFF33ＣｏｍｍｏｎＬｉｓｐ#FFFFFFとか#FFFF33ｅｌｉｓｐ#FFFFFF
+　　　　とか、何とかＬｉｓｐっていうのが、
+　　　　たくさんあるんだよね」\
+アリサ「方言はたくさんあるけど、核となる部
+　　　　分はいずれもシンプルで、小さいけど
+　　　　非常に強力な言語なのよ」\
+すずか「機能をおさえたら#FFFF33ＮＳｃｒｉｐｔｅｒ#FFFFFF
+　　　　に組み込めるくらいだからね」\
+
+	csp SP_R : csp SP_L : print E_VFAST
+	bg "img/title#01.bmp", 1
+	wait 1000
+	delay 3000
+	bgm ms_setsume
+	bg "img/blackboard.bmp", E_FAST
+
+	speak_mode
+	r_show ari_n
+アリサ「というわけで、Ｌｉｓｐの簡単な文法を学んでいきましょう」\
+	r_show suzur_hrt
+すずか「理由がさっぱり分からないけど、とりあえずそれはいいね」\
+	r_show ari_n
+アリサ「Ｌｉｓｐで足し算は
+#33FF33（＋　１　２）#FFFFFF
+のように書くの。@/
+インタプリタの対話画面で、これを入力すると、１足す２の答え、３が表示されるわ」\
+	r_show suzur_nc
+すずか「なんかイメージがつかめないよ」\
+	r_show ari_n
+アリサ「そんなときは右クリックでメニューを開いて『#FFFF33インタプリタを起動#FFFFFF』を選択して、/
+#33FF33（＋　１　２）#FFFFFFを入力してみるといいわ。/
+入力は全て半角文字。Ｅｎｔｅｒキーを押したら結果が出るからね。」\
+	r_show suzur_nc
+すずか「……すこし分かったかも。@まず括弧から始まって、プラスの記号、足される数、足す数、そして最後に括弧だね」\
+	r_show ari_n
+アリサ「そういうこと。引き算の場合は
+#33FF33（－　５　３）#FFFFFF
+と書くの。#33FF33＋#FFFFFFが#33FF33－#FFFFFFに変わっただけで、あとは足し算の場合といっしょね。５引く３が計算されるわ」\
+	r_show suzur_n
+すずか「先に＋や－といった演算子を書くっていうのがポイントだね」\
+	r_show ari_ase
+アリサ「……すずか、小学生は『演算子』とか言わないから」\
+	r_show suzur_dot
+すずか「そんなことより、実際にちょっとやってみたいな」\
+	r_show ari_n
+アリサ「わかった。先に少し注意しておくわよ。掛け算は#33FF33＊#FFFFFFを使って、割り算も#33FF33／#FFFFFFを使って同じように書けるけど、/
+割り算は『余りを無視する』ようになってるから。@/
+あと、引き算でも０未満となる答えの場合は０になってしまうから、注意しなさいよ。@/
+	r_show ari_tun
+Ｌｉｓｐの尊厳のためにいっておくけど、本当はいまどきのＬｉｓｐは/
+複素数だって標準で使えるくらいなの。@ＮＳｃＬｉｓｐｅｒが自然数しか扱えないのは単にサボっただけなんだからね！」\
+	r_show suzur_ase
+すずか「……アリサちゃん、小学生は『複素数』とか『自然数』とか言わないよ」\
+	r_show ":l;img/arin.bmp"
+アリサ「ありーん」\
+	r_show ari_n
+アリサ「あと、入力は全て半角文字。Ｅｎｔｅｒキーを押したら結果が出るからね。@/
+変な式を打ち込まないように気をつけなさいよ♪」\
+
+	mov %adv_rmode, 0         ;右クリック無効
+	bgm ms_ex
+	csp SP_R : csp SP_L
+	bg black, E_NORMAL
+	r_load ari_n
+	bg "img/blackboard.bmp", E_FAST
+	skipoff
+	mov %adv_tmp, 0
+	mov %save_flag, 0  ;セーブ不能
+	gosub *create_new_env  ;自由にいじれるように新しい環境を作る
+	mov %arg0, %ret
+	mov %adv_tmp3, %arg0
+	gosub *push  ;GC対策
+	mov %arg1, %global_env
+	gosub *nconc
+*ex01
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「気が済んだらＴａｂキーを押して終わってね」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex01_end  ;Tab
+	if $sarg0 == "" goto *ex01
+textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex01
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *lobject_to_string
+	textclear
+アリサ「結果は『$sret』ね」\
+	inc %adv_tmp
+	goto *ex01
+
+*ex01_end
+	mov %adv_rmode, 1        ;右クリック有効
+	gosub *pop
+	saveon
+	mov %save_flag, 1  ;セーブ可能
+	textclear
+	bgm ms_setsume
+	if %adv_tmp == 1 goto *s_01_2
+	if %adv_tmp == 0 goto *s_01_1
+アリサ「まあ、そんなところね」\
+	goto *s_01_3
+*s_01_1
+	r_show ":l;img/arin.bmp"
+アリサ「ありーん」\
+アリサ「一回も試さないってどういうことよ……」\
+	goto *s_01_3
+*s_01_2
+アリサ「一回で大丈夫なの？　まあ、べつにいいけど……」\
+	goto *s_01_3
+*s_01_3
+
+
+	r_show suzur_qes
+すずか「さっき出てきた#33FF33（＋　１　２）#FFFFFFとかって結局なんだったの？」\
+	r_show ari_n
+アリサ「あれこそが、Ｌｉｓｐのプログラムよ。それを実際に計算することを、他のプログラミング言語なら『プログラムを実行する』っていう場合が多いけど、/
+Ｌｉｓｐの場合は#FFFF33式を評価する#FFFFFFというの。@/
+#FFFF33式#FFFFFFっていうのは、#33FF33（＋　１　２）#FFFFFFのような形式で書かれたもの。/
+#FFFF33評価#FFFFFFっていうのは式をある規則にそって単純な形に変形することね」\
+	r_show suzur_n
+すずか「計算結果……というより、評価した結果っていうのかな？@　それが画面に表示されてたのはなんで？　/
+表示するような命令を書いた覚えはないんだけど」\
+	r_show ari_n
+アリサ「式を評価した結果のことは#FFFF33式の値#FFFFFFというわ。@/
+Ｌｉｓｐインタプリタは、入力された式の値を#FFFF33自動的に画面に表示#FFFFFFすることになってるのよ。@/
+だから、何も書かなくても結果が画面に表示されたわけ。@/
+Ｌｉｓｐインタプリタは、『読み込み』『評価』『表示』の三つの動作から成り立つの。@/
+これを『ｒｅａｄ－ｅｖａｌｕａｔｅ－ｐｒｉｎｔ　ｌｏｏｐ』といったり、/
+トップレベルといったりするわ」\
+	r_show suzur_nc
+すずか「話をまとめると、Ｌｉｓｐインタプリタでプログラムを動かすっていうのは、まず、式を入力する。@/
+インタプリタはそれを読み込んで、@評価して、@結果を表示する。こういう流れだっていうことだね」\
+	r_show ari_n
+アリサ「それから、#33FF33（＊　３　４）#FFFFFFのようなもの全体のことを式というけど、これを構成する、/
+#33FF33＋#FFFFFFや#33FF33１#FFFFFFや#33FF33２#FFFFFFも、それぞれ式なの。@/
+式に含まれている式であることを強調する時は#FFFF33部分式#FFFFFFといったりもするわ」\
+	r_show suzur_n
+すずか「つまり、#33FF33（＊　３　４）#FFFFFFは、３つの式を括弧で括って並べたものなんだね。@/
+それから、一つ一つの式は空白をいれて区切るんだね」\
+	r_show ari_n
+アリサ「括弧の中で最初に現れる式を#FFFF33演算子#FFFFFF、それ以外の式を#FFFF33被演算子#FFFFFFというわ。@/
+	show_dgm ":l;img/dgm0101.bmp"
+#33FF33（＊　３　４）#FFFFFFの場合、#33FF33＊#FFFFFFが演算子、#33FF33３#FFFFFFと#33FF33４#FFFFFFが被演算子ね」\
+	r_show suzur_n
+すずか「括弧で括られた式は、演算子と被演算子に分けられて、@/
+演算子に被演算子を作用させたものがその式の結果になるんだね」\
+	r_show ari_n
+アリサ「これから時々練習問題をやっていくけど、それ以外のどんなタイミングでも、/
+右クリックでメニューを開いて『#FFFF33インタプリタを起動#FFFFFF』を選択すれば、/
+いつでも式を打ち込むことができるからね」\
+	r_show suzur_n
+すずか「説明の途中で色々確認するために使うと便利そうだね」\
+	csp SP_DGM0
+	csp SP_R
+	bg black, E_NORMAL
+	r_load ari_n
+	l_load suzu_n
+	bgm ms_after
+	bg "img/blackboard.bmp", E_NORMAL
+	talk_mode
+アリサ「なのはとユーノの情報によると魔法も
+　　　　プログラム仕掛けらしいの。つまりプ
+　　　　ログラミングさえできれば……」\
+すずか「いずれ、私たちも魔法の力をこの手に
+　　　　できる。時空管理局の無能な人たちが
+　　　　偉そうな顔をするのもおしまい」\
+	r_show ari_hrt
+アリサ「春休みの間に魔法の力を手に入れるっ
+　　　　てのも悪くないでしょ」\
+	l_show suzu_nc
+すずか「それは有意義な春休みだね」\
+	r_show ari_n
+アリサ「ふふ、!w300ふふふ、!w200あはは、!w100
+　　　　あーはっはっはっは！！！」\
+
+
+;;;;;第1話終了;;;;;
+	speak_mode
+	textclear
+	vsp SP_R, 0
+	vsp SP_L, 0
+	bg black, E_SLOW
+;;共通記録の書き換え
+	csvopen "arisa.szk", "rc"
+	csvread %adv_clear
+	csvclose
+	if %adv_clear >= 1 goto *story01_after 
+	mov %adv_clear, 1
+	csvopen "arisa.szk", "wc"
+	csvwrite %adv_clear
+	csvclose
+#FFFF33用語集#FFFFFFに単語が追加されました。\
+*story01_after
+	r_show suzur_nc
+すずか「どうしようかな？」
+csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タイトルに戻る", *title_back, "第２話へ進む", *story02
+
+*story01_condicil
+	gosub *condicil
+	goto *story01_after
+*story01_glossary
+	gosub *glossary
+	goto *story01_after
+
+
+
+
+
+
+
+
+
+;;;;;第2話;;;;;
+*story02
+	mov %adv_noroi_off, 0
+	csp SP_R : csp SP_L : print E_FAST
+	stop
+	talk_mode
+	bgm ms_narumi
+	bg "img/blackboard.bmp", E_FAST
+	r_in ari_n
+	l_in suzu_n
+
+	talk_mode
+	l_show suzu_exc
+すずか「アリサちゃん『まめでがんす』ってい
+　　　　ってみて」\
+	r_show ari_ase
+アリサ「何よ突然……というより、一体何よそ
+　　　　れ？」\
+	l_show suzu_n
+すずか「『まめでがんす』っていうのは広島の
+　　　　方言で『元気です』という意味だよ」\
+	r_show ari_qes
+アリサ「そうなの？」\
+	l_show suzu_qes
+すずか「あれ？　アリサちゃんが昔そういって
+　　　　なかったっけ」\
+アリサ「いったかしら……方言といえば、なに
+　　　　か大事なことを忘れていたような気が
+　　　　するわね」\
+
+	csp SP_R : csp SP_L : print 1
+	bg "img/title#02.bmp", E_VFAST
+	wait 1000
+	delay 2000
+	bgm ms_setsume
+	bg "img/blackboard.bmp", E_FAST
+
+	speak_mode
+	r_show ari_n
+アリサ「そうそう。Ｌｉｓｐのどの#FFFF33方言#FFFFFFを使うか決めないといけないわね」\
+	r_show suzur_nc
+すずか「えーと、Ｌｉｓｐはいろんなところが独自拡張とかをしてきたからいろんなルールがあるんだよね」\
+	r_show ari_n
+アリサ「ここでは、#FFFF33Ｓｃｈｅｍｅ#FFFFFFと呼ばれる方言に似せたものを使うことにしましょう。Ｓｃｈｅｍｅはコンパクトな仕様で非常に美しいのよ」\
+	r_show suzur_n
+すずか「まあ、文法をＳｃｈｅｍｅライクにしただけで、ＮＳｃＬｉｓｐｅｒは/
+その『コンパクトな仕様』さえも、ろくに実装してないんだけどね」\
+	r_show ":l;img/arin.bmp"
+アリサ「ありーん」\
+	r_show ari_n
+アリサ「それはさておき、今回は変数を使ってみましょうか。@
+#33FF33（ｄｅｆｉｎｅ　ｘ　１２８）#FFFFFF
+この式を評価すると、Ｌｉｓｐインタプリタの#FFFF33環境#FFFFFFというモノに『変数ｘは１２８』と記憶されるの。@/
+	show_dgm ":l;img/dgm0201a.bmp"
+それで、この式を評価した後に式#33FF33ｘ#FFFFFFを評価したら、結果は１２８になるのよ。@/
+	show_dgm ":l;img/dgm0201b.bmp"
+式が変数のみからなる場合、その#FFFF33式の値#FFFFFFのことを#FFFF33変数の値#FFFFFFというわ」\
+	csp SP_DGM0
+	r_show suzur_n
+すずか「つまり、#33FF33（ｄｅｆｉｎｅ　変数名　式）#FFFFFFを評価すると、変数を定義できるんだね。@/
+あと、変数を評価した結果のことは#FFFF33変数の値#FFFFFFっていうんだ」\
+	r_show ari_n
+アリサ「括弧で囲まれたものだけじゃなくて、ｘとか１２８とかも式だってことを忘れないでね。@/
+あと、ｄｅｆｉｎｅで定義していない変数を評価すると、普通はエラーになるんだけど、/
+ＮＳｃＬｉｓｐｅｒでは#33FF33ｎｉｌ#FFFFFFという特殊な値になるの」\
+	r_show suzur_dere
+すずか「ＮＳｃＬｉｓｐｅｒは止まることよりも、走り続ける道を選んだんだ……@/
+	r_show suzur_ase
+そういうと、少しかっこいいけど、実際は開発者がサボってるだけだね」\
+	r_show ari_n
+アリサ「ちなみに、数を表す式を直接評価――例えば、#33FF33２５６#FFFFFFとかを評価したらどうなると思う？」\
+	r_show suzur_qes
+すずか「えーと、２５６以外にはなれそうもないし、２５６のままなのかな？」\
+	r_show ari_n
+アリサ「その通り。一見当たり前のような規則だけど、これが案外重要なの。@/
+さっきのｄｅｆｉｎｅの式を評価した後に、
+#33FF33（＋　ｘ　８９６）#FFFFFF
+を評価するとどうなると思う？」\
+	r_show suzur_nc
+すずか「えっと、１２８足す８９６が計算されて１０２４になるんじゃないかな？」\
+	r_show ari_n
+アリサ「式の値はその通りよ。@/
+けど、流れとしては、#33FF33（＋　ｘ　８９６）#FFFFFFを評価する際に、/
+まず、ｘが評価されて、１２８になるの。@
+その後さらに、８９６も評価されて８９６になってから＋による足し算が行われるの。@/
+	show_dgm ":l;img/dgm0202.bmp"
+このように、被演算子は先に評価されるのよ」\
+	csp SP_DGM0
+	r_show suzur_exc
+すずか「#33FF33（＋　Ａ　Ｂ）#FFFFFFは＋が作用するよりも先に、ＡとＢが評価されるんだね」\
+	r_show ari_n
+アリサ「そう。そして、ＡやＢは数や変数じゃなくて、括弧で囲われた式でもいいの。つまり、
+#33FF33（＋　（＊　３　４）（－　５　２））#FFFFFF
+みたいな式を書くことも許されるわ」\
+	r_show suzur_excc
+すずか「演算子が被演算子に作用するよりも先に被演算子は評価されるんだね。@/
+だから、＋とかの演算子が作用する被演算子は数であっても、括弧で囲われた式であっても、それを評価した結果が数であればいいのかな」\
+	csp SP_DGM0
+	r_show ari_ase
+アリサ「……妙に理解が早いわね。じゃあ、実際に何かやってみましょうか。@/
+	r_show ari_exc
+今回も演習の前に諸注意。/
+#33FF33（ｄｅｆｉｎｅ　ｎａｍｅ　２）#FFFFFFを評価すると#33FF33ｎａｍｅ#FFFFFFという結果になるわ。@/
+少々不思議に感じるかもしれないけど、これが一体何なのかは/
+持ち越しにするから、今はあまり深く考えたら駄目だからね！@/
+　あと、どうしても駄目だと思ったら#FFFF33Ｔａｂ#FFFFFFキーを押すといいことが起こるかもしれないわ」\
+
+	mov %adv_rmode, 0         ;右クリック無効
+	bgm ms_ex
+	csp SP_R : csp SP_L
+	bg black, E_NORMAL
+	r_load ari_n
+	bg "img/blackboard.bmp", E_FAST
+	skipoff
+	mov %adv_tmp, 0
+	mov %save_flag, 0  ;セーブ不能
+*ex02
+	mov %gc_run, 0  ;GC起動回数を初期化
+	gosub *create_new_env  ;変な定義をしないように毎回環境を作り直す
+	mov %arg0, %ret
+	gosub *push  ;S(new env)
+	mov %adv_tmp3, %arg0
+	mov %arg1, %global_env
+	gosub *nconc
+	mov $sarg0, ""
+	textclear
+!s0アリサ「まず、ｘの値を４と定義しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 gosub *pop : goto *ex02_tab  ;Tab
+	if $sarg0 == "" gosub *pop : goto *ex02
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex02
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *lobject_to_string
+	textclear
+アリサ「結果は『$sret』ね」\
+	;答え合わせ
+	mov $sarg0, "x"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *get_tag
+	mov %tmp1, %ret
+	gosub *get_data
+	mov %tmp2, %ret
+	if %tmp1 == TAG_NUM && %tmp2 == 4 goto *ex02_2  ;S(new env)
+	r_show ari_die
+	アリサ「……なに違うことやってるのよ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	gosub *pop  ;new env<S()
+	goto *ex02
+
+*ex02_2  ;S(new env)
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「次に、（ｘ＋３）＊４を計算しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex02_2_tab  ;Tab
+	if $sarg0 == "" goto *ex02_2
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex02_2
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	gosub *push  ;S(input, new env)
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *push  ;S(new object, input, new env)
+	gosub *lobject_to_string
+	textclear
+アリサ「結果は『$sret』ね」\
+	gosub *pop  ;new object<S(input, new env)
+	mov %arg0, %ret
+	gosub *get_tag
+	mov %tmp1, %ret
+	gosub *get_data
+	mov %tmp2, %ret
+	if %tmp1 == TAG_NUM && %tmp2 == 28 goto *ex02_3  ;この後xの値を変えてチェック
+    ;ここでxの再定義をしてくれるという素晴らしい人のために
+	mov $sarg0, "x"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *get_tag
+	mov %tmp1, %ret
+	gosub *get_data
+	mov %tmp2, %ret
+	if %tmp1 != TAG_NUM goto *ex02_ext
+	if %tmp2 != 4 goto *ex02_ext
+	r_show ari_die
+アリサ「違うわよ。もう一回やり直し！」\
+	r_show ari_n
+	gosub *pop  ;input<S(new env)
+	inc %adv_tmp
+	goto *ex02_2
+*ex02_ext
+	r_show ari_muka
+アリサ「……なかなか面白いことをやってくれるわね。@/
+	r_show ari_do
+最初からやり直し！！！」\
+	r_show ari_n
+	gosub *pop  ;input<S(new env)
+	gosub *pop  ;new env<S()
+	inc %adv_tmp
+	goto *ex02
+
+*ex02_3  ;（ｘ＋３）＊４なのかチェック
+	mov $sarg0, "(define x 997)"  ;set!に直した方がいい
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval  ;xの値を997に書き換え
+	gosub *pop  ;input<S(new env)
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *get_tag
+	mov %tmp1, %ret
+	gosub *get_data
+	mov %tmp2, %ret
+	if %tmp1 == TAG_NUM && %tmp2 == 4000 goto *ex02_end
+	r_show ari_muka
+アリサ「あのさ、なんで答えだけがあってるのかな……@/
+	r_show ari_do
+最初からやり直し！！！」\
+	r_show ari_n
+	gosub *pop  ;new env<S()
+	inc %adv_tmp
+	goto *ex02
+
+
+
+*ex02_tab
+csel "続ける", *ex02, "ヒント", *ex02_hint,  "タイトルに戻る", *ex02_bye
+
+*ex02_hint
+textclear
+アリサ「変数の定義は
+#33FF33（ｄｅｆｉｎｅ　変数名　式）#FFFFFF
+よ」\
+	goto *ex02
+
+*ex02_bye
+	mov %adv_rmode, 1        ;右クリック有効
+	textclear
+	csp SP_R
+	stop
+	goto *title
+
+
+*ex02_2_tab
+csel "続ける", *ex02_2, "ヒント", *ex02_2_hint,  "タイトルに戻る", *ex02_2_bye
+
+*ex02_2_hint
+textclear
+アリサ「まず、『（ｘ＋３）＊４』はｘ＋３と４の積よね。@/
+この２つはそれぞれ#33FF33（＋　ｘ　３）#FFFFFFと#33FF33４#FFFFFFという式で表せるわ。@/
+それから、被演算子が先に評価されるという規則があるから、式Ａと式Ｂの積は
+#33FF33（＊　Ａ　Ｂ）#FFFFFF
+という式になるわ。この問題の場合は式ＡとＢは既に言った２つの式だから……」\
+	goto *ex02_2
+
+*ex02_2_bye
+	mov %adv_rmode, 1        ;右クリック有効
+	textclear
+	csp SP_R
+	stop
+	gosub *pop
+	goto *title
+
+
+
+
+*ex02_end
+	mov %adv_rmode, 1        ;右クリック有効
+	gosub *pop  ;new env<S()
+	saveon
+	mov %save_flag, 1  ;セーブ可能
+	add %adv_miss, %adv_tmp
+	bgm ms_setsume
+	textclear
+	if %adv_tmp == 0 goto *s_02_2
+	if %adv_tmp >=3   goto *s_02_3
+*s_02_1
+アリサ「まあまあだったわね」\
+	goto *s_02_4
+*s_02_2
+	r_show ari_hrt
+アリサ「全く問題ないようね」\
+	goto *s_02_4
+*s_02_3
+	r_show ari_ase
+アリサ「ちょっと失敗が多いわね」\
+	goto *s_02_4
+
+
+*s_02_4
+	r_show suzur_qes
+すずか「結局、変数ってなんだったのかな？」\
+	r_show ari_n
+アリサ「変数というのは、文字の並びで構成される#FFFF33名前#FFFFFFが#33FF33値#FFFFFFと結びついたものなの。@/
+値というものは、今のところは７とか８といった数を思い浮かべておくといいわ」\
+	r_show suzur_nc
+すずか「評価したら、結果が１２８になるような変数ｘっていうのは、/
+『１２８という値』と結びついた『ｘという名前』なのかな」\
+	r_show ari_n
+アリサ「これまでの説明では#33FF33ｘ#FFFFFFとか、簡素な名前しか使わなかったけど@/
+#33FF33ｓｕｚｕｋａ#FFFFFFとか#33FF33ｎａｎｏｈａ１９#FFFFFFとか、/
+アルファベットと数字で構成されたり、@#33FF33ｓｔａｒｌｉｇｈｔ－ｂｒｅａｋｅｒ！#FFFFFFとか、/
+記号を混ぜることもできるのよ」\
+	r_show suzur_n
+すずか「記号を使えるといっても、括弧『（』『）』とかは使用できないし、@#33FF33６６６#FFFFFFのように/
+数字だけで構成されるものは#FFFF33数#FFFFFFとして扱われるから#FFFF33名前#FFFFFFには出来ないってことだね」\
+	r_show ari_hrt
+アリサ「さすがね。よく分かってるじゃない！@/
+　あと、普通はＬｉｓｐは大文字と小文字を区別しないことが多いけど、/
+ＮＳｃＬｉｓｐｅｒでは区別するから注意してね。@この#FFFF33名前#FFFFFFをＬｉｓｐでは#FFFF33シンボル#FFFFFFというものを使って表すの」\
+	r_show suzur_qes
+すずか「変数っていうのは、値と結びついた#FFFF33シンボル#FFFFFFなんだね。じゃあ、#FFFF33変数の定義#FFFFFFとか/
+#FFFF33変数の評価#FFFFFFってのはなんだったのかな？」\
+	r_show ari_n
+アリサ「Ｌｉｓｐにおける変数の定義っていうのは、#FFFF33シンボル#FFFFFFと#FFFF33値#FFFFFFを結びつけることなのよ。@/
+例えば、#33FF33（ｄｅｆｉｎｅ　ｘ　１６）#FFFFFFはｘという名前と１６という値を結びつけるの。/
+このことを『ｘが１６に#FFFF33束縛（ｂｉｎｄ）#FFFFFFされる』というの」\
+	r_show suzur_qes
+すずか「ｘが１６を束縛するんじゃなくて、ｘが１６に束縛されるの？」\
+	r_show ari_n
+アリサ「日本語として微妙な言い回しかもしれないけど、英語の本とかだとそう書いてたからきっとそうなのよ@/
+	r_show ari_ase
+……多分」\
+	r_show suzur_n
+すずか「確か#FFFF33環境#FFFFFFっていうモノに、変数と値の結びつきが入っているんだよね？」\
+	r_show ari_n
+アリサ「環境っていうのはシンボルと値の結びつきである#FFFF33束縛#FFFFFFの集まりなの。/
+ｄｅｆｉｎｅを使うと、この環境に新たな束縛を加えることが出来るの。@/
+そして、変数を評価すると環境からその名前が探されて、それに対応する値が結果となるのよ」\
+	r_show suzur_qes
+すずか「ねえねえ、ふと疑問に思ったんだけど、#33FF33（＋　ｘ　１）#FFFFFFは、#33FF33ｘ#FFFFFFが評価されてから、/
+#33FF33＋#FFFFFFがそれに作用するんだよね。@けど、#33FF33（ｄｅｆｉｎｅ　ｘ　３２）#FFFFFFと書いた場合は？@　/
+	show_dgm ":l;img/dgm0203.bmp"
+これは、ｘは評価されずにシンボルとして扱われてない？」\
+	r_show ari_n
+アリサ「いいところに目を付けたわね。/
+ｄｅｆｉｎｅの２つ目の被演算子は評価されるけど、１つ目の被演算子は評価せずにシンボルとして扱われるわ。@/
+こうなる理由は、今は『ｄｅｆｉｎｅは特別だから』としか言えないわね」\
+	csp SP_DGM0
+	r_show suzur_ase
+すずか「えー、そんなのずるいよアリサちゃん。教えてよ～」\
+
+	csp SP_R
+	bg black, E_NORMAL
+	r_load ari_n
+	l_load suzu_n
+	bgm ms_after
+	bg "img/blackboard.bmp", E_NORMAL
+	talk_mode
+アリサ「まあまあ、そんなに焦らなくても。大
+　　　　丈夫よ。この調子だとすぐに魔法も使
+　　　　えるようになるはずよ」\
+	l_show suzu_qes
+すずか「魔法を使うには、生まれながらの資質
+　　　　も必要だってなのはちゃんから聞いた
+　　　　けど、私たちはどうなんだろうね」\
+	r_show ari_tun
+アリサ「そればっかしは私たちにはどうなのか
+　　　　分からないわね」\
+	l_show suzu_ase
+すずか「……それは大問題じゃないの？」\
+	r_show ari_n
+アリサ「けど、たとえ魔法の資質がなくても、
+　　　　魔法の効果を作り出すプログラミング
+　　　　さえできれば十分よ」\
+	l_show suzu_n
+すずか「杖（デバイス）に魔法のプログラムを
+　　　　保存して、それを魔法が使える人に持
+　　　　たせたらいいんだよね」\
+アリサ「そうすると、魔法を発動させることが
+　　　　できるはずよ。だから私たちはプログ
+　　　　ラミングに専念しましょう」\
+	l_show suzu_nc
+すずか「もし、私たち二人ともが魔法が使えな
+　　　　かった時は、魔法を使える人を探さな
+　　　　いとね」\
+	r_show ari_tun
+アリサ「その時は鮫島に任せましょう。あいつ
+　　　　なら、多分大丈夫よ@/
+	r_show ari_dere
+……年齢的に」\
+	l_show suzu_dot
+すずか「まさか、アリサちゃん、２５歳を過ぎ
+　　　　たら魔法を使えるっていうのを信じて
+　　　　たりしないよね」\
+アリサ「……大丈夫。きっともう一つの条件も
+　　　　クリアしてるわ」\
+	l_show suzu_dotc
+すずか「アリサちゃん……」\
+
+
+;;;;;第2話終了;;;;;
+	speak_mode
+	textclear
+	vsp SP_R, 0
+	vsp SP_L, 0
+	bg black, E_SLOW
+;共通記録の書き換え
+	csvopen "arisa.szk", "rc"
+	csvread %adv_clear
+	csvclose
+	if %adv_clear >= 2 goto *story02_after 
+	mov %adv_clear, 2
+	csvopen "arisa.szk", "wc"
+	csvwrite %adv_clear
+	csvclose
+#FFFF33補足説明#FFFFFFが追加されました。
+#FFFF33用語集#FFFFFFに単語が追加されました。\
+*story02_after
+	r_show suzur_nc
+すずか「どうしようかな？」
+csel "補足説明を読む", *story02_condicil, "用語集を読む", *story02_glossary, "タイトルに戻る", *title_back, "第３話へ進む", *story03
+
+*story02_condicil
+	gosub *condicil
+	goto *story02_after
+*story02_glossary
+	gosub *glossary
+	goto *story02_after
+
+
+
+
+
+
+;;;;;第3話;;;;;
+*story03
+	mov %adv_noroi_off, 0
+	csp SP_R : csp SP_L : print E_FAST
+	stop
+	talk_mode
+	bgm ms_narumi
+	bg "img/blackboard.bmp", E_FAST
+	r_in ari_n
+	l_in suzu_n
+
+アリサ「有名な『鉄腕アトム』に登場するアト
+　　　　ムの脳の記憶容量って１５兆８千億ビ
+　　　　ットなのよ。知ってた？」\
+	l_show suzu_exc
+すずか「そうなんだ。@/
+	l_show suzu_ase
+でも、あれ……これって
+　　　　計算すると２テラバイトより少ないこ
+　　　　とになるよ。案外少ないね」\
+
+	csp SP_R : csp SP_L : print 1
+	bg "img/title#03.bmp", E_VFAST
+	wait 1000
+	delay 2000
+	bgm ms_setsume
+	bg "img/blackboard.bmp", E_FAST
+
+	speak_mode
+	r_show ari_n
+アリサ「というわけで、数とシンボルの話をしましょう」\
+	r_show suzur_T_T
+すずか「アトムの話はどこにいったの……？」\
+	r_show ari_n
+アリサ「括弧で囲まれた式全体を#FFFF33リスト#FFFFFFというの。@/
+それから、括弧で囲われてない式（シンボルや数）を#FFFF33アトム#FFFFFFというの。@/
+	show_dgm ":l;img/dgm0301.bmp"
+Ｌｉｓｐの少し古い言い方ではそれぞれを、文字アトムとか、数アトムとか言ってたんだけど、/
+最近はあまりこの言い方は使われてないようね」\
+	csp SP_DGM0
+	r_show suzur_ase
+すずか「それが言いたかっただけの理由でアトムの話を出したんだ」\
+	r_show ":l;img/arin.bmp"
+アリサ「ありーん」\
+	r_show suzur_nc
+すずか「数は評価しても変化しないけど、シンボルは評価したら別のものに変わっちゃうんだよね。/
+これってなんか不公平な気がするな」\
+	r_show ari_n
+アリサ「ふっふっふ……Ｌｉｓｐに抜かりはないわ。
+#33FF33’ｓｕｚｕｋａ#FFFFFF
+これを評価すると、結果は#33FF33ｓｕｚｕｋａ#FFFFFFになるのよ」\
+	r_show suzur_n
+すずか「どうして私の名前を使うかなぁ……じゃなくて、文字の並びが結果になってるよ。/
+これはひょっとしてシンボルのなの？」\
+	r_show ari_exc
+アリサ「ご名答。#33FF33’ｓｕｚｕｋａ#FFFFFFっていうのは正確には/
+#33FF33（ｑｕｏｔｅ　ｓｕｚｕｋａ）#FFFFFFの省略した記法で、こう書いても同じことになるわ」\
+	r_show suzur_n
+すずか「つまり、#33FF33（ｑｕｏｔｅ　ｓｙｍｂｏｌ）#FFFFFFを評価したら、/
+#33FF33ｓｙｍｂｏｌ#FFFFFFがそのまま結果になるってことだね」\
+	r_show ari_n
+アリサ「ｑｕｏｔｅがｓｙｍｂｏｌに作用する前にｓｙｍｂｏｌが評価されないのか、って思うかもしれないけど、/
+これは『ｑｕｏｔｅが特別だから』評価されないのよ」\
+	r_show suzur_qes
+すずか「ｄｅｆｉｎｅも特別って言ってたけど、これは/
+#33FF33（ｄｅｆｉｎｅ　ｎａｍｅ　ｅｘｐｒ）#FFFFFFを評価すると、/
+ｅｘｐｒは評価されるけど、ｎａｍｅは評価されず、そのままのシンボルとして扱われるからだったよね。@/
+つまり、演算子が特別だと、評価されない被演算子があるってこと？」\
+	r_show ari_n
+アリサ「その通り。よく分からないとしても、#33FF33’ｎａｍｅ#FFFFFFを評価すると、/
+#33FF33ｎａｍｅ#FFFFFFが結果として返るということだけは覚えてね。@/
+ちなみに、式#33FF33’３#FFFFFFの値は#33FF33３#FFFFFFになるわ。/
+余裕があるならこれも覚えておくといいわね」\
+	r_show suzur_qes
+すずか「ねえ、シンボルといえば、前は変数の名前みたいな感じで出てきたけど、今回は違うの？」\
+	r_show ari_exc
+アリサ「ここは少し難しいかもしれないから注意して聞いてね。@/
+#33FF33１９#FFFFFFとか#33FF33ｎａｎｏｈａ#FFFFFFといったものは、共に#FFFF33値#FFFFFF（オブジェクト）と呼ばれるの。@/
+値と一言に言っても、数字の並びから出来ているものや、文字の並びから出来ているものなど、種類がいくつかあるの。@/
+『数』『シンボル』といった値の種類のことを#FFFF33型#FFFFFFというわ」\
+	r_show suzur_excc
+すずか「#33FF33１９#FFFFFFは型が数である値。#33FF33ｎａｎｏｈａ#FFFFFFは型がシンボルである値ってことだね@/
+	show_dgm ":l;img/dgm0302.bmp"
+」\
+	csp SP_DGM0
+	r_show ari_n
+アリサ「型が数である値を単に『数』と呼んだり、型がシンボルである値を単に『シンボル』といったりするけど、/
+これらは値という言葉を省略しているのよ」\
+	r_show suzur_nc
+すずか「そういえば、変数は#FFFF33束縛されたシンボル#FFFFFFだったね。逆に言うと、/
+束縛されてないシンボルっていうものもあるんだよね」\
+	r_show ari_n
+アリサ「シンボルは評価されると、環境から対応する値が探されて、それが結果となるの。@/
+けど、評価さえしなければ、それは文字の並びを表すシンボルとして、そのまま残るわ@/
+	show_dgm ":l;img/dgm0303.bmp"
+」\
+	csp SP_DGM0
+	r_show suzur_dotc
+すずか「えーと、#33FF33’ｓｙｍｂｏｌ#FFFFFFはｓｙｍｂｏｌはｑｕｏｔｅの効果で評価されないから……@/
+	r_show suzur_exc
+そっか、だから引用符’でシンボルを作れるんだね」\
+	r_show ari_n
+アリサ「さらにさらに。シンボルも値なんだから変数に対応する値として環境に束縛を加えることも出来るのよ。/
+#33FF33（ｄｅｆｉｎｅ　ｎａｎｏｈａ　’ｆａｔｅ）#FFFFFFを評価して、/
+#33FF33ｎａｎｏｈａ#FFFFFFを評価すると、結果は#33FF33ｆａｔｅ#FFFFFFになるわ」\
+	r_show suzur_excc
+すずか「なのはちゃんがフェイトちゃんに束縛されてることに注意@/
+	r_show suzur_ase
+……じゃなくて、#33FF33（ｄｅｆｉｎｅ　変数名　式）#FFFFFFの/
+#33FF33式#FFFFFFは評価されるから、シンボルにしたかったら、引用符’をつける必要があるけど、@/
+#33FF33変数名#FFFFFFはｄｅｆｉｎｅの効果で、元々評価されないから引用符’を付けたら駄目なことに注意だね」\
+	r_show ari_n
+アリサ「色々頭の中がごちゃごちゃしてきたと思うから、簡単な問題をやってみましょう」\
+
+	mov %adv_rmode, 0         ;右クリック無効
+	bgm ms_ex
+	csp SP_R : csp SP_L
+	bg black, E_NORMAL
+	r_load ari_n
+	bg "img/blackboard.bmp", E_FAST
+	skipoff
+	mov %adv_tmp, 0
+	mov %save_flag, 0  ;セーブ不能
+*ex03_prev
+	gosub *create_new_env  ;自由にいじれるように新しい環境を作る
+	mov %arg0, %ret
+	mov %adv_tmp3, %arg0
+	gosub *push  ;GC対策
+	mov %arg1, %global_env
+	gosub *nconc
+*ex03
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「結果が『#33FF33ｈａｙａｔｅ#FFFFFF』というシンボルになる式を評価しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex03_tab  ;Tab
+	if $sarg0 == "" goto *ex03
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex03
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *push     ;S(ret)
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	mov $sarg0, "hayate"
+	gosub *create_symbol
+	mov %tmp, %ret
+	gosub *pop      ;ret<S()
+	if %tmp == %ret goto *ex03_2
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex03
+
+*ex03_2
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「変数ｆａｔｅの値を『ｎａｎｏｈａ』というシンボルとして定義しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex03_2_tab  ;Tab
+	if $sarg0 == "" goto *ex03_2
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex03_2
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	mov $sarg0, "fate"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *push     ;S(value of fate)
+	mov $sarg0, "nanoha"
+	gosub *create_symbol
+	mov %arg0, %ret
+	gosub *pop      ;value of fate<S()
+	if %arg0 == %ret goto *ex03_3
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex03_2
+
+*ex03_3
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「変数ｆａｔｅを評価しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex03_3_tab  ;Tab
+	if $sarg0 == "" goto *ex03_3
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex03_3
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	gosub *push     ;S(input)
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *push     ;S(ret, input)
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	;;;定義の書き換えcheck;;;
+	mov $sarg0, "fate"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *push     ;S(value of fate, ret, input)
+	mov $sarg0, "nanoha"
+	gosub *create_symbol
+	mov %arg0, %ret
+	gosub *pop      ;value of fate<S(ret, input)
+	if %arg0 != %ret sub %sp, 2 : goto *ex03_3_miss2
+	;;;end;;;
+	mov $sarg0, "nanoha"
+	gosub *create_symbol
+	mov %arg0, %ret
+	gosub *pop      ;ret<S(input)
+	if %arg0 != %ret gosub *pop : goto *ex03_3_miss
+	mov $sarg0, "fate"
+	gosub *create_symbol
+	mov %arg0, %ret
+	gosub *pop      ;input<S()
+	if %arg0 == %ret goto *ex03_end
+*ex03_3_miss
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex03_3
+*ex03_3_miss2
+	textclear
+	r_show ari_muka
+アリサ「……最初からやり直し！！」\
+	r_show ari_n
+	inc %adv_tmp
+	gosub *pop  ;new env
+	goto *ex03_prev
+
+
+*ex03_tab
+csel "続ける", *ex03, "ヒント", *ex03_hint,  "タイトルに戻る", *ex03_bye
+*ex03_2_tab
+csel "続ける", *ex03_2, "ヒント", *ex03_2_hint,  "タイトルに戻る", *ex03_bye
+*ex03_3_tab
+csel "続ける", *ex03_3, "ヒント", *ex03_3_hint,  "タイトルに戻る", *ex03_bye
+
+*ex03_bye
+	mov %adv_rmode, 1        ;右クリック有効
+	textclear
+	csp SP_R
+	stop
+	gosub *pop
+	goto *title
+
+*ex03_hint
+	textclear
+アリサ「シンボルを評価せず、そのままの形で残すには引用符’を使って#33FF33’ｘ#FFFFFFのように書くか、/
+#33FF33（ｑｕｏｔｅ　ｘ）#FFFFFFと書けばいいわ」\
+	goto *ex03
+
+*ex03_2_hint
+	textclear
+アリサ「変数の定義は今まで通り#33FF33（ｄｅｆｉｎｅ　変数名　式）#FFFFFFとすればいいわ。@/
+#33FF33変数名#FFFFFFは評価されないけど、#33FF33式#FFFFFFは評価されるから、引用符’を使えばいいわね」\
+	goto *ex03_2
+
+*ex03_3_hint
+	textclear
+アリサ「何も考えずに、変数名だけを書いたらいいわ」\
+	goto *ex03_3
+
+
+
+*ex03_end
+	mov %adv_rmode, 1        ;右クリック有効
+	gosub *pop  ;new env<S()
+	saveon
+	mov %save_flag, 1  ;セーブ可能
+	textclear
+	add %adv_miss, %adv_tmp
+	bgm ms_setsume
+	if %adv_tmp == 0 goto *s_03_2
+	if %adv_tmp >=4   goto *s_03_3
+*s_03_1
+アリサ「まあまあだったわね」\
+	goto *s_03_4
+*s_03_2
+	r_show ari_hrt
+アリサ「全く問題ないようね」\
+	goto *s_03_4
+*s_03_3
+	r_show ari_ase
+アリサ「ちょっと失敗が多いわね」\
+	goto *s_03_4
+*s_03_4
+
+	r_show ari_n
+アリサ「ｑｕｏｔｅや引用符’を使って、式や部分式を評価しないことを#FFFF33ｑｕｏｔｅする#FFFFFFというの。@/
+変な言い回しかもしれないけど覚えてね」\
+	r_show suzur_qes
+すずか「今更だけどさ、＋とか－とかｄｅｆｉｎｅとかって一体何なの？　見た目はシンボルのようだけど……」\
+	r_show ari_n
+アリサ「それを知るにはまず、評価のルールを知る必要があるわね。
+#33FF33（演算子　被演算子１　被演算子２…被演算子ｎ）#FFFFFF
+いままで何度も見てきた括弧で囲われた式ね。被演算子は長いから#FFFF33引数#FFFFFFといいましょう。
+一つ目、二つ目の引数のことを第一引数、第二引数という感じに呼ぶことにするわね」\
+	r_show suzur_nc
+すずか「演算子が＋や－の時は引数は評価されるけど、ｑｕｏｔｅとかの場合は特別に評価されないんだよね」\
+	r_show ari_n
+アリサ「＋や－のように、引数を評価するものを#FFFF33関数#FFFFFF、@/
+ｄｅｆｉｎｅやｑｕｏｔｅのように引数の扱いが特別なものを、/
+#FFFF33スペシャルフォーム#FFFFFFというの」\
+	r_show suzur_T_T
+すずか「『特別だから』とさんざん言ってきたものの名前がスペシャルフォームだなんて……@/
+そのまま過ぎない？」\
+	r_show ari_do
+アリサ「うるさいうるさいうるさい」\
+	r_show suzur_dere
+すずか「まあまあ、落ち着いて」\
+	r_show ari_n
+アリサ「そうそう、今まで『演算子を被演算子に作用させる』みたいな言い回しを使ってきたけど、/
+関数の場合『引数をつけて関数を呼び出す』ということにするわ。@/
+それから、#33FF33（関数　引数１…引数ｎ）#FFFFFFのような式を『#FFFF33関数呼び出し#FFFFFF』というわね。@/
+あと、関数呼び出しを評価して得られる結果を#FFFF33関数が返す値#FFFFFFと呼ぶことにするわ」\
+	r_show suzur_qes
+すずか「新しい言葉が一杯出てきたけど、＋とかが見た目はシンボルのようだっていう話はどうなの？」\
+	r_show ari_n
+アリサ「＋や－は、それ自身はシンボルに違いないわ。ただ、#FFFF33型が関数である値#FFFFFFに束縛されているの。/
+リストを評価すると引数だけじゃなくて演算子も評価されるから、その値が現れるんだけど、それは難しいからまた今度にしましょう」\
+	r_show suzur_n
+すずか「うーん、なんだか難しい話だね。/
+とりあえず、今は#FFFF33スペシャルフォーム#FFFFFF、#FFFF33関数#FFFFFF、#FFFF33引数#FFFFFFという名称だけを覚えて、/
+詳しいところはまた話が進んでから理解すれば十分かな」\
+
+	vsp SP_R, 0
+	bg black, E_NORMAL
+	r_load ari_n
+	l_load suzu_n
+	bgm ms_after
+	bg "img/blackboard.bmp", E_NORMAL
+	talk_mode
+アリサ「なかなか順調にＬｉｓｐに慣れてきて
+　　　　いるわね」\
+	l_show suzu_qes
+すずか「アリサちゃん、プログラミング言語っ
+　　　　ていろんな種類があるって聞いたけど
+　　　　なんでＬｉｓｐなの？」\
+アリサ「Ｌｉｓｐはね、人工知能の開発に強い
+　　　　の。だから人工知能搭載のデバイスの
+　　　　開発に使われてる」\
+	l_show suzu_exc
+すずか「なるほど、デバイスの開発に使う標準
+　　　　的な言語なんだね」\
+	r_show ari_qes
+アリサ「そう。そして、時空管理局のコンピュ
+　　　　ータは『何故か』全てＬｉｓｐマシン
+　　　　なのよ」\
+	l_show suzu_nc
+すずか「時空管理局は全面的にＬｉｓｐを使っ
+　　　　ているんだね。それはいいけど、そろ
+　　　　そろデバイスを手に入れないとね」\
+	r_show ari_n
+アリサ「それは時空管理局で失敬しましょう」\
+	l_show suzu_dot
+すずか「さすがにそれはまずくない？　という
+　　　　より、そう簡単にいくかな」\
+アリサ「大丈夫。実は何日も掛けて計画を練っ
+　　　　ていたのよ。近々決行するわよ」\
+	l_show suzu_dotc
+すずか「万が一、局員に見つかった時は？」\
+	r_show ari_hrt
+アリサ「鮫島を連れて行きましょう。何かあっ
+　　　　た時に責任を取るのは大人よ。子供は
+　　　　取る必要はないわ」\
+	l_show suzu_ase
+すずか「アリサちゃん……酷い……」\
+
+
+
+;;;;;第3話終了;;;;;
+	speak_mode
+	textclear
+	vsp SP_R, 0
+	vsp SP_L, 0
+	bg black, E_SLOW
+;;共通記録の書き換え
+	csvopen "arisa.szk", "rc"
+	csvread %adv_clear
+	csvclose
+	if %adv_clear >= 3 goto *story03_after 
+	mov %adv_clear, 3
+	csvopen "arisa.szk", "wc"
+	csvwrite %adv_clear
+	csvclose
+#FFFF33補足説明#FFFFFFが追加されました。
+#FFFF33用語集#FFFFFFに単語が追加されました。\
+*story03_after
+	r_show suzur_nc
+すずか「どうしようかな？」
+csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タイトルに戻る", *title_back, "第４話へ進む", *story04
+
+*story03_condicil
+	gosub *condicil
+	goto *story03_after
+*story03_glossary
+	gosub *glossary
+	goto *story03_after
+
+
+
+
+
+;;;;;第4話;;;;;
+*story04
+	mov %adv_noroi_off, 0
+	csp SP_R : csp SP_L : print E_FAST
+	stop
+	talk_mode
+	bgm ms_narumi
+	bg "img/blackboard.bmp", E_FAST
+	r_in ari_n
+	l_in suzu_n
+アリサ「さあ、今日は時空管理局に潜入するわ
+　　　　よ。準備はいい？」\
+	l_show suzu_dotc
+すずか「やっぱり泥棒はいけないと思うな」\
+アリサ「大丈夫。なのはに聞いた話によると、
+　　　　今、旧式のデバイスが大量に破棄され
+　　　　ようとしているらしいの」\
+	l_show suzu_n
+すずか「へー、そうなんだ」\
+	r_show ari_hrt
+アリサ「新型のデバイスより性能は劣るけど、
+　　　　まだ使えるのよ。これを捨てるなん
+　　　　てもったいないでしょ」\
+	l_show suzu_ase
+すずか「盗むんじゃなくて、これから捨てるも
+　　　　のを貰ってくるって言いたいんだね」\
+	r_show ari_n
+アリサ「むしろ、ごみが減っていいじゃない。
+　　　　さあ、潜入の前に気合を入れて勉強を
+　　　　していきましょうか」\
+
+	csp SP_R : csp SP_L : print 1
+	bg "img/title#04.bmp", E_VFAST
+	wait 1000
+	delay 2000
+	bgm ms_setsume
+	bg "img/blackboard.bmp", E_FAST
+
+	speak_mode
+	r_show suzur_qes
+すずか「Ｌｉｓｐって式に括弧が多いよね。この括弧っていったい何なのかな？」\
+	r_show ari_n
+アリサ「ふっふっふ……これこそがＬｉｓｐの面白いところ。プログラムである式と、/
+データである値が等価であるという脅威の特徴を秘めるためのものなのよ」\
+	r_show suzur_T_T
+すずか「アリサちゃん、むずかしすぎるよ…」\
+	r_show ari_n
+アリサ「ふふっ。とにかく、Ｌｉｓｐは面白いってこと！」\
+	r_show suzur_qes
+すずか「値って#33FF33４#FFFFFFとか#33FF33ｙ#FFFFFFのことだよね。@/
+式は#33FF33（ｉｓｈｉｄａ　３０）#FFFFFFのように、括弧の中に値である数値やシンボルを含んだりもするけど、/
+これも値なの？」\
+	r_show ari_n
+アリサ「括弧で包まれた式は前に言った通り#FFFF33リスト#FFFFFFという構造なんだけど、/
+これは#FFFF33コンス#FFFFFFという型の値を複数使ってできているの」\
+	r_show suzur_nc
+すずか「うーん、よく分からないな。@/
+とりあえずコンスっていうものについて教えて」\
+	r_show ari_n
+アリサ「コンスとは、#FFFF33ＣＡＲ部#FFFFFF、#FFFF33ＣＤＲ部#FFFFFFという２つの記憶場所をもつ型なの。@/
+ＣＡＲ、ＣＤＲはそれぞれ、カー、クダーと発音するわ。@/
+コンスはこれらを使って２つの値を覚えることが出来るのよ」\
+	r_show suzur_n
+すずか「いまいちよく分からないな……実際に触った方が分かりやすいのかな」\
+	r_show ari_n
+アリサ「コンスを作るにはｃｏｎｓという関数を使うの。@
+#33FF33（ｃｏｎｓ　’ａ　’ｂ）#FFFFFF
+これを評価すると、#33FF33（ａ　．　ｂ）#FFFFFFという値が返るわ。/
+これは、シンボルａをＣＡＲ部に、シンボルｂをＣＤＲ部に保持するコンスという意味よ。@/
+	show_dgm ":l;img/dgm0401.bmp"
+ここから分かるように、関数ｃｏｎｓは第一引数をＣＡＲ部に、第二引数をＣＤＲ部に保持するコンスを作るわ」\
+	r_show suzur_exc
+すずか「確かに、１つのコンスで２つの値を覚えてるね」\
+	csp SP_DGM0
+	r_show ari_n
+アリサ「コンスに対してｃａｒという関数を使うとＣＡＲ部の値が、ｃｄｒという関数を使うとＣＤＲ部の値が取得できるから、
+#33FF33（ｃａｒ　（ｃｏｎｓ　’ａ　’ｂ））#FFFFFF⇒#33FF33ａ#FFFFFF
+#33FF33（ｃｄｒ　（ｃｏｎｓ　’ａ　’ｂ））#FFFFFF⇒#33FF33ｂ#FFFFFF
+という結果になるわ」\
+	r_show suzur_n
+すずか「ｃａｒ、ｃｄｒ、ｃｏｎｓは関数だから引数が先に評価されるんだね」\
+	r_show ari_n
+アリサ「ここで注意しないといけないのが、コンスは２つの値を記憶しているわけではなく、/
+２つの値の#FFFF33番地#FFFFFFを覚えているということよ」\
+	r_show suzur_qes
+すずか「値の番地ってどういうこと？」\
+	r_show ari_n
+アリサ「値というものは、作られると箱のようなものの中に記憶されると考えられるの。@/
+その箱には一つ一つ固有の番号が付けられていて、この番号のことを#FFFF33番地#FFFFFFと呼ぶわ。@/
+	show_dgm ":l;img/dgm0402.bmp"
+値は必ず箱の中のみに存在して、勝手に別の箱に移動したり、１つの箱の中に２つの値が入ったりするようなことはないの。@/
+だから、値の番地さえ分かれば、値が分かっているのと同じことなのよ」\
+	r_show suzur_qes
+すずか「それならコンスは、なんで値そのものじゃなくて、番地で記憶してるの？」\
+	r_show ari_n
+アリサ「コンスのＣＡＲやＣＤＲには、どんな値を覚えさせることもできるの。@/
+つまり、型がコンスの値も入れることができるわ。@/
+こればっかしは、値を直接覚える方法じゃ無理でしょ」\
+	r_show suzur_exc
+すずか「ああ、なるほど」\
+	csp SP_DGM0
+	r_show ari_n
+アリサ「コンスに対してｃｏｎｓを使う式
+#33FF33（ｃｏｎｓ　’ａ　（ｃｏｎｓ　’ｂ　’ｃ））#FFFFFF
+これを評価した結果はどうなると思う？」\
+	r_show suzur_nc
+すずか「えーと、まず、#33FF33（ｃｏｎｓ　’ｂ　’ｃ）#FFFFFFが評価されて、/
+#33FF33（ｂ　．　ｃ）#FFFFFFというコンスになるよね。@/
+それから、ＣＡＲ部にシンボルａ、ＣＤＲ部にさっき作ったコンスが入ったコンスが作られるから、この式の値は/
+#33FF33（ａ　．（ｂ　．　ｃ））#FFFFFFかな？」\
+	r_show ari_n
+アリサ「#33FF33（ｃｏｎｓ　’ａ　（ｃｏｎｓ　’ｂ　’ｃ））#FFFFFFの値は#33FF33（ａ　ｂ　．　ｃ）#FFFFFFと表示されるわ。@/
+この表記に少々驚くかもしれないけど、この例のように、/
+#FFFF33コンスのＣＤＲ部がコンス#FFFFFFの場合、ドットと括弧を省略するというのが決まりなの。@/
+表示はドットと括弧が一つずつ消えてるけど、意味の上ではすずかが言ったので正解よ」\
+	r_show suzur_dotc
+すずか「えーと、#33FF33（ａ　ｂ　．　ｃ）#FFFFFFっていうのは、まず、コンスがあって、/
+そのＣＡＲはシンボルａ、ＣＤＲは別のコンス。/
+で、そのコンスのＣＡＲがシンボルｂでＣＤＲはシンボルｃ@/
+	r_show suzur_ase
+……なんだかややこしいね」\
+	r_show ari_n
+アリサ「分かりにくいなら図を描いてみるといいわ。@/
+	show_dgm ":l;img/dgm0403.bmp"
+図の描き方については補足説明の方で解説するわね」\
+	r_show suzur_nc
+すずか「こんな感じでコンスを繋いでいったら確かに今まで入力してきた式みたいになりそうだけど、/
+これだと最後に#33FF33（Ａ　Ｂ … Ｙ　．　Ｚ）#FFFFFFみたいにドット．が残っちゃうよね」\
+	r_show ari_n
+アリサ「これも記法上のルールで、コンスのＣＤＲが空リスト#33FF33（）#FFFFFFという特殊な値の場合、/
+ＣＤＲ部の表示を省略するって決まりになってるの」\
+	r_show suzur_nc
+すずか「確かに空リスト#33FF33（）#FFFFFFっていうのは、中身がないリストっていう風に見えなくもないね。@/
+これをコンスのＣＤＲ部に入れるといいの？」\
+	r_show ari_n
+アリサ「具体的には、
+#33FF33（ｃｏｎｓ　’ａ　（ｃｏｎｓ　’ｂ　’（）））#FFFFFF
+の値は#33FF33（ａ　ｂ）#FFFFFFになるわ。図を描くとこんな感じよ。@/
+	show_dgm ":l;img/dgm0404.bmp"
+空リストは#33FF33’（）#FFFFFFという風に、ｑｕｏｔｅして使うから注意してね」\
+	r_show suzur_exc
+すずか「今まで式として書いてきたものはコンスというものが繋がってできたＬｉｓｐの値の集まりだったんだね」\
+	r_show ari_n
+アリサ「最初、括弧に要素が入ったものをリストと呼んだけど、@/
+正確には、空リストと、ＣＤＲにリストを格納したコンスのことをリストというの。@/
+	show_dgm ":l;img/dgm0405.bmp"
+定義が再帰的になって分かりにくいかもしれないけど、意味はそのうちわかるわ」\
+	csp SP_DGM0
+	r_show suzur_n
+すずか「けど、複雑なものを作ろうとしたら、ｃｏｎｓを一杯書かなくちゃいけないから大変だね」\
+	r_show ari_exc
+アリサ「それが面白いことに、#33FF33’（ａ　ｂ　ｃ）#FFFFFFなんて式も書けちゃうのよ」\
+	r_show suzur_dotc
+すずか「引用符’はｑｕｏｔｅに変わるから#33FF33（ｑｕｏｔｅ　（ａ　ｂ　ｃ））#FFFFFFに変形して、/
+ｑｕｏｔｅの引数がそのまま結果になるから……@/
+	r_show suzur_exc
+式の値は#33FF33（ａ　ｂ　ｃ）#FFFFFF……@式がそのままリストになっちゃった！」\
+	r_show ari_n
+アリサ「どう？　式の書き方と値の表現方法が同じだから、式も値として扱えるの。@/
+ちなみに#33FF33’（ａ　．　ｂ）#FFFFFFみたいな式を書くことだって出来るのよ。@/
+今まで式と呼んできたものは正確には#FFFF33Ｓ式#FFFFFFというの。@/
+Ｓ式の詳細については用語集を読んでね」\
+	r_show suzur_n
+すずか「頭が混乱しそうだし、そろそろ実際にやってみたいな」\
+	r_show ari_n
+アリサ「ここで諸注意。『（１　２　３）というリストを作れ』といわれた時は、
+#33FF33/
+（ｃｏｎｓ　１
+　（ｃｏｎｓ　２
+　　（ｃｏｎｓ　３　’（））））#FFFFFF
+と書いてもいいけど、@/
+#33FF33’（１　２　３）#FFFFFF
+と書いた方が楽だからね。@/
+あと、
+#33FF33（ｃｏｎｓ　ｘ　（ｃｏｎｓ　ｙ　’（）））#FFFFFF
+はｘとｙが評価されるけど、@/
+#33FF33’（ｘ　ｙ）#FFFFFF
+はｘとｙはｑｕｏｔｅの影響で評価されずに、シンボルのまま残るから注意してね」\
+
+	mov %adv_rmode, 0         ;右クリック無効
+	bgm ms_ex
+	csp SP_R : csp SP_L
+	bg black, E_NORMAL
+	r_load ari_n
+	bg "img/blackboard.bmp", E_FAST
+	skipoff
+	mov %adv_tmp, 0
+	mov %save_flag, 0  ;セーブ不能
+*ex04
+	mov %gc_run, 0  ;GC起動回数を初期化
+	gosub *create_new_env  ;変な定義をしないように毎回環境を作り直す
+	mov %arg0, %ret
+	gosub *push  ;S(new env)
+	mov %adv_tmp3, %arg0
+	mov %arg1, %global_env
+	gosub *nconc
+	mov $sarg0, ""
+	textclear
+!s0アリサ「まず、ｘの値を（ａ　ｂ　ｃ）というリストと定義しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 gosub *pop : goto *ex04_tab  ;Tab
+	if $sarg0 == "" gosub *pop : goto *ex04
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex04
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *lobject_to_string
+	textclear
+アリサ「結果は『$sret』ね」\
+	;;(defien x '(a b c))の答え合わせ
+	mov $sarg0, "x"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret  ;A
+	gosub *get_tag
+	mov %tmp1, %ret
+	if %tmp1 != TAG_CONS goto *ex04_miss1
+	gosub *push  ;S(A, new env)
+	mov $sarg0, "a"
+	gosub *create_symbol
+	mov %tmp, %ret  ;a
+	gosub *pop   ;A<S(new env)
+	mov %arg0, %ret
+	gosub *push  ;S(A, new env)
+	mov %arg1, %arg0
+	mov %arg0, %tmp
+	gosub *push  ;S(a, A, new env)
+	mov %arg0, %arg1
+	gosub *car
+	mov %tmp1, %ret  ;CAR(A)
+	gosub *pop  ;a<S(A, new env)
+	if %tmp1 != %ret gosub *pop : goto *ex04_miss1
+	gosub *pop  ;A<S(new env)
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret  ;B
+	gosub *get_tag
+	mov %tmp1, %ret
+	if %tmp1 != TAG_CONS goto *ex04_miss1
+	gosub *push  ;S(B, new env)
+	mov $sarg0, "b"
+	gosub *create_symbol
+	mov %tmp, %ret  ;b
+	gosub *pop   ;B<S(new env)
+	mov %arg0, %ret
+	gosub *push  ;S(B, new env)
+	mov %arg1, %arg0
+	mov %arg0, %tmp
+	gosub *push  ;S(b, B, new env)
+	mov %arg0, %arg1
+	gosub *car
+	mov %tmp1, %ret  ;CAR(B)
+	gosub *pop  ;b<S(B, new env)
+	if %tmp1 != %ret gosub *pop : goto *ex04_miss1
+	gosub *pop  ;B<S(new env)
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret  ;C
+	gosub *get_tag
+	mov %tmp1, %ret
+	if %tmp1 != TAG_CONS goto *ex04_miss1
+	gosub *push  ;S(C, new env)
+	mov $sarg0, "c"
+	gosub *create_symbol
+	mov %tmp, %ret  ;c
+	gosub *pop   ;C<S(new env)
+	mov %arg0, %ret
+	gosub *push  ;S(C, new env)
+	mov %arg1, %arg0
+	mov %arg0, %tmp
+	gosub *push  ;S(c, C, new env)
+	mov %arg0, %arg1
+	gosub *car
+	mov %tmp1, %ret  ;CAR(C)
+	gosub *pop  ;c<S(C, new env)
+	if %tmp1 != %ret gosub *pop : goto *ex04_miss1
+	gosub *pop  ;C<S(new env)
+	mov %arg0, %ret
+	gosub *cdr
+	if %ret != %nil goto *ex04_miss1
+	;;(define x '(a b c))の答え合わせ終了
+	mov $sarg0, "x"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret  ;A
+	gosub *push   ;S(A, new env)
+	goto *ex04_2  ;S(A, new env)
+
+*ex04_miss1
+	r_show ari_die
+	アリサ「……なに違うことやってるのよ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	gosub *pop  ;new env<S()
+	goto *ex04
+
+*ex04_2  ;S(A, new env)
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「次に、ｘのＣＡＲを取り出しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex04_2_tab  ;Tab
+	if $sarg0 == "" goto *ex04_2
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex04_2
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *push  ;S(new object, A, new env)
+	gosub *lobject_to_string
+	textclear
+アリサ「結果は『$sret』ね」\
+	;;(car x)の答え合わせ
+	gosub *pop  ;new object<S(A, new env)
+	mov %arg0, %ret
+	gosub *pop  ;A<S(new env)
+	mov %tmp, %ret
+	gosub *push ;(new object, new env)
+	mov %arg0, %tmp
+	gosub *push ;S(A, new object, new env)
+	gosub *car
+	mov %tmp, %ret  ;CAR(A)
+	gosub *pop  ;A<S(new object, new env)
+	mov %tmp1, %ret
+	gosub *pop  ;new object<S(new env)
+	mov %tmp2, %ret
+	if %tmp2 == %tmp mov %arg0, %tmp1 : gosub *push : goto *ex04_3  ;S(A, new env)
+	mov %arg0, %tmp1
+	gosub *push  ;S(A, new env)
+    ;ここでxの再定義をしてくれるという素晴らしい人のために
+	;(set-car!等は諦める方針で orz)
+	mov $sarg0, "x"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %tmp, %ret
+	gosub *pop  ;A<S(new env)
+	mov %arg0, %ret
+	if %tmp != %arg0 goto *ex04_ext  ;S(new env)
+	gosub *push  ;S(A, new env)
+	r_show ari_die
+アリサ「違うわよ。もう一回やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex04_2
+*ex04_ext
+	r_show ari_muka
+アリサ「……なかなか面白いことをやってくれるわね。@/
+	r_show ari_do
+最初からやり直し！！！」\
+	r_show ari_n
+	gosub *pop  ;new env<S()
+	inc %adv_tmp
+	goto *ex04
+
+*ex04_3  ;S(A, new env)
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「次に、ｘのＣＤＲを取り出しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex04_3_tab  ;Tab
+	if $sarg0 == "" goto *ex04_3
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex04_3
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *push  ;S(new object, A, new env)
+	gosub *lobject_to_string
+	textclear
+アリサ「結果は『$sret』ね」\
+	;;(cdr x)の答え合わせ
+	gosub *pop  ;new object<S(A, new env)
+	mov %arg0, %ret
+	gosub *pop  ;A<S(new env)
+	mov %tmp, %ret
+	gosub *push ;(new object, new env)
+	mov %arg0, %tmp
+	gosub *push ;S(A, new object, new env)
+	gosub *cdr
+	mov %tmp, %ret  ;CDR(A)
+	gosub *pop  ;A<S(new object, new env)
+	mov %tmp1, %ret
+	gosub *pop  ;new object<S(new env)
+	mov %tmp2, %ret
+	if %tmp2 == %tmp goto *ex04_end  ;S(new env)
+	mov %arg0, %tmp1
+	gosub *push  ;S(A, new env)
+    ;ここでxの再定義をしてくれるという素晴らしい人のために
+	;(set-car!等は諦める方針で orz)
+	mov $sarg0, "x"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %tmp, %ret
+	gosub *pop  ;A<S(new env)
+	mov %arg0, %ret
+	if %tmp != %arg0 goto *ex04_ext  ;S(new env)
+	gosub *push  ;S(A, new env)
+	r_show ari_die
+アリサ「違うわよ。もう一回やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex04_3
+
+*ex04_tab
+csel "続ける", *ex04, "ヒント", *ex04_hint,  "タイトルに戻る", *ex04_bye
+*ex04_2_tab
+csel "続ける", *ex04_2, "ヒント", *ex04_2_hint,  "タイトルに戻る", *ex04_2_bye
+*ex04_3_tab
+csel "続ける", *ex04_3, "ヒント", *ex04_3_hint,  "タイトルに戻る", *ex04_3_bye
+
+*ex04_bye
+	mov %adv_rmode, 1        ;右クリック有効
+	textclear
+	csp SP_R
+	stop
+	goto *title
+
+*ex04_2_bye
+	sub %sp, 2
+	goto *ex04_bye
+
+*ex04_3_bye
+	sub %sp, 2
+	goto *ex04_bye
+
+*ex04_hint
+	textclear
+アリサ「変数の定義自体はもう大丈夫よね？　問題は#33FF33（ａ　ｂ　ｃ）#FFFFFFという値を作るところね。@/
+#33FF33（ａ　ｂ　ｃ）#FFFFFFと直接書くと式として評価されて、関数呼び出しになっちゃうから駄目よ。@/
+#33FF33’式#FFFFFFという風に、式をｑｕｏｔｅすると、式の形のままのリストが得られて上手くいくわ」\
+	goto *ex04
+
+*ex04_2_hint
+	textclear
+アリサ「リストのＣＡＲ部を取得するには関数ｃａｒを使うといいわ」\
+	goto *ex04_2
+
+*ex04_3_hint
+	textclear
+アリサ「リストのＣＤＲ部を取得するにはｃａｒ同様に、関数ｃｄｒを使うといいわ」\
+	goto *ex04_3
+
+*ex04_end
+	mov %adv_rmode, 1        ;右クリック有効
+	gosub *pop  ;new env<S()
+	saveon
+	mov %save_flag, 1  ;セーブ可能
+	textclear
+	add %adv_miss, %adv_tmp
+	bgm ms_setsume
+	if %adv_tmp == 0 goto *s_04_2
+	if %adv_tmp >=4   goto *s_04_3
+*s_04_1
+アリサ「まあまあだったわね」\
+	goto *s_04_4
+*s_04_2
+	r_show ari_hrt
+アリサ「全く問題ないようね」\
+	goto *s_04_4
+*s_04_3
+	r_show ari_ase
+アリサ「ちょっと失敗が多いわね」\
+	goto *s_04_4
+*s_04_4
+
+
+
+	r_show suzur_n
+すずか「#33FF33（ｃａｒ　’（ａ　ｂ　ｃ））#FFFFFFは#33FF33ａ#FFFFFFでシンボルになるのに、/
+#33FF33（ｃｄｒ　’（ａ　ｂ　ｃ））#FFFFFFは#33FF33（ｂ　ｃ）#FFFFFFで、リストなんだね」\
+	r_show ari_n
+アリサ「これはリストの構造を良く考えたら分かるわ。@/
+	show_dgm ":l;img/dgm0406a.bmp"
+これが元のリストだけど、操作する対象はもちろん一番左のコンスなの。@/
+	show_dgm ":l;img/dgm0406b.bmp"
+そう考えると、ＣＡＲはシンボルでＣＤＲがリストになる理由が分かるわ」\
+	r_show suzur_excc
+すずか「あ、確かにリストになるね。リスト操作がいまいち分からない時は図を描くのがいいね」\
+	csp SP_DGM0 : print E_FAST
+
+
+
+	mov %adv_noroi_off, 1
+	vsp SP_R, 0
+	bg black, E_NORMAL
+	r_load ari_n
+	l_load suzu_n
+	bgm ms_jiku
+	bg "img/jiku_back.bmp", E_NORMAL
+	talk_mode
+アリサ「なんとか時空管理局の施設の中に潜入
+　　　　できたわね」\
+すずか「ほんと大変だったね」\
+	r_show ari_tun
+アリサ「潜入するまでのエピソードは都合上、
+　　　　省略させていただきます」\
+	l_show suzu_qes
+すずか「アリサちゃん、誰にいってるの？」\
+	r_show ari_n
+アリサ「こっちにもいろいろあるのよ。鮫島、
+　　　　ちゃんとついてきてる？」\
+	l_show ":l;img/same.bmp"
+鮫島「ここに」\
+	r_show ari_ase
+アリサ「なのはに調べてもらったら、私にもす
+　　　　ずかにも魔法適性がなくて、鮫島にだ
+　　　　けあるとは思わなかったわ」\
+鮫島「恐縮です」\
+	r_show ari_n
+アリサ「まあいいわ、あんたが頼りだからね」\
+鮫島「心得ております」\
+	vsp SP_R, 0 : vsp SP_L, 0
+	bg black, E_NORMAL
+施設の中を探索すること数分\
+	lsp SP_TMP, ":l;img/dev.bmp", 100, 50
+	print E_SLOW
+三人はデバイスを見つけ出した\
+	csp SP_TMP
+	print E_FAST
+	r_load ari_n
+	l_load suzu_hrt
+	bg "img/jiku_back.bmp", E_NORMAL
+すずか「まさか、親切に取り扱い説明書まで一
+　　　　緒においてあるとは思わなかったね」\
+アリサ「そのおかげで、すぐにでも使える状態
+　　　　になって、良かったじゃない」\
+	l_show suzu_nc
+すずか「これで鮫島さんが魔法が使えるね」\
+	r_show ari_exc
+アリサ「そうそう。魔法プログラムとして、こ
+　　　　れまでに、すずかが打ち込んだ式も入
+　　　　れといたからね」\
+	l_show suzu_n
+すずか「！？」\
+	r_show ari_hrt
+アリサ「#FFFF33間違えてなかったら#FFFFFF、ちゃんと強力な
+　　　　魔法が使えるはずだから大丈夫」\
+	l_show suzu_dot
+すずか「つまり、間違えてたら、#FFFF33魔法の威力が
+　　　　落ちる#FFFFFFわけだね……」\
+	r_show ari_n
+アリサ「さて、用は済んだし、すずか、鮫島、
+　　　　帰るわよ」\
+	l_show suzu_nc
+すずか「そうだね」\
+	r_out
+	l_rout
+	delay 500
+	l_in ":l;img/jiku.bmp"
+局員「誰だ！　そこにいるのは！」\
+	r_show ari_ase
+アリサ「あ……見つかった……」\
+	r_show suzu_ase
+すずか「アリサちゃん、どうしよう！！」\
+	r_show ari_tun
+アリサ「鮫島！！！　あいつやっつけて！」\
+	r_show ":l;img/same.bmp"
+鮫島「心得ております」\
+	stop
+	csp SP_R : csp SP_L
+	bg black, E_WIPE2
+	bgm ms_battle
+	gosub *battle04
+	if %ret == 0 goto *battle04_after
+	;;敗北
+	textclear
+	stop
+	goto *title
+*battle04_after
+	l_load ":l;img/jiku.bmp"
+	bgm ms_jiku
+	bg "img/jiku_back.bmp", E_NORMAL
+局員「く……ベルカ式の魔法か……」\
+	csp SP_L
+	print E_FAST
+バタ\
+	r_show ari_hrt
+	l_show suzu_ase
+すずか「アリサちゃん、この人、気絶しちゃっ
+　　　　たけど……」\
+アリサ「今のうちに逃げましょう」\
+すずか「局員を襲っちゃったわけだし、絶対に
+　　　　追っ手が来るよ！」\
+	r_show ari_tun
+アリサ「うーん……しばらく何処かに身を潜め
+　　　　た方がいいかもしれないわね……」\
+	l_show suzu_exc
+すずか「そうだ京都に行こう」\
+
+
+
+
+
+
+
+
+
+
+
+speak_mode
+;;;;;第4話終了;;;;;
+	speak_mode
+	textclear
+	vsp SP_R, 0
+	vsp SP_L, 0
+	bg black, E_SLOW
+;;共通記録の書き換え
+	csvopen "arisa.szk", "rc"
+	csvread %adv_clear
+	csvclose
+	if %adv_clear >= 4 goto *story04_after 
+	mov %adv_clear, 4
+	csvopen "arisa.szk", "wc"
+	csvwrite %adv_clear
+	csvclose
+#FFFF33補足説明#FFFFFFが追加されました。
+#FFFF33用語集#FFFFFFに単語が追加されました。\
+*story04_after
+	r_show suzur_nc
+すずか「どうしようかな？」
+csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タイトルに戻る", *title_back, "第５話へ進む", *story05
+
+*story04_condicil
+	gosub *condicil
+	goto *story04_after
+*story04_glossary
+	gosub *glossary
+	goto *story04_after
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;;;;;第5話;;;;;
+*story05
+	mov %adv_noroi_off, 1 ;;;λ山のためユーノは出さない
+	csp SP_R : csp SP_L : print E_FAST
+	stop
+	talk_mode
+	bgm ms_kyoto
+	bg "img/yama_b.bmp", E_FAST
+
+	r_in ari_n
+	l_in suzu_n
+	l_show suzu_hrt
+すずか「というわけで舞台は京都に移ります」\
+	r_show ari_hrt
+アリサ「後ろに見えるのが、有名な#FFFF33λ山#FFFFFFね……@/
+	r_show ari_ase
+　　　　というより、本当に京都に来たんだ」\
+	l_show suzu_nc
+すずか「それはともかく、追っ手に備えないと
+　　　　いけないね」\
+	r_show ari_hrt
+アリサ「とりあえず、前に倒したやつぐらいは
+　　　　簡単に倒せるくらいに魔法を強化しな
+　　　　いとね」\
+	l_show suzu_ase
+すずか「全然解決に向かってない気が……」\
+
+
+
+	csp SP_R : csp SP_L : print 1
+	bg "img/title#05.bmp", E_VFAST
+	wait 1000
+	delay 2000
+	bgm ms_setsume
+	bg "img/blackboard.bmp", E_FAST
+
+	speak_mode
+	r_show suzur_n
+すずか「けど、鮫島さんがどうにかして、泊まる場所と勉強のための場所を手配してくれて助かったね。@/
+	r_show suzur_dotc
+……なんか、前の場所と似すぎている気もするけど」\
+	r_show ari_n
+アリサ「それは置いておいて、今回は関数の説明をするわね」\
+	r_show suzur_nc
+すずか「関数といったら、#33FF33ｃａｒ#FFFFFFとか#33FF33＋#FFFFFFとか、/
+評価された引数を受け取って、それに対応して値を返すものだよね」\
+	r_show ari_n
+アリサ「今回は関数を使うんじゃなくて作ってみましょう。@/
+手始めに、『引数に１を加えたものを返す関数』でも作ってみましょうか。
+#33FF33（ｌａｍｂｄａ　（ｘ）　（＋　ｘ　１））#FFFFFF
+ｌａｍｂｄａ（ラムダ）というのは関数を作るためのスペシャルフォームよ。@/
+引数は評価されないわ」\
+	r_show suzur_n
+すずか「見た感じ、引数をつけてこの作られた関数を呼び出すと、/
+#33FF33ｘ#FFFFFFという名前でその引数を受け取って、@/
+#33FF33（＋　ｘ　１）#FFFFFFの評価したものが結果となるのかな」\
+	r_show ari_n
+アリサ「ここでのｘのように、引数を受け取るシンボルを#FFFF33仮引数#FFFFFFというの。@/
+今まで引数と言ってきた、関数に送る側の値は仮引数と区別する時には、#FFFF33実引数#FFFFFFというわ。@/
+実引数はどんな型でもかまわないけど、仮引数は必ずシンボルだからね」\
+	r_show suzur_qes
+すずか「仮引数の値は実引数なんだよね。@/
+つまり、仮引数は実引数に束縛されるのかな？」\
+	r_show ari_n
+アリサ「その話は後回しにしましょう。@/
+関数自体は値の一種で、型が関数の値が表示される時は、/
+#33FF33＃＜ｐｒｏｃｅｄｕｒｅ＞#FFFFFF/
+となるわ。この表示から得られる情報は特にないわね」\
+	r_show suzur_nc
+すずか「関数が値の一種ってことは、数や、シンボルと同等に扱えるんだね。@/
+ただ、数やシンボルとは違って、表示してもあんまり意味はないんだ。@/
+けど、なんかいまいちイメージが湧かないな……」\
+	r_show ari_n
+アリサ「じゃあ、今度はさっきの関数を呼び出してみるわね。
+#33FF33（（ｌａｍｂｄａ（ｘ）（＋　ｘ　１））９）#FFFFFF
+結果は#33FF33１０#FFFFFFになるわ。@/
+	show_dgm ":l;img/dgm0501.bmp"
+ピンとこないかもしれないけど、評価の規則をよく思い出してね」\
+	r_show suzur_n
+すずか「式全体はリストだから#33FF33（関数　引数）#FFFFFFの関数呼び出しの形だよね。
+関数は#33FF33（ｌａｍｂｄａ（ｘ）（＋　ｘ　１））#FFFFFF。引数は#33FF33９#FFFFFFだね」\
+	r_show ari_n
+アリサ「リストを評価する時は、演算子が被演算子に作用する前に、/
+被演算子だけじゃなくて演算子も先に評価されるの。@/
+	show_dgm ":l;img/dgm0502.bmp"
+だから、この場合、#33FF33（ｌａｍｂｄａ　（ｘ）　（＋　ｘ　１））#FFFFFFと#33FF33９#FFFFFFが先に評価されるわ。@/
+ｌａｍｂｄａの式の結果はさっき言った通り関数になるわ。９は９のままね。@/
+それから、この関数が呼び出されて、#33FF33（＋　ｘ　１）#FFFFFFの仮引数ｘを実引数９と置き換えた式の値、@/
+すなわち#33FF33（＋　９　１）#FFFFFFの値である１０が式全体の値となるわ」\
+	r_show suzur_exc
+すずか「関数の中身に出てくる仮引数を、実引数と置き換えると考えたら分かりやすいね」\
+	csp SP_DGM0
+	r_show ari_n
+アリサ「今度は引数を２個受け取る関数を書いてみるわね。/
+言うまでもないけど、３個以上の時も同様にすれば出来るわ。
+#33FF33/
+（ｌａｍｂｄａ　（ｘ　ｙ）
+　（ｃｏｎｓ　ｘ　（ｃｏｎｓ　ｙ　’（））））#FFFFFF
+複数行にわたって書いてるけど、実際に入力する時は、一行で書くのよ。/
+本物のＬｉｓｐは、もちろん複数行に渡って書いていいんだけど、/
+ＮＳｃＬｉｓｐｅｒはＮＳｃｒｉｐｔｅｒの仕様上、一行しか書けないの」\
+	r_show suzur_nc
+すずか「えーと、呼び出す時は
+#33FF33/
+（（ｌａｍｂｄａ　（ｘ　ｙ）
+　　（ｃｏｎｓ　ｘ
+　　　　　　　　（ｃｏｎｓ　ｙ　’（））））
+　’ａ　’ｂ）#FFFFFF
+だね。#33FF33（ｃｏｎｓ　ｘ　（ｃｏｎｓ　ｙ　’（）））#FFFFFFのｘとｙを/
+#33FF33’ａ#FFFFFFと#33FF33’ｂ#FFFFFFを評価した値、すなわち#33FF33ａ#FFFFFFと#33FF33ｂ#FFFFFFに置き換えるから、/
+結果は#33FF33（ａ　ｂ）#FFFFFFかな？」\
+	r_show ari_n
+アリサ「ただ、これじゃあ、関数呼び出しのたび長い式を書かないといけないから、変数に関数を束縛させましょう。
+#33FF33/
+（ｄｅｆｉｎｅ　ｃａａｒ
+　（ｌａｍｂｄａ（ｌｓｔ）
+　　（ｃａｒ（ｃａｒ　ｌｓｔ））））#FFFFFF
+関数は値の一種だから、これまでと同様にｄｅｆｉｎｅが使えて、@/
+これで#33FF33ｃａａｒ#FFFFFFが関数に束縛されるわ。@/
+こうやって、変数を関数で束縛することを『関数の定義』というの。@/
+この例の場合、『関数ｃａａｒを定義する』というわね。@/
+あと、#FFFF33関数ｃａａｒ#FFFFFFという言い方をする場合、ｃａａｒを束縛している関数を指すから注意してね」\
+	r_show suzur_qes
+すずか「ただ『関数』とだけいってたら分かりにくいから、付けた名前で呼ぶこともあるんだね。@/
+関数は一度束縛してしまえば、作り直さなくてもいいの？」\
+	r_show ari_n
+アリサ「束縛したら、ｌａｍｂｄａの式を書く代わりに、束縛されたシンボルを使って、
+#33FF33（ｃａａｒ　’（（ａ　ｂ）（ｃ　ｄ）））#FFFFFF
+とすればいいの。この式の結果はａになるわね」\
+	r_show suzur_nc
+すずか「えーと、ｃａａｒはシンボルだから、評価すると、対応する値に変わるんだね。@/
+	show_dgm ":l;img/dgm0503.bmp"
+で、対応しているのは関数だから上手くいくんだ。@/
+	r_show suzur_qes
+あれ？　じゃあ、同じように＋とかｃａｒも、実は関数に束縛されたシンボルだったの？」\
+	csp SP_DGM0
+	r_show ari_exc
+アリサ「そういうこと。いままで＋やｃａｒを関数と呼んできたけど、これは正確には/
+#FFFF33関数に束縛されたシンボル#FFFFFFなの。@/
+今までの『関数ｃａｒ』みたいな言い方は、ｃａｒを束縛している関数のことを指してたのよ」\
+	r_show suzur_excc
+すずか「＋やｃａｒは、シンボル自身に特別な意味があるんじゃなくて、単に関数に束縛されてただけなんだ」\
+	r_show ari_n
+アリサ「じゃあ、改めて、リストの評価の規則を説明するわね。
+#33FF33（関数　引数１　引数２…引数ｎ）#FFFFFF
+この場合は、引数１～ｎと関数を評価する。そして関数を評価して得られた値に評価済みの引数１～ｎを渡す。@/
+ここで言う『関数』は、値としての関数じゃなくて、関数に束縛されたシンボルやｌａｍｂｄａの式のように/
+『評価したら関数になる式』と言う意味だから間違えないでね」\
+	r_show suzur_nc
+すずか「少し分かったような分からないような……。とりあえず、話をもどすと、関数を作るには
+#33FF33（ｌａｍｂｄａ　（仮引数）　式）#FFFFFF
+とするんだね。引数は何個でも自由に取れて、式の部分は自由に書けるんだね」\
+	r_show ari_n
+アリサ「使う時は、一度束縛すると便利だけど、別に束縛しなくても使えるからね」\
+	r_show suzur_n
+すずか「じゃあ、そろそろ試してみたいな」\
+	r_show ari_n
+アリサ「練習問題の前に少しリストの復習。@/
+リストはｑｕｏｔｅを使って#33FF33’（ａ　ｂ　ｃ）#FFFFFFという風に作れるわ。@/
+このａ、ｂ、ｃのことをそれぞれ、第一要素、第二要素、第三要素と呼びましょう。@/
+これのＣＡＲを取ると#33FF33ａ#FFFFFF、ＣＤＲを取ると#33FF33（ｂ　ｃ）#FFFFFFとなるわ。@/
+よって、ｃａｒはリストの第一要素を取り出す関数、@/
+ｃｄｒはリストの第一要素を抜き取ったリストを返す関数/
+と考えることもできるわ」\
+
+	mov %adv_rmode, 0         ;右クリック無効
+	bgm ms_ex
+	csp SP_R : csp SP_L
+	bg black, E_NORMAL
+	r_load ari_n
+	bg "img/blackboard.bmp", E_FAST
+	skipoff
+	mov %adv_tmp, 0
+	mov %save_flag, 0  ;セーブ不能
+*ex05_prev
+	gosub *create_new_env  ;自由にいじれるように新しい環境を作る
+	mov %arg0, %ret
+	mov %adv_tmp3, %arg0
+	gosub *push  ;GC対策
+	mov %arg1, %global_env
+	gosub *nconc
+*ex05
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「関数ｆを『引数の第二要素を返す関数』として定義しなさい。/
+ただし、引数は１つで、リストのみが来ると考えていいわ」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex05_tab  ;Tab
+	if $sarg0 == "" goto *ex05
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex05
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	;;;検証1
+	mov $sarg0, "(f '(k l))"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *push     ;S(l?)
+	mov $sarg0, "l"
+	gosub *create_symbol
+	mov %arg0, %ret
+	gosub *pop      ;l?<S()
+	if %arg0 != %ret goto *ex05_miss
+	;;;検証2
+	mov $sarg0, "(f '(x miko))"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *push     ;S(miko?)
+	mov $sarg0, "miko"
+	gosub *create_symbol
+	mov %arg0, %ret
+	gosub *pop      ;miko?<S()
+	if %arg0 == %ret goto *ex05_2_prev
+*ex05_miss
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex05
+
+*ex05_2_prev
+	mov $sarg0, "f"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *push     ;S(f)
+*ex05_2
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「引数#33FF33’（ａ　ｂ　ｃ）#FFFFFFをつけてｆを呼び出しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex05_2_tab  ;Tab
+	if $sarg0 == "" goto *ex05_2
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex05_2
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *push     ;S(ret, f)
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	mov $sarg0, "b"
+	gosub *create_symbol
+	mov %arg0, %ret
+	gosub *pop      ;ret<S(f)
+	if %arg0 == %ret gosub *pop : goto *ex05_end
+;;;fの再定義をcheck;;;
+	mov $sarg0, "f"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *pop      ;f<S()
+	if %arg0 != %ret goto *ex05_2_miss
+	mov %arg0, %ret
+	gosub *push     ;S(f)
+;;;end;;;
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex05_2
+
+*ex05_2_miss
+	textclear
+	r_show ari_muka
+アリサ「……なかなか面白いことをやってくれるわね。@/
+	r_show ari_do
+最初からやり直し！！！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex05
+
+
+
+*ex05_tab
+csel "続ける", *ex05, "ヒント", *ex05_hint,  "タイトルに戻る", *ex05_bye
+*ex05_2_tab
+csel "続ける", *ex05_2, "ヒント", *ex05_2_hint,  "タイトルに戻る", *ex05_2_bye
+
+*ex05_bye
+	mov %adv_rmode, 1        ;右クリック有効
+	textclear
+	csp SP_R
+	stop
+	gosub *pop      ;new env<S()
+	goto *title
+
+*ex05_2_bye
+	gosub *pop      ;f<S(new env)
+	goto *ex05_bye
+
+*ex05_hint
+	textclear
+アリサ「関数ｆを定義するんだから、式全体は#33FF33（ｄｅｆｉｎｅ　ｆ　関数）#FFFFFFだわ。@/
+受け取る引数は一つだから#33FF33関数#FFFFFFの部分には#33FF33（ｌａｍｂｄａ　（ｘ）　式）#FFFFFFと書くといいわ。@/
+#33FF33式#FFFFFFには『ｘ』の第二要素を取り出す式を書くの。@/
+これは、問題をやる直前に私が言ったことが大ヒントね。@/
+もう一度いうと、ｃａｒはリストの第一要素を取り出す関数で、ｃｄｒはリストの第一要素を抜き取ったリストを返す関数。@/
+#33FF33（ｃｄｒ　ｘ）#FFFFFFの結果はリストで、その第一要素はｘの第二要素なんだから……」\
+	goto *ex05
+
+*ex05_2_hint
+	textclear
+アリサ「単純に#33FF33（関数　引数）#FFFFFFの式を書けばいいわ」\
+	goto *ex05_2
+
+
+
+*ex05_end
+	mov %adv_rmode, 1        ;右クリック有効
+	gosub *pop  ;new env<S()
+	saveon
+	mov %save_flag, 1  ;セーブ可能
+	textclear
+	add %adv_miss, %adv_tmp
+	bgm ms_setsume
+	if %adv_tmp == 0 goto *s_05_2
+	if %adv_tmp >=4   goto *s_05_3
+*s_05_1
+アリサ「まあまあだったわね」\
+	goto *s_05_4
+*s_05_2
+	r_show ari_hrt
+アリサ「全く問題ないようね」\
+	goto *s_05_4
+*s_05_3
+	r_show ari_ase
+アリサ「ちょっと失敗が多いわね」\
+	goto *s_05_4
+*s_05_4
+
+
+	r_show suzur_nc
+すずか「『仮引数は実引数で置き換えられる』と考えてきたけど、本当に置き換えられるわけじゃないよね。@例えば
+#33FF33/
+（ｄｅｆｉｎｅ　ｑ
+　（ｌａｍｂｄａ　（ｘ）
+　　’ｘ））#FFFFFF
+本当に、仮引数を実引数で置き換えたら、#33FF33（ｑ　３）#FFFFFFの値は’３を評価した結果#33FF33３#FFFFFFになっちゃうけど、/
+これはちゃんと#33FF33ｘ#FFFFFFになるでしょ」\
+	r_show ari_n
+アリサ「すずかが最初に言った通り、本当は#FFFF33仮引数は実引数に束縛される#FFFFFFわ。@/
+ただ、それだけだと問題があるの。@
+#33FF33/
+（ｄｅｆｉｎｅ　ｘ　１）⇒ｘ
+（ｄｅｆｉｎｅ　ｙ　３）⇒ｙ
+（ｄｅｆｉｎｅ　ｆ
+　（ｌａｍｂｄａ　（ｘ）
+　　（＋　ｘ　ｙ）））　⇒ｆ
+（ｆ　７）　　　　　　　⇒１０#FFFFFF
+この４つの式を順番に評価していったら環境はどうなると思う？」\
+	r_show suzur_dotc
+すずか「えーと、最初にｘが１に束縛される。@それからｙが３に束縛される。@/
+そして、ｆが関数で束縛される。@最後にｆに７をつけて呼び出す。@/
+そうすると、仮引数のｘが実引数の７に束縛されて……@/
+	r_show suzur_exc
+あれ？　ｘが２回束縛されちゃう！」\
+	r_show ari_n
+アリサ「そうなるとややこしいから、『ｆの仮引数のｘ』と『関数の外側のｘ』を別物として扱いたいわね。@/
+そこで、関数を呼び出すと新たな空っぽの環境が作られて、そこで仮引数が実引数に束縛されて、@/
+その環境の元で、関数の中身の式を評価したらどうかしら？」\
+	r_show suzur_nc
+すずか「環境が二つできるわけだね。ちょっとややこしいかな」\
+	r_show ari_n
+アリサ「それじゃあ、ここでは新たに作る環境を#FFFF33新しい環境#FFFFFF、それまで使っていた環境を#FFFF33古い環境#FFFFFF/
+とでも呼ぶことにするわね。@/
+	show_dgm ":l;img/dgm0504.bmp"
+すると、関数呼び出しの間だけ、新しい環境が使われて、関数呼び出しが終わったら古い環境が再び使われることになるわ」\
+	r_show suzur_dotc
+すずか「えーと、つまり#33FF33（ｆ　７）#FFFFFFを評価すると、『ｘは７』という環境が作られて、@/
+その元で、#33FF33（＋　ｘ　ｙ）#FFFFFFが評価されるんだよね。@/
+	r_show suzur_T_T
+けど、そうなると、ｘは環境から７だと分かるけど、ｙは環境にないから、この式は評価できないよ」\
+	csp SP_DGM0
+	r_show ari_n
+アリサ「そう。だからもうひと頑張り必要ね。@/
+話は少し変わるけど、仮引数のことを#FFFF33束縛変数#FFFFFFともいうの。この場合ｘのことね。/
+束縛変数の束縛は新しい環境に必ず含まれているわ。@/
+それに対して、ここでのｙのように、関数の仮引数でないけど、関数の中身の式に登場する変数を、/
+#FFFF33自由変数#FFFFFFというわ」\
+	r_show suzur_n
+すずか「仮引数を束縛変数、それ以外の変数を自由変数というわけだね」\
+	r_show ari_n
+アリサ「自由変数の束縛は新しい環境の中には入っていないけど、/
+関数の外側――つまり、古い環境に入ってるはずよね。@/
+そこで、ｌａｍｂｄａは関数を作る時に、評価に使った環境を/
+これから作る関数に記憶させるの。@/
+	show_dgm ":l;img/dgm0505.bmp"
+この場合、『ｘは１』と『ｙは３』という束縛のある環境ね」\
+	r_show suzur_n
+すずか「つまり、関数は中身である式以外にも、ｌａｍｂｄａが評価された環境を保持するんだ」\
+	r_show ari_n
+アリサ「ただ、保持するといっても、コンスと同じく、直接環境のデータ全てを覚えるんじゃなくて、/
+環境というものがある位置を覚えるの。『保持するというより』は、『矢印を向ける』という方がイメージしやすいかもしれないわね」\
+	r_show suzur_n
+すずか「環境を丸々コピーすしたりするわけじゃないから、速度とかを心配することはないんだね」\
+	r_show ari_n
+アリサ「作った関数を呼び出す時には、新しい環境を作って、仮引数を実引数で束縛した後、/
+その環境の後ろに#FFFF33関数が保持している環境#FFFFFFを繋げるの。@/
+	show_dgm ":l;img/dgm0506.bmp"
+変数を評価する時、まず新しい環境の中から探して、なければ繋げた環境の方を探すの」\
+	r_show suzur_nc
+すずか「そうなると、#33FF33（＋　ｘ　ｙ）#FFFFFFを評価する時は、@/
+ｘを新しい環境から探して値を見つける。@/
+ｙを新しい環境から探すけど、見つからない。@/
+だから、繋いである環境から探して、値を見つける。@/
+こうやって、正しい結果を得るんだ」\
+	csp SP_DGM0
+	r_show ari_n
+アリサ「これは、インタプリタの実装の一例で、全てのインタプリタがこう作られてるわけではないわ。@/
+けど、つくりが違っても、結果は同じだから安心していいわよ」\
+	r_show suzur_ase
+すずか「なんか分かったような分からないような話だね」\
+	r_show ari_n
+アリサ「まあ、これはすぐには分からなくていいわ。@/
+ただ、関数の仮引数と、関数の外側の変数の名前が一致した場合、仮引数の方が使われるということは覚えておいてね」\
+
+
+	mov %adv_noroi_off, 0  ;;ユーノ叩き再開
+	vsp SP_R, 0
+	bg black, E_NORMAL
+	r_load ari_exc
+	l_load suzu_n
+	bgm ms_after
+	bg "img/blackboard.bmp", E_NORMAL
+	talk_mode
+すずか「この建物の窓からはλ山じゃなくて、
+　　　　『妙』と『法』が見えるのね」\
+	l_show suzu_qes
+すずか「そういえば、局員の人が#FFFF33ベルカ式#FFFFFFの魔
+　　　　法っていってたけど、一体なんのこと
+　　　　だったのかな？」\
+	r_show ari_n
+アリサ「調べてみたんだけど、魔法にはミッド
+　　　　式と、ベルカ式という二つの流派があ
+　　　　るらしいの」\
+すずか「なるほど。けど、どうして私たちの魔
+　　　　法はベルカ式だったんだろう？」\
+アリサ「ミッド式はＣｏｍｍｏｎＬｉｓｐで、
+　　　　ベルカ式はＳｃｈｅｍｅらしいわ」\
+	l_show suzu_dot
+すずか「……凄い設定だね」\
+	r_show ":l;img/arin.bmp"
+アリサ「ありーん」\
+アリサ「設定とか言わないように！」\
+
+
+
+;;;;;第5話終了;;;;;
+	speak_mode
+	textclear
+	vsp SP_R, 0
+	vsp SP_L, 0
+	bg black, E_SLOW
+;;共通記録の書き換え
+	csvopen "arisa.szk", "rc"
+	csvread %adv_clear
+	csvclose
+	if %adv_clear >= 5 goto *story05_after 
+	mov %adv_clear, 5
+	csvopen "arisa.szk", "wc"
+	csvwrite %adv_clear
+	csvclose
+#FFFF33補足説明#FFFFFFが追加されました。
+#FFFF33用語集#FFFFFFに単語が追加されました。\
+*story05_after
+	r_show suzur_nc
+すずか「どうしようかな？」
+csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タイトルに戻る", *title_back, "第６話へ進む", *story06
+
+*story05_condicil
+	gosub *condicil
+	goto *story05_after
+*story05_glossary
+	gosub *glossary
+	goto *story05_after
+
+
+
+
+
+
+
+;;;;;第6話;;;;;
+*story06
+	mov %adv_noroi_off, 0
+	csp SP_R : csp SP_L : print E_FAST
+	stop
+	talk_mode
+	bgm ms_kyoto
+	bg "img/blackboard.bmp", E_FAST
+	r_in ari_n
+	l_in suzu_n
+すずか「鮫島さんってさ」\
+	r_show ari_qes
+アリサ「ん、何？」\
+すずか「５７歳だよね」\
+アリサ「たしか、そうだったと思うけど、それ
+　　　　がどうかしたの？」\
+	l_show suzu_dot
+すずか「いや、私たちが魔法使うんなら『魔法
+　　　　少女』って感じなんだけどさ、鮫島さ
+　　　　んの場合……」\
+	r_show ari_dere
+アリサ「魔法!w250…!w250…!w500老人？」\
+	l_show suzu_dere
+すずか「老人はちょっと酷いと思うな」\
+	r_show ari_do
+アリサ「うるさいうるさいうるさい！　もう、
+　　　　魔導師でいいじゃない！」\
+
+
+	csp SP_R : csp SP_L : print 1
+	bg "img/title#06.bmp", E_VFAST
+	wait 1000
+	delay 2000
+	bg "img/blackboard.bmp", E_FAST
+
+
+	bgm ms_setsume
+	speak_mode
+	r_show ari_n
+アリサ「今回は例から入っていきましょう。@
+#33FF33/
+（ｉｆ　（＝　ｘ　０）
+　　　　１
+　　　　（－　ｘ　１））#FFFFFF
+この式は評価されると、ｘの値が０の場合、１になり、それ以外の場合、ｘから１引いた数になるわ」\
+	r_show suzur_nc
+すずか「#33FF33ｉｆ#FFFFFFと#33FF33＝#FFFFFFっていうのがはじめて出てきたね。@/
+＝は第一引数と第二引数が同じ数かどうか確かめている感じだよね。@/
+で、ｉｆはその結果を見て第二引数か第三引数かどちらかを返すという感じかな」\
+	r_show ari_n
+アリサ「＝は引数として二つの数を受け取る関数で、二つの数が等しい場合、#33FF33＃ｔ#FFFFFFという値、異なる場合は#33FF33＃ｆ#FFFFFFという値を返すわ。@/
+＃ｔと＃ｆはＳｃｈｅｍｅで正しい（#FFFF33真#FFFFFF）・正しくない（#FFFF33偽#FFFFFF）を表すための値よ。/
+型は#FFFF33論理型#FFFFFFといって、この型の値は＃ｔと＃ｆしかないのよ。@/
+一方、ｉｆは三つの式を受け取るスペシャルフォームなの。@/
+第一引数を評価して、その値が真の場合、第二引数を評価して、それが結果となるの。@/
+もし、第一引数を評価して、その値が偽の場合、第三引数を評価して、それが結果となるわ。@/
+真・偽と言うのはさっき言った＃ｔと＃ｆのことだけど、＃ｆ以外の値は全て真という扱いだから注意してね。@/
+つまり、偽といったら、＃ｆのことだけど、真といったら、＃ｆ以外の値全てのことなの」\
+	r_show suzur_excc
+すずか「ｉｆは複雑な動作をするね。@/
+第一引数を評価した値が真の場合は、第三引数は評価#FFFF33されない#FFFFFFし、@/
+第一引数を評価した値が偽の場合は、第二引数は評価#FFFF33されない#FFFFFFんだね」\
+	r_show ari_n
+アリサ「似たようなスペシャルフォームとして、#33FF33ｃｏｎｄ#FFFFFFというものがあるわ。@
+#33FF33/
+（ｃｏｎｄ　（条件式１　実行式１）
+　　　　　　（条件式２　実行式２）
+　　　　　　・・・
+　　　　　　（条件式ｎ　実行式ｎ）
+　　　　　　（ｅｌｓｅ　実行式ｅ））#FFFFFF
+この式を評価すると、まず、条件式１を評価して、それが真の場合、実行式１を評価してその値を返す。@/
+偽だったら、条件式２を評価して、それが真の場合、実行式２を評価してその値を返す。@/
+同様に条件式ｎまで繰り返して、それも偽だった場合は、実行式ｅを評価してその値を返すの。@/
+条件式は何個書いてもいいわ」\
+	r_show suzur_nc
+すずか「ｃｏｎｄは条件式を順番に評価して、真になったところに対応する実行式を評価してその値を返すんだね。@/
+全ての条件式が偽だった場合は、ｅｌｓｅに続く実行式ｅを評価してその値を返すんだ。@/
+これを使ってさっきの式を書き換えると
+#33FF33/
+（ｃｏｎｄ　（（＝　ｘ　０）　１）
+　　　　　　（ｅｌｓｅ　（－　ｘ　１）））#FFFFFF
+と書けるね」\
+	r_show ari_n
+アリサ「ｃｏｎｄもｉｆ同様に、評価しない引数が出てくるわね。@/
+これまでの例だけを見てると、#33FF33１#FFFFFFと#33FF33（－　ｘ　１）#FFFFFFを両方評価しても問題はないけど、/
+両方評価されたら困る場合というのがあるの。@
+#33FF33/
+（ｄｅｆｉｎｅ　ｆａｃｔ
+　（ｌａｍｂｄａ　（ｎ）
+　　（ｉｆ　（＝　ｎ　０）
+　　　　　　１
+　　　　　　（＊　ｎ
+　　　　　　　　　（ｆａｃｔ　（－　ｎ　１
+））））））#FFFFFF
+読みにくくて悪いけど、これは階乗を求める関数を定義してるの。@/
+ｎの階乗とは『ｎ×（ｎ－１）×（ｎ－２）×…×１』のことよ。@/
+#33FF33（ｆａｃｔ　３）#FFFFFFを評価すると、３×２×１が計算されて６となるわ」\
+	r_show suzur_dotc
+すずか「最初、実引数が０でないとすれば、/
+#33FF33ｎ#FFFFFFに#33FF33（ｆａｃｔ　（－　ｎ　１））#FFFFFFを掛けたものが結果になるんだね。@/
+ｆａｃｔがｆａｃｔの中で呼ばれるけど、実引数は小さくなっていくから、いつか０になる。@/
+すると、ｆａｃｔは呼ばれずに、１が返されるから……確かに階乗の計算になってるね」\
+	r_show ari_n
+アリサ「ここで、『ｉｆは評価しない引数をもつ』という特徴が使われているわ。@/
+もし、第二引数と第三引数両方を常に評価するとすれば、ｎが０の時もｆａｃｔが呼ばれて、/
+永遠にｆａｃｔの呼び出しが終わることはないわ」\
+	r_show suzur_n
+すずか「関数が自分自身を呼び出しているのが面白いよね。@/
+ｌａｍｂｄａの式を評価している時点では、まだｆａｃｔの値は定義されてないけど、/
+上手くいくってのがちょっと不思議だな……」\
+	r_show ari_n
+アリサ「関数が、自分自身を呼ぶことを#33FF33再帰呼び出し#FFFFFFというの。@/
+これを略して再帰ということもあるわ。@/
+ｆａｃｔを定義する前に、ｆａｃｔを呼び出す式をｌａｍｂｄａの中で書いてるけど、/
+これが上手くいく理由を説明するには、また環境の話をすることになるの。@/
+前に言った通り、ｌａｍｂｄａが呼ばれて作られた関数は、その時の環境を保持するわ。@/
+その後にｄｅｆｉｎｅでｆａｃｔと関数の束縛が環境に加えられるわけだけど、@/
+関数は環境に矢印を向けているだけだから、ちゃんと新たな束縛が反映されるの。/
+だから、上手くいくのよ」\
+	r_show suzur_ase
+すずか「かなり頭が混乱してるけど、一応何か練習しておきたいな」\
+	r_show ari_n
+アリサ「再帰呼び出しを使った式は最悪、評価がずっと終わらないという危険性もあるわ。@/
+ＮＳｃＬｉｓｐｅｒでは、あまりに評価に時間がかかると、無理やり評価を終えるか聞いてくるようになってるの。@/
+ただ、無理やり終えるとプログラム自体が終了してしまうわ。@/
+だから、ここでいったんセーブしておくことをお勧めするわ。@/
+あと、回答に自信がなかったらＴａｂキーを押してヒントを見た方がいいわね」\
+
+	mov %adv_rmode, 0         ;右クリック無効
+	bgm ms_ex
+	csp SP_R : csp SP_L
+	bg black, E_NORMAL
+	r_load ari_n
+	bg "img/blackboard.bmp", E_FAST
+	skipoff
+	mov %adv_tmp, 0
+	mov %save_flag, 0  ;セーブ不能
+*ex06_prev
+	gosub *create_new_env  ;自由にいじれるように新しい環境を作る
+	mov %arg0, %ret
+	mov %adv_tmp3, %arg0
+	gosub *push  ;GC対策
+	mov %arg1, %global_env
+	gosub *nconc
+*ex06
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「関数ｓを『引数としてｎを受け取ると、１＋２＋…＋ｎを返す関数』として定義しなさい。/
+ただし、引数は１つで、数のみが来ると考えていいわ」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex06_tab  ;Tab
+	if $sarg0 == "" goto *ex06
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex06
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	;;;検証1
+	mov $sarg0, "(s 0)"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret != 0 goto *ex06_miss
+	;;;検証2
+	mov $sarg0, "(s 6)"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret == 21 goto *ex06_2_prev
+*ex06_miss
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex06
+
+*ex06_2_prev
+	mov $sarg0, "s"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *push     ;S(s)
+*ex06_2
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「引数#33FF33１０#FFFFFFをつけてｓを呼び出しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex06_2_tab  ;Tab
+	if $sarg0 == "" goto *ex06_2
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex06_2
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *push     ;S(ret, s)
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	gosub *pop      ;ret<S(s)
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret == 55 gosub *pop : goto *ex06_end
+;;;sの再定義をcheck;;;
+	mov $sarg0, "s"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *pop      ;s<S()
+	if %arg0 != %ret goto *ex06_2_miss
+	mov %arg0, %ret
+	gosub *push     ;S(s)
+;;;end;;;
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex06_2
+
+*ex06_2_miss
+	textclear
+	r_show ari_muka
+アリサ「……なかなか面白いことをやってくれるわね。@/
+	r_show ari_do
+最初からやり直し！！！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex06
+
+
+
+*ex06_tab
+csel "続ける", *ex06, "ヒント", *ex06_hint,  "タイトルに戻る", *ex06_bye
+*ex06_2_tab
+csel "続ける", *ex06_2, "ヒント", *ex06_2_hint,  "タイトルに戻る", *ex06_2_bye
+
+*ex06_bye
+	mov %adv_rmode, 1        ;右クリック有効
+	textclear
+	csp SP_R
+	stop
+	gosub *pop      ;new env<S()
+	goto *title
+
+*ex06_2_bye
+	gosub *pop      ;s<S()
+	goto *ex06_bye
+
+*ex06_hint
+	textclear
+アリサ「受け取る引数は一つだから#33FF33（ｌａｍｂｄａ　（ｎ）　式）#FFFFFFと書くといいわ。@/
+けど、難しいのはこの式の部分ね。@/
+１＋２＋…＋（ｎ－１）＋ｎの計算をするんだけど、これは階乗の計算とよく似てるわね。@/
+ｎが０の時は当然０になるわ。@/
+それ以外の時には、ｎに１＋２＋…（ｎ－１）を足したものになるわ。@/
+ｓは１＋２＋…ｎを計算する関数なんだから、引数としてｎ－１を送ると、１＋２＋…（ｎ－１）が計算できそうね。@/
+つまり、ｓの中でｓを呼び出す再帰呼び出しを使えばいいの。@/
+すると、ｓの定義は、ｎが０なら#33FF33０#FFFFFF、@それ以外なら、#33FF33（＋　ｎ　（ｓ　（－　ｎ　１）））#FFFFFFと書けるわね。@/
+あとは、ｉｆかｃｏｎｄを使ってこれを式にするだけよ」\
+	goto *ex06
+
+*ex06_2_hint
+	textclear
+アリサ「単純に#33FF33（関数　引数）#FFFFFFの式を書けばいいわ」\
+	goto *ex06_2
+
+
+
+*ex06_end
+	mov %adv_rmode, 1        ;右クリック有効
+	gosub *pop  ;new env<S()
+	saveon
+	mov %save_flag, 1  ;セーブ可能
+	textclear
+	add %adv_miss, %adv_tmp
+	bgm ms_setsume
+	if %adv_tmp == 0 goto *s_06_2
+	if %adv_tmp >=4   goto *s_06_3
+*s_06_1
+アリサ「まあまあだったわね」\
+	goto *s_06_4
+*s_06_2
+	r_show ari_hrt
+アリサ「全く問題ないようね」\
+	goto *s_06_4
+*s_06_3
+	r_show ari_ase
+アリサ「ちょっと失敗が多いわね」\
+	goto *s_06_4
+*s_06_4
+
+
+
+	r_show suzur_n
+すずか「それにしても、練習問題でも入力する量が大分多くなってきたね」\
+	r_show ari_n
+アリサ「実は、関数の定義をちょっとだけ短く書く方法が用意されていたりするの。
+#33FF33/
+（ｄｅｆｉｎｅ　（関数名　仮引数１…仮引数ｎ）
+　式）
+（ｄｅｆｉｎｅ　関数名
+　（ｌａｍｂｄａ　（仮引数１…仮引数ｎ）
+　　式））#FFFFFF
+この二つの式は全く同じものとして扱われるの」\
+	r_show suzur_hrt
+すずか「ｌａｍｂｄａと括弧一つ分を書く手間が省けるね。@/
+こんな便利なものがあるなら、もっと早く言ってくれてもよかったのに」\
+	r_show ari_n
+アリサ「確かに便利といえば便利なんだけど、仕組みを分かりにくくしてしまうの。@/
+ｄｅｆｉｎｅはあくまでも、束縛を作るだけのスペシャルフォーム。/
+関数を作るための特殊な機構を持っているわけじゃないの。@/
+この新しい書き方は、あくまでも今までの書き方を#FFFF33省略#FFFFFFした書き方だからね」\
+	r_show suzur_n
+すずか「逆に言えば、それさえ理解したら、好きなだけ使って問題ないわけだね」\
+	r_show ari_tun
+アリサ「まあ、そうなんだけど。@このほかにｑｕｏｔｅに対する引用符’のように、同じことをするのに、/
+用意されている短い書き方を#FFFF33糖衣構文#FFFFFF（ｓｙｎｔａｘ　ｓｕｇａｒ）というわ」\
+	r_show suzur_nc
+すずか「便利だけど、使う時は、どういう意味のものなのかしっかり理解して使いましょうってことかな」\
+
+
+	vsp SP_R, 0
+	bg black, E_NORMAL
+	r_load ari_n
+	l_load suzu_n
+	bgm ms_after
+	bg "img/blackboard.bmp", E_NORMAL
+	talk_mode
+すずか「ずっと追われる立場のままじゃいけな
+　　　　いと思うけど、どうしようか？」\
+アリサ「機会を見て、なのはとコンタクトを取
+　　　　ってみましょう」\
+	l_show suzu_qes
+すずか「それで上手くいくかな？」\
+	r_show ari_hrt
+アリサ「なのはって、時空管理局の偉い人と知
+　　　　り合いらしいの。頼んだらきっと上手
+　　　　くうやむやにしてくれるわ」\
+	l_show suzu_ase
+すずか「うわぁ……」\
+	r_show ari_n
+アリサ「まあ、すぐに頼んだらさすがに迷惑だ
+　　　　から、ほとぼりが冷めるまでしばらく
+　　　　はここで大人しくしてましょう」\
+
+
+
+
+;;;;;第6話終了;;;;;
+	speak_mode
+	textclear
+	vsp SP_R, 0
+	vsp SP_L, 0
+	bg black, E_SLOW
+;;共通記録の書き換え
+	csvopen "arisa.szk", "rc"
+	csvread %adv_clear
+	csvclose
+	if %adv_clear >= 6 goto *story06_after 
+	mov %adv_clear, 6
+	csvopen "arisa.szk", "wc"
+	csvwrite %adv_clear
+	csvclose
+#FFFF33補足説明#FFFFFFが追加されました。
+#FFFF33用語集#FFFFFFに単語が追加されました。\
+*story06_after
+	r_show suzur_nc
+すずか「どうしようかな？」
+csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タイトルに戻る", *title_back, "第７話へ進む", *story07
+
+*story06_condicil
+	gosub *condicil
+	goto *story06_after
+*story06_glossary
+	gosub *glossary
+	goto *story06_after
+
+
+
+
+
+
+
+
+;;;;;第7話;;;;;
+*story07
+	mov %adv_noroi_off, 0
+	csp SP_R : csp SP_L : print E_FAST
+	stop
+	talk_mode
+	bgm ms_kyoto
+	bg "img/blackboard.bmp", E_FAST
+	r_in ari_n
+	l_in suzu_n
+	l_show suzu_qes
+すずか「なのはちゃんの魔法は遠距離から攻撃
+　　　　したりすることができるらしいけど、
+　　　　そういうのはできないかな？」\
+	r_show ari_tun
+アリサ「うーん、そういう魔法プログラムを入
+　　　　れたところで、術者が使えないと意味
+　　　　がないのよ」\
+	l_show ":l;img/same.bmp"
+鮫島「恥ずかしながら、どうやら私には使えな
+　　　いようです」\
+アリサ「だそうよ」\
+	l_show suzu_dotc
+すずか「うーん、魔法の有効範囲が狭いってい
+　　　　うのは、ちょっと残念だね」\
+
+	csp SP_R : csp SP_L : print 1
+	bg "img/title#07.bmp", E_VFAST
+	wait 1000
+	delay 2000
+	bgm ms_setsume
+	bg "img/blackboard.bmp", E_FAST
+
+	speak_mode
+	r_show ari_n
+アリサ「変数の話をするわね。
+#33FF33/
+（ｄｅｆｉｎｅ　ｘ　１）
+（ｄｅｆｉｎｅ　ｙ　２）
+（ｄｅｆｉｎｅ　ｆ
+　（ｌａｍｂｄａ　（ｎ）
+　　（＋　ｎ　ｘ）））#FFFFFF
+このｘ、ｙ、ｆのように定義した変数はどこからでも使えるの。@/
+例えば、関数を作って、その中からでも使えるでしょ。@/
+こういった変数のことを#FFFF33大域変数#FFFFFFというわ」\
+	r_show suzur_n
+すずか「今までｄｅｆｉｎｅで作っていた変数は大域変数なんだね」\
+	r_show ari_n
+アリサ「それから、大域変数の束縛がある環境のことを#FFFF33大域環境#FFFFFFというわ。@/
+それに対して、ｆの仮引数として使われているｎはｆの中でしか使えないの。@/
+このような変数を#FFFF33局所変数#FFFFFFというわ」\
+	r_show suzur_excc
+すずか「特定の範囲内でしか使えないものを局所変数というんだ」\
+	r_show ari_n
+アリサ「変数の見える範囲を#FFFF33スコープ#FFFFFFというの。@/
+大域変数のスコープは全体だけど、局所変数のスコープは一部といった感じね」\
+	r_show suzur_nc
+すずか「大域変数のスコープは全体だからいいけど、局所変数のスコープは限られるわけだから、/
+スコープをしっかりと意識した方がいいのかな」\
+	r_show ari_n
+アリサ「その局所変数をつくりだす#33FF33ｌｅｔ#FFFFFFというスペシャルフォームがあるの。
+#33FF33/
+（ｌｅｔ　（（変数名１　式１）
+　　　　　　（変数名２　式２）
+　　　　　　・・・
+　　　　　　（変数名ｎ　式ｎ））
+　式）#FFFFFF
+ｌｅｔを評価すると、まず、式１～ｎを評価するの。@/
+	show_dgm ":l;img/dgm0701.bmp"
+それから、新しい環境を作って、そこに変数名１と式１の値の束縛を追加、変数名２と式２の値の束縛を追加……とｎまで繰り返すわ。@/
+	show_dgm ":l;img/dgm0702.bmp"
+最後に、その新しい環境の後ろにｌｅｔを評価した環境を繋げるの。@/
+そして、その新しい環境で#33FF33式#FFFFFFを評価して、その結果を全体の結果とするの。@/
+	show_dgm ":l;img/dgm0703.bmp"
+ｌｅｔを呼び終えたら、それ以降は元の環境で評価を行うから、変数名１～ｎはｌｅｔの中のみで有効となるわけ。@/
+つまり、ｌｅｔの中で作った変数のスコープはｌｅｔの中に限るってことね」\
+	csp SP_DGM0
+	r_show suzur_nc
+すずか「一時的に使う変数を作り出すわけだね。なんとなく分かったけど、使い道がいまいち分からないな……」\
+	r_show ari_n
+アリサ「例えば、リストｌｓｔの２番目の要素をＣＡＲ、ＣＤＲの両方にもつコンスを作るとしましょう。
+#33FF33/
+（ｃｏｎｓ　（ｃａｒ　（ｃｄｒ　ｌｓｔ））
+　　　　　　（ｃａｒ　（ｃｄｒ　ｌｓｔ））#FFFFFF
+見たら分かるけど、ｌｓｔの２番目の要素を取り出す式が２回出てきてるわね。@/
+同じ式を２回評価するのはあんまりかっこよくないでしょ。@/
+そこでｌｅｔを使うと、
+#33FF33/
+（ｌｅｔ
+　（（ｘ　（ｃａｒ　（ｃｄｒ　ｌｓｔ））））
+　（ｃｏｎｓ　ｘ　ｘ））#FFFFFF
+この場合、ｌｓｔの２番目の要素を取り出す式を一度だけ評価して、新しい環境でｘに束縛。そのｘを使って式を評価。@/
+結果は両方とも同じだけど、こっちだと同じ計算を２回する手間が省けるでしょ」\
+	r_show suzur_n
+すずか「なるほど、ちょっと便利だね」\
+	r_show ari_n
+アリサ「けど『新しい環境を作ってそこに束縛を加える』っていう流れ。@/
+これは関数のところでも同じことをいったわよね。@/
+実は、この式はこんな風にも書けるの
+#33FF33/
+（（ｌａｍｂｄａ　（ｘ）
+　　（ｃｏｎｓ　ｘ　ｘ））
+　（ｃａｒ　（ｃｄｒ　ｌｓｔ）））#FFFFFF
+ｌａｍｂｄａで作った関数にｌｓｔの２番目の要素をつけて呼び出してるわ。@/
+そうすると、新しい環境でｘが束縛されて、ｌｅｔを使った場合と全く同じになるの」\
+	r_show suzur_excc
+すずか「ｌｅｔを使った場合、ｘとそれを束縛するｌｓｔの２番目の要素の対応はパッと見て分かるけど、@/
+ｌａｍｂｄａを使った場合、仮引数ｘと実引数であるｌｓｔの２番目の要素が少し離れてるから分かりにくいね」\
+	r_show ari_exc
+アリサ「同じ役割なのに、局所変数を作るうえではｌｅｔの方が分かりやすいでしょ。@/
+実はｌｅｔはｌａｍｂｄａの糖衣構文なの。@/
+ｌａｍｂｄａは関数を作るだけだけど、ｌｅｔは呼び出しまでするから少し違うものに見えるかもしれないけど、/
+ｌｅｔを使った式は全て、ｌａｍｂｄａを使って書き直せるのよ」\
+	r_show suzur_n
+すずか「引用符’とｄｅｆｉｎｅの関数定義に続いて、３番目の糖衣構文だね」\
+	r_show ari_n
+アリサ「今度はｌｅｔを関数の中で使って見ましょう。
+#33FF33/
+（ｄｅｆｉｎｅ　ｆ
+　（ｌａｍｂｄａ　（ｎ）
+　　（ｌｅｔ
+　　　（（ｍ　（＋　ｎ　１）））
+　　　（＊　ｎ　ｍ））））#FFFFFF
+関数ｆの外側からｎとｍは見えないし、ｆの中でも、ｌｅｔの外側からはｍは見えないわ。@/
+	show_dgm ":l;img/dgm0704.bmp"
+つまり、外側からは内側の変数は見えないの。その一方で、内側からはどれだけ外側の変数も見えるのよ」\
+	csp SP_DGM0
+	r_show suzur_qes
+すずか「分かったような分からないような……あれ？　ｌｅｔってｌａｍｂｄａに書き換えれるんだよね。@/
+だとすると、この式はｌａｍｂｄａの中にｌａｍｂｄａが出てくるように書き直せる！？」\
+	r_show ari_n
+アリサ「いい所に気づいたわね。この式は次のように書き直せるわ。
+#33FF33/
+（ｄｅｆｉｎｅ　ｆ
+　（ｌａｍｂｄａ　（ｎ）
+　　（（ｌａｍｂｄａ　（ｍ）
+　　　　（＊　ｎ　ｍ））
+　　　（＋　ｎ　１））））#FFFFFF
+ここで思い出して欲しいのが、ｌａｍｂｄａの仕組み。@/
+関数がｌａｍｂｄａを評価した時の環境を保持するっていうのがあったわよね」\
+	r_show suzur_dotc
+すずか「えーと、まず、ｄｅｆｉｎｅの引数として、外側のｌａｍｂｄａの式が評価される。@/
+この時、出来上がる関数――すなわちｆは大域環境を保持するんだね。@/
+	show_dgm ":l;img/dgm0705.bmp"
+ｌａｍｂｄａは引数を評価しないから、内側のｌａｍｂｄａの式はまだ評価されないよね。@/
+ここで、#33FF33（ｆ　１６）#FFFFFFを評価すると、新しい環境が作られて、ｎが１６で束縛される。@/
+	show_dgm ":l;img/dgm0706.bmp"
+その後ろには関数が保持する環境――大域環境が繋がる。こうやって出来た環境を仮に環境Ｅと呼ぶね。@/
+すると、その環境Ｅで引数として#33FF33（＋　ｎ　１）#FFFFFFが、関数として、内側のｌａｍｂｄａの式が評価されるんだから、/
+ここで一時的に作られる関数は、環境Ｅを保持するんだね。@/
+	show_dgm ":l;img/dgm0707.bmp"
+で、その関数を#33FF33（＋　ｎ　１）#FFFFFFの値１７をつけて呼び出すと、また新しい環境が作られてｍが１７で束縛される。@/
+その後ろには関数が保持する環境――環境Ｅが繋がる。@/
+	show_dgm ":l;img/dgm0708.bmp"
+こうやって、最後に出来た環境はｍ、ｎ、そして大域環境の全ての束縛が見れるんだ」\
+	csp SP_DGM0
+	r_show ari_ase
+アリサ「よく一発で分かったわね……@これが内側からは外側が見えて、外側からは内側が見えない仕組みの正体だけど、@/
+最初のうちは普通はあまり分からない場合もあるわ。@/
+その場合は、#FFFF33内側からは外側が見える#FFFFFFということをしっかりと覚えておくといいわ」\
+	r_show suzur_qes
+すずか「じゃあ、例によってそろそろ練習問題かな？」\
+	r_show ari_tun
+アリサ「うーん……ｌｅｔってｌａｍｂｄａの便利な書き方に過ぎないから、問題を出すのもね……」\
+	r_show suzur_hrt
+すずか「じゃあ、今回は問題は――」\
+	r_show ari_n
+アリサ「今回はｌｅｔは関係ない問題を出すわね」\
+	r_show suzur_ase
+すずか「問題はないのかなと思わせぶりなことを言った直後にそれは酷いよ……」\
+	r_show ari_n
+アリサ「問題に備えてリストの補足説明をするわね。@/
+#33FF33ｎｕｌｌ？#FFFFFFという関数があって、これは引数が空リストなら＃ｔ、そうでなければ＃ｆを返すの。
+#33FF33/
+（ｎｕｌｌ？　’（））　⇒＃ｔ
+（ｎｕｌｌ？　’（ａ））⇒＃ｆ#FFFFFF」\
+	r_show suzur_nc
+すずか「＃ｔか＃ｆを返すってことは、ｉｆやｃｏｎｄで使えそうな関数だね」\
+	r_show ari_n
+アリサ「＃ｔか＃ｆを返す関数は#FFFF33述語#FFFFFFというの。@/
+述語は疑問符？で終わる名前のものが多いのよ」\
+	r_show suzur_n
+すずか「#33FF33ｎｕｌｌ？#FFFFFFや#33FF33＝#FFFFFFのことを述語って言うんだね」\
+	r_show ari_n
+アリサ「空リストって言うのは『要素が０個のリスト』と考えれるわよね。@/
+それから要素が一つのリストに対してｃｄｒを使うと空リストが返るわ。@/
+	show_dgm ":l;img/dgm0709.bmp"
+これはリストの図を描いたら分かるわよね。@/
+それから思い出して欲しいのが、ｃｄｒはリストの先頭の要素を取り出したリストを作る関数と考えられるということ。@/
+以上から、ｃｄｒは元のリストより要素が１つ少ないリストを作る関数とも考えられるの」\
+
+	mov %adv_rmode, 0         ;右クリック無効
+	bgm ms_ex
+	csp SP_DGM0
+	csp SP_R : csp SP_L
+	bg black, E_NORMAL
+	r_load ari_n
+	bg "img/blackboard.bmp", E_FAST
+	skipoff
+	mov %adv_tmp, 0
+	mov %save_flag, 0  ;セーブ不能
+*ex07_prev
+	gosub *create_new_env  ;自由にいじれるように新しい環境を作る
+	mov %arg0, %ret
+	mov %adv_tmp3, %arg0
+	gosub *push  ;GC対策
+	mov %arg1, %global_env
+	gosub *nconc
+*ex07
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「関数ｌを『引数としてｘを受け取ると、ｘの要素の数を返す関数』として定義しなさい。/
+ただし、引数は１つで、リストのみが来ると考えていいわ」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex07_tab  ;Tab
+	if $sarg0 == "" goto *ex07
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex07
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	;;;検証1
+	mov $sarg0, "(l '())"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret != 0 goto *ex07_miss
+	;;;検証2
+	mov $sarg0, "(l '(1 2 3 4 5))"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret == 5 goto *ex07_2_prev
+*ex07_miss
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex07
+
+*ex07_2_prev
+	mov $sarg0, "l"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *push     ;S(l)
+*ex07_2
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「引数#33FF33’（ａ　ｂ　ｃ）#FFFFFFをつけてｌを呼び出しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex07_2_tab  ;Tab
+	if $sarg0 == "" goto *ex07_2
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex07_2
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *push     ;S(ret, l)
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	gosub *pop      ;ret<S(l)
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret == 3 gosub *pop : goto *ex07_end
+;;;sの再定義をcheck;;;
+	mov $sarg0, "l"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *pop      ;l<S()
+	if %arg0 != %ret goto *ex07_2_miss
+	mov %arg0, %ret
+	gosub *push     ;S(l)
+;;;end;;;
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex07_2
+
+*ex07_2_miss
+	textclear
+	r_show ari_muka
+アリサ「……なかなか面白いことをやってくれるわね。@/
+	r_show ari_do
+最初からやり直し！！！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex07
+
+
+
+*ex07_tab
+csel "続ける", *ex07, "ヒント", *ex07_hint,  "タイトルに戻る", *ex07_bye
+*ex07_2_tab
+csel "続ける", *ex07_2, "ヒント", *ex07_2_hint,  "タイトルに戻る", *ex07_2_bye
+
+*ex07_bye
+	mov %adv_rmode, 1        ;右クリック有効
+	textclear
+	csp SP_R
+	stop
+	gosub *pop      ;new env<S()
+	goto *title
+
+*ex07_2_bye
+	gosub *pop      ;l<S(new env)
+	goto *ex07_bye
+
+*ex07_hint
+	textclear
+アリサ「受け取る引数は一つだから#33FF33（ｌａｍｂｄａ　（ｘ）　式）#FFFFFFと書くといいわ。@/
+今回も前回同様に再帰を使うと上手くいきそうね。@/
+リスト#33FF33（ａ１　ａ２…ａｎ）#FFFFFFの要素を数えるとしましょう。@/
+ｎが０――つまり、空リストの時は要素数は当然０になるわ。@/
+それ以外の時には要素数は、#33FF33（ａ２　ａ３…ａｎ）#FFFFFFの要素数に１を足したものになるわ。@/
+このリストは元のリストのＣＤＲを取ると作れるわよね。@/
+つまり、ｌの定義は、ｘが空リストなら#33FF33０#FFFFFF、@それ以外なら、#33FF33（＋　１　（ｌ　（ｃｄｒ　ｘ）））#FFFFFFと書けるわ。@/
+ｘが空リストかどうかは#33FF33ｎｕｌｌ？#FFFFFFを使うと確認できるわね。@/
+あとは、ｉｆかｃｏｎｄを使ってこれを式にするだけよ」\
+	goto *ex07
+
+*ex07_2_hint
+	textclear
+アリサ「単純に#33FF33（関数　引数）#FFFFFFの式を書けばいいわ」\
+	goto *ex07_2
+
+
+
+*ex07_end
+	mov %adv_rmode, 1        ;右クリック有効
+	gosub *pop  ;new env<S()
+	saveon
+	mov %save_flag, 1  ;セーブ可能
+	textclear
+	add %adv_miss, %adv_tmp
+	bgm ms_setsume
+	if %adv_tmp == 0 goto *s_07_2
+	if %adv_tmp >=2   goto *s_07_3
+*s_07_1
+アリサ「まあまあだったわね」\
+	goto *s_07_4
+*s_07_2
+	r_show ari_hrt
+アリサ「全く問題ないようね」\
+	goto *s_07_4
+*s_07_3
+	r_show ari_ase
+アリサ「ちょっと失敗が多いわね」\
+	goto *s_07_4
+*s_07_4
+
+
+	r_show ari_n
+アリサ「Ｓｃｈｅｍｅの変数のスコープは式を書いた時点で決まるでしょ。@/
+このスコープの取り決めを、#FFFF33レキシカルスコープ#FFFFFFというの。@/
+ＳｃｈｅｍｅやＣｏｍｍｏｎＬｉｓｐはレキシカルスコープだけど、/
+ｅｌｉｓｐをはじめとする、多くのＬｉｓｐ方言は式を評価するまでスコープの決まらない/
+#FFFF33ダイナミックスコープ#FFFFFFというものが使われるの。@/
+Ｌｉｓｐ方言の二大勢力がレキシカルスコープを使ってるから、/
+ここではダイナミックスコープについては割愛するわね」\
+	r_show suzur_nc
+すずか「内側から外側は見えるけど、外側からは内側が見えないっていうのがレキシカルスコープだね」\
+	r_show ari_n
+アリサ「今回の内容は、ｌｅｔを使うと局所変数が作れる、@/
+ｌｅｔはｌａｍｂｄａの糖衣構文である、@/
+ｌａｍｂｄａの内部でｌａｍｂｄａを書いても問題はない、@/
+その際の環境の作られ方に注意する。@/
+といった感じね」\
+	r_show suzur_n
+すずか「その割には練習問題は前回の再帰の続きみたいだったね」\
+	r_show ari_n
+アリサ「再帰はＬｉｓｐでプログラムを書く上で最も重要ともいえるものだから、@/
+しっかりと使えるようになって欲しいの。@/
+だから、再帰の問題を出したのよ」\
+	r_show suzur_nc
+すずか「確かに、再帰が分かることによって計算を#FFFF33繰り返す#FFFFFFことが出来るようになったしね」\
+	r_show ari_exc
+アリサ「Ｌｉｓｐで同じ計算を繰り返し行う時は、再帰を使うの。@/
+他のプログラミング言語に詳しかったら『そんなことをしたら遅いし、メモリを食いつぶす』と思うかもしれないけど、大丈夫。@/
+後で話すけど、Ｌｉｓｐはそれに対する解決策があるから、安心して再帰を使っていいのよ」\
+
+	vsp SP_R, 0
+	bg black, E_NORMAL
+	r_load ari_n
+	l_load suzu_n
+	bgm ms_after
+	bg "img/blackboard.bmp", E_NORMAL
+	talk_mode
+アリサ「そういえばさ、火星人はＬｉｓｐを使
+　　　　っているって話知ってる？」\
+	l_show suzu_dot
+すずか「なんか、火星人がいるのが前提ってい
+　　　　うのが凄いね……」\
+	r_show ari_tun
+アリサ「京都のλ山は有名だけど、実は火星に
+　　　　もね……あるのよ」\
+	l_show suzu_excc
+すずか「ま、まさか！」\
+	r_show ari_exc
+アリサ「火星のクレータにはλの文字がある！
+　　　　この文字こそ火星人がＬｉｓｐを使っ
+　　　　ている証拠なのよ！！」\
+	l_show suzu_exc
+すずか「な・・・・なんだってー」\
+	r_show ari_n
+アリサ「まあ、火星人がいればの話だけどね」\
+	l_show suzu_ase
+すずか「とりあえず驚いてみたけど、火星人が
+　　　　いても、その話の進め方には無理があ
+　　　　ると思うな……」\
+
+
+;;;;;第7話終了;;;;;
+	speak_mode
+	textclear
+	vsp SP_R, 0
+	vsp SP_L, 0
+	bg black, E_SLOW
+;;共通記録の書き換え
+	csvopen "arisa.szk", "rc"
+	csvread %adv_clear
+	csvclose
+	if %adv_clear >= 7 goto *story07_after
+	mov %adv_clear, 7
+	csvopen "arisa.szk", "wc"
+	csvwrite %adv_clear
+	csvclose
+#FFFF33補足説明#FFFFFFが追加されました。
+#FFFF33用語集#FFFFFFに単語が追加されました。\
+*story07_after
+	r_show suzur_nc
+すずか「どうしようかな？」
+csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タイトルに戻る", *title_back, "第８話へ進む", *story08
+
+*story07_condicil
+	gosub *condicil
+	goto *story07_after
+*story07_glossary
+	gosub *glossary
+	goto *story07_after
+
+
+
+
+
+
+
+
+;;;;;第8話;;;;;
+*story08
+	mov %adv_noroi_off, 0
+	csp SP_R : csp SP_L : print E_FAST
+	stop
+	talk_mode
+	bgm ms_kyoto
+	bg "img/blackboard.bmp", E_FAST
+	r_in ari_n
+	l_in suzu_n
+すずか「お医者さんに行って貰う処方箋って、
+　　　　ものすごく丁寧に書いてある場合があ
+　　　　るよね」\
+アリサ「薬の写真がカラーで入ってたり、薬を
+　　　　飲む時間とかが詳しく書いてたりする
+　　　　わね」\
+	l_show suzu_ase
+すずか「薬の副作用についてなんかも、結構書
+　　　　いてあって、なんか妙に心配しちゃっ
+　　　　たりするんだよね」\
+
+
+	csp SP_R : csp SP_L : print 1
+	bg "img/title#08.bmp", E_VFAST
+	wait 1000
+	delay 2000
+	bg "img/blackboard.bmp", E_FAST
+
+
+	bgm ms_setsume
+	speak_mode
+	r_show ari_n
+アリサ「変数の束縛の変更というやつをやってみましょう」\
+	r_show suzur_qes
+すずか「これまで、変数は一度定義したらその値が変わることはなかったよね。@/
+束縛を変更するということは、変数の値を変えるってこと？」\
+	r_show ari_n
+アリサ「まあ、とりあえず、例を見てみましょう。
+#33FF33/
+（ｄｅｆｉｎｅ　ｘ　９）
+（ｓｅｔ！　ｘ　１９）#FFFFFF
+この２つ式を順番に評価した後に#33FF33ｘ#FFFFFFを評価すると、結果は１９になるわ」\
+	r_show suzur_n
+すずか「ｘの値が９から１９に変化してるね。@/
+つまり、#33FF33（ｓｅｔ！　ｘ　１９）#FFFFFFはｘを１９で束縛し直すってことかな」\
+	r_show ari_n
+アリサ「これまでの内容をしっかり理解できてるなら分かってると思うけど、#33FF33ｓｅｔ！#FFFFFFはスペシャルフォームよ。@/
+第一引数のｘが評価されずにシンボルのまま扱われているのを見たらわかるわね。@
+#33FF33（ｓｅｔ！　変数名　式）#FFFFFF
+これで変数の束縛を変更できるわ。ただし、ＮＳｃＬｉｓｐｅｒでは、/
+ｄｅｆｉｎｅで定義した変数にしか使えないから注意してね」\
+	r_show suzur_nc
+すずか「ｓｅｔ！を使う前にｄｅｆｉｎｅを使う必要があるんだね」\
+	r_show ari_n
+アリサ「それから、ｓｅｔ！は束縛を変更するところに意味があって、その式自体の結果は特に意味を持たないの。/
+ＮＳｃＬｉｓｐｅｒではｓｅｔ！を呼び出すと＃ｔを返すことにしてあるけど、この結果を利用したりするのは好ましくないわ。@/
+このｓｅｔ！のように、結果である値には意味がなく、その効果に意味があるものを#FFFF33副作用#FFFFFFのある操作というのよ」\
+	r_show suzur_dotc
+すずか「ｓｅｔ！の返す値を使っちゃいけないんだね。じゃあ、
+#33FF33/
+（ｄｅｆｉｎｅ　（ｓｅｔ－ｘ！　ｍ　ｎ）
+　（ｓｅｔ！　ｘ　（＋　ｍ　ｎ）））#FFFFFF
+こんな風にｓｅｔ！を使う関数の返す値も使っちゃ駄目なんだね……@/
+変更後のｘの値が関数の返す値だったら便利なんだけどな」\
+	r_show ari_n
+アリサ「そういう場合#33FF33ｂｅｇｉｎ#FFFFFFというスペシャルフォームを使って、
+#33FF33/
+（ｄｅｆｉｎｅ　（ｓｅｔ－ｘ！　ｍ　ｎ）
+　（ｂｅｇｉｎ
+　　（ｓｅｔ！　ｘ　（＋　ｍ　ｎ））
+　　ｘ））#FFFFFF
+とすれば、関数の返す値は変更後のｘの値となるわ。@/
+ｂｅｇｉｎは任意個の引数を取って、第一引数から順番に評価していって、最後の引数を評価した結果を全体の値とするスペシャルフォームなの」\
+	r_show suzur_excc
+すずか「引数を全て評価するけど、最後の引数の値しか使わないから、途中に副作用のある式を入れるのには便利なんだね」\
+	r_show ari_n
+アリサ「実は、関数定義の時には暗黙にｂｅｇｉｎが使われていて、
+#33FF33/
+（ｄｅｆｉｎｅ　（ｓｅｔ－ｘ！　ｍ　ｎ）
+　（ｓｅｔ！　ｘ　（＋　ｍ　ｎ））
+　ｘ）#FFFFFF
+こんな風に書けるの。@/
+もちろん、ｌａｍｂｄａを使う時も同様に
+#33FF33/
+（ｄｅｆｉｎｅ　ｓｅｔ－ｘ！
+　（ｌａｍｂｄａ　（ｍ　ｎ）
+　　（ｓｅｔ！　ｘ　（＋　ｍ　ｎ））
+　　ｘ））#FFFFFF
+のような書き方が出来るわ」\
+	r_show suzur_nc
+すずか「つまり、関数定義の時には任意個の式を書いてよくて、その場合、式は順番に評価されていって、/
+最後の式の値が関数全体の結果として使われるんだ」\
+	r_show ari_n
+アリサ「これはｌａｍｂｄａの糖衣構文であるｌｅｔも同様に、
+#33FF33/
+（ｌｅｔ　（・・・）
+　式１
+　・・・
+　式ｎ）#FFFFFF
+と書けるわ。
+これは、新しい環境の中で式１～ｎを順番に評価して、式全体の結果は式ｎを評価した値となるわ」\
+	r_show suzur_n
+すずか「ｌｅｔはｌａｍｂｄａと実質的に同じだから、同じことが出来るんだね」\
+	r_show ari_n
+アリサ「さらに、ｃｏｎｄでも同じことができるの。
+#33FF33
+（ｃｏｎｄ　（条件式　実行式１
+　　　　　　　　　　　・・・
+　　　　　　　　　　　実行式ｎ）
+　　　　　　・・・）#FFFFFF
+こう書くと、条件式を評価した結果が真だった場合、実行式１～ｎが順番に評価されて、/
+式全体の結果は、実行式ｎを評価した値となるの」\
+	r_show suzur_dotc
+すずか「この流れのままいくとｉｆもできるのかな。/
+えーと、ｉｆの使い方は……
+#33FF33/
+（ｉｆ　条件式
+　　　　式Ａ
+　　　　式Ｂ）#FFFFFF@
+	r_show suzur_qes
+あれ？　ｉｆは引数を３つしかとれないから、同じようなことが出来ない？」\
+	r_show ari_n
+アリサ「残念ながらｉｆは条件式が真の時の式、偽の時の式もそれぞれ一つずつしか書けないわ。@/
+複数個式を書きたかったら、ｃｏｎｄを使うか、ｉｆの中でｂｅｇｉｎを使えばいいわ」\
+	r_show suzur_nc
+すずか「えーと、
+#33FF33/
+（ｉｆ　条件式
+　　　　（ｂｅｇｉｎ
+　　　　　式Ａ１
+　　　　　・・・
+　　　　　式Ａｎ）
+　　　　・・・）#FFFFFF
+みたいな感じかな」\
+	r_show ari_n
+アリサ「話をｓｅｔ！に戻しましょう。少し前に出てきた関数
+#33FF33/
+（ｄｅｆｉｎｅ　（ｓｅｔ－ｘ！　ｍ　ｎ）
+　（ｓｅｔ！　ｘ　（＋　ｍ　ｎ））
+　ｘ）#FFFFFF
+これの意味を少し考えてみましょうか」\
+	r_show suzur_nc
+すずか「えーと、この関数ｓｅｔ－ｘ！は引数を２個受け取って、ｘをその和で束縛し直すんだよね。@/
+ただ、これをやる前にｄｅｆｉｎｅでｘを定義しておく必要があるのかな」\
+	r_show ari_n
+アリサ「そう。ここで触ってるｘは関数の外側にあるｘのことなの。
+#33FF33/
+（ｄｅｆｉｎｅ　ｘ　０）
+（ｄｅｆｉｎｅ　（ｓｅｔ－ｘ！　ｍ　ｎ）
+　（ｓｅｔ！　ｘ　（＋　ｍ　ｎ））
+　ｘ）
+ｘ　　　　　　　　　　　　⇒０
+（ｓｅｔ－ｘ！　９　１９）⇒２８
+ｘ　　　　　　　　　　　　⇒２８#FFFFFF
+この結果から、外側のｘの値が変化してるのがわかるわね」\
+	r_show suzur_n
+すずか「確か内側からは外側を触れるんだよね。これは変数の束縛を変更する時も同じなんだ」\
+	r_show ari_n
+アリサ「これを少し変化させて、
+#33FF33/
+（ｄｅｆｉｎｅ　ｘ　０）
+（ｄｅｆｉｎｅ　（ｓｅｔ－ｘ２！　ｘ　ｎ）
+　（ｓｅｔ！　ｘ　（＋　ｘ　ｎ））
+　ｘ）
+ｘ　　　　　　　　　　　　⇒０
+（ｓｅｔ－ｘ！　９　１９）⇒２８
+ｘ　　　　　　　　　　　　⇒０#FFFFFF
+こうすると、外側のｘは変化しないでしょ」\
+	r_show suzur_dotc
+すずか「えーと、この場合は、ｓｅｔ－ｘ２！の引数としてｘという名前が使われてるから、/
+そのｘの方が外側のｘより優先されるんだよね。@/
+	r_show suzur_qes
+だから、ｓｅｔ！による束縛の変更は、外側のｘじゃなくて、内側のｘに対して行われたってこと？」\
+	r_show ari_exc
+アリサ「その通り！　これを応用すると面白いことが出来るの。@/
+けど、その前にちょっと復習をしましょう。@/
+ｌｅｔのところで、ｌａｍｂｄａの中にｌａｍｂｄａを書く例をやったわよね」\
+	r_show suzur_n
+すずか「あったね。内側からは外側が見えるけど、外側からは内側は見えないというやつだよね」\
+	r_show ari_n
+アリサ「あの例では、内側のｌａｍｂｄａで作った関数はその場で呼び出してたけど、こんなこともできるの。
+#33FF33/
+（ｄｅｆｉｎｅ　ｍａ
+　（ｌａｍｂｄａ　（ｎ）
+　　（ｌａｍｂｄａ　（ｘ）
+　　　（＋　ｎ　ｘ））））#FFFFFF
+これはどういった関数だと思う？」\
+	r_show suzur_dotc
+すずか「外側のｌａｍｂｄａを見ると、引数を一つ受け取る関数だよね。@/
+で、その内容は、ｌａｍｂｄａの呼び出し――つまり、関数を作って返すというものだから……@/
+	r_show suzur_exc
+関数ｍａを呼び出した結果は新しい関数！？」\
+	r_show ari_n
+アリサ「式を評価したら、値が返ってくる。関数も値の一種なんだから別におかしなことじゃないでしょ。@/
+ｌａｍｂｄａは関数を返すスペシャルフォーム。同じように、ｍａも関数を返す関数ってだけよ」\
+	r_show suzur_ase
+すずか「えーと、内側のｌａｍｂｄａを見ると、引数を１つ受け取って、それとｎの和を返す関数を作ってるんだね。@/
+……うーん、使い方がよく分からないよ」\
+	r_show ari_n
+アリサ「じゃあ、実際に使ってみましょう
+#33FF33/
+（ｄｅｆｉｎｅ　ａ５　（ｍａ　５））⇒ａ５
+（ｄｅｆｉｎｅ　ａ９　（ｍａ　９））⇒ａ９
+（ａ５　５）⇒１０（＝５＋５）
+（ａ９　５）⇒１４（＝９＋５）
+（ａ５　１）⇒６　（＝５＋１）
+（ａ９　１）⇒１０（＝９＋１）#FFFFFF@
+ａ５とａ９は新しく作った関数で束縛されてるわけだけど、/
+結果を見たら分かるように、それぞれで使われているｎという値がしっかりと残っているというのが重要よ」\
+	r_show suzur_nc
+すずか「ｎっていうのは関数ｍａの仮引数だよね。ｍａの呼び出しが終わったあとも、/
+内側のｌａｍｂｄａで作られる関数で使われ続けてるんだ」\
+	r_show ari_n
+アリサ「これは、関数が環境を覚えるからこんなことができるのよ。@/
+例えばａ５の場合、ｍａの内側のｌａｍｂｄａ評価を評価した/
+環境――すなわち、『ｎは５』という環境を覚えてるわけだから、上手くいくの。/
+ａ９の場合も全く同じね」\
+	r_show suzur_qes
+すずか「なんだかややこしいね。ところで『面白いこと』っていうのは何なの？」\
+	r_show ari_n
+アリサ「この例とｓｅｔ！を組み合わせるの。
+#33FF33/
+（ｄｅｆｉｎｅ　ｍａ２
+　（ｌａｍｂｄａ　（ｎ）
+　　（ｌａｍｂｄａ　（ｘ）
+　　　（ｓｅｔ！　ｎ　（＋　ｎ　ｘ））
+　　　ｎ）））#FFFFFF
+こんどは記憶しているｎの束縛を変更しているの。/
+さあ、これをさっきと同じように使ってみましょうか」\
+	r_show suzur_nc
+すずか「えーと、
+#33FF33/
+（ｄｅｆｉｎｅ　ａ４　（ｍａ２　４））
+（ａ４　８）⇒１２（＝４＋８）
+（ａ４　８）⇒２０（＝１２＋８）
+（ａ４　８）⇒２８（＝２０＋８）
+（ａ４　８）⇒３６（＝２８＋８）#FFFFFF
+引数に８をつけて呼び出すと、結果は８ずつ増えていくね。@/
+関数に記憶されてるｎの値がちゃんと変更されてるんだ」\
+	r_show ari_n
+アリサ「ちなみに、この関数は、
+#33FF33/
+（（ｍａ２　４）　８）⇒１２#FFFFFF
+みたいに使うこともできるわ。@/
+関数を返す関数に関しては全て、
+#33FF33/
+（（関数　引数）　引数）#FFFFFF
+という書き方が許されるの。@/
+ただし、これはＳｃｈｅｍｅの場合の話で、Ｌｉｓｐ方言によってはこの書き方ができないから注意してね」\
+	r_show suzur_n
+すずか「Ｓｃｈｅｍｅでは関数を返す関数は、ｌａｍｂｄａみたいな書き方ができるってことだね」\
+	r_show ari_die
+アリサ「ｓｅｔ！は便利なんだけど、乱用すると混乱を生む恐れもあるから、使いどころは考えた方がいいわね」\
+	r_show suzur_excc
+すずか「副作用には注意しろってことだね」\
+	r_show ari_n
+アリサ「さて、そろそろ練習問題をやりましょうか」\
+
+
+
+	mov %adv_rmode, 0         ;右クリック無効
+	bgm ms_ex
+	csp SP_R : csp SP_L
+	bg black, E_NORMAL
+	r_load ari_n
+	bg "img/blackboard.bmp", E_FAST
+	skipoff
+	mov %adv_tmp, 0
+	mov %save_flag, 0  ;セーブ不能
+*ex08_prev
+	gosub *create_new_env  ;自由にいじれるように新しい環境を作る
+	mov %arg0, %ret
+	mov %adv_tmp3, %arg0
+	gosub *push  ;GC対策
+	mov %arg1, %global_env
+	gosub *nconc
+*ex08
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「関数ｆを『引数としてｘを受け取ると、”#33FF33引数を１つ取り、ｘとその和を返す関数#FFFFFF”を返す関数』として定義しなさい。/
+ただし、引数は１つで、数のみが来ると考えていいわ」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex08_tab  ;Tab
+	if $sarg0 == "" goto *ex08
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex08
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	;;;検証1
+	mov $sarg0, "((f 9) 99)"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret != 108 goto *ex08_miss
+	;;;検証2
+	mov $sarg0, "((f 2) 5)"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret == 7 goto *ex08_2_prev
+*ex08_miss
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex08
+
+*ex08_2_prev
+	mov $sarg0, "f"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *push     ;S(f)
+*ex08_2
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「#33FF33（ｆ　６）#FFFFFFが返す関数に引数#33FF33６６#FFFFFFをつけて呼び出しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex08_2_tab  ;Tab
+	if $sarg0 == "" goto *ex08_2
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex08_2
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *push     ;S(ret, f)
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	gosub *pop      ;ret<S(f)
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret == 72 gosub *pop : goto *ex08_end
+;;;sの再定義をcheck;;;
+	mov $sarg0, "f"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *pop      ;f<S()
+	if %arg0 != %ret goto *ex08_2_miss
+	mov %arg0, %ret
+	gosub *push     ;S(f)
+;;;end;;;
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex08_2
+
+*ex08_2_miss
+	textclear
+	r_show ari_muka
+アリサ「……なかなか面白いことをやってくれるわね。@/
+	r_show ari_do
+最初からやり直し！！！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex08
+
+
+
+*ex08_tab
+csel "続ける", *ex08, "ヒント", *ex08_hint,  "タイトルに戻る", *ex08_bye
+*ex08_2_tab
+csel "続ける", *ex08_2, "ヒント", *ex08_2_hint,  "タイトルに戻る", *ex08_2_bye
+
+*ex08_bye
+	mov %adv_rmode, 1        ;右クリック有効
+	textclear
+	csp SP_R
+	stop
+	gosub *pop      ;new env<S()
+	goto *title
+
+*ex08_2_bye
+	gosub *pop      ;f<S(new env)
+	goto *ex08_bye
+
+*ex08_hint
+	textclear
+アリサ「受け取る引数は一つだから#33FF33（ｌａｍｂｄａ　（ｘ）　式）#FFFFFFと書くといいわ。@/
+返す値は『引数を１つ取る関数』だから、#33FF33式#FFFFFFの部分には#33FF33（ｌａｍｂｄａ　（ｎ）　…）#FFFFFFと書けばいいわ。@/
+あとは、#33FF33…#FFFFFFの部分を完成させるだけね」\
+	goto *ex08
+
+*ex08_2_hint
+	textclear
+アリサ「単純に#33FF33（関数　引数）#FFFFFFの式を書くんだけど、/
+この#33FF33関数#FFFFFFには#33FF33（ｆ　６）#FFFFFFと書けばいいわ」\
+	goto *ex08_2
+
+
+
+*ex08_end
+	mov %adv_rmode, 1        ;右クリック有効
+	gosub *pop  ;new env<S()
+	saveon
+	mov %save_flag, 1  ;セーブ可能
+	textclear
+	add %adv_miss, %adv_tmp
+	bgm ms_setsume
+	if %adv_tmp == 0 goto *s_08_2
+	if %adv_tmp >=2   goto *s_08_3
+*s_08_1
+アリサ「まあまあだったわね」\
+	goto *s_08_4
+*s_08_2
+	r_show ari_hrt
+アリサ「全く問題ないようね」\
+	goto *s_08_4
+*s_08_3
+	r_show ari_ase
+アリサ「ちょっと失敗が多いわね」\
+	goto *s_08_4
+*s_08_4
+
+
+	r_show ari_n
+アリサ「今回の内容は副作用と関数の続きね」\
+	r_show suzur_n
+すずか「関数を返す関数っていうのが新しかったね」\
+	r_show ari_n
+アリサ「値というものはすべて同等に扱えるの。@/
+だから、数を関数の戻す値として使えるんだからシンボルや関数も使えるわ。@/
+また、数を引数として送れるんだから、シンボルや関数も送れるの。@/
+説明の上では数を使う機会が多かったけど、数が特別とかいったことは全くないのよ」\
+	r_show suzur_qes
+すずか「それにしても、関数はｌａｍｂｄａを評価した環境を覚えるから、/
+新しく作った環境を残すことができるっていうのが少し不思議な話だね。@/
+一体どうやって、残すものと捨てるものを区別してるの？」\
+	r_show ari_n
+アリサ「Ｌｉｓｐでは#FFFF33今後、二度と使えないもの#FFFFFFだけを捨てるようになってるわ。@/
+逆に言えば、今後使う可能性のあるものは全て残すようになっているの。だから、上手くいくのよ。@/
+前に、『値は箱に入っていると考えられる』といったと思うけど、この箱の数は有限なの。@/
+けど、いらない値を入れた箱があれば、その値を捨てて箱を再利用するから、箱の数が足りなくなることは滅多にないのよ」\
+	r_show suzur_n
+すずか「再利用だなんて、環境にやさしいね」\
+	r_show ari_ase
+アリサ「まあ、環境にやさしいといえばやさしいけど……@/
+	r_show ari_n
+この、必要なものと、そうでないものを区別して箱を再利用する仕組みを#FFFF33ＧＣ#FFFFFF（Ｇａｒｂａｇｅ　Ｃｏｌｌｅｃｔｉｏｎ）というの。@/
+	r_show ari_tun
+どこかの珈琲みたいな名前の言語がＧＣを搭載していることを自慢していたけど、/
+Ｌｉｓｐはそのはるか昔からＧＣを使い続けていたんだからね！」\
+
+
+	vsp SP_R, 0
+	bg black, E_NORMAL
+	r_load ari_n
+	l_load ":l;img/same.bmp" ;;;
+	bgm ms_after
+	bg "img/blackboard.bmp", E_NORMAL
+	talk_mode
+鮫島「……むむむ！！！」\
+	r_show ari_qes
+アリサ「鮫島？　どうかしたの？」\
+鮫島「いえ、なんでもありません。アリサお嬢
+　　　様、突然で申し訳ないのですが、しばら
+　　　く出て参ります」\
+アリサ「別にいいけど……何か急用でもできた
+　　　　の？」\
+鮫島「そんなところです」\
+	mov %adv_noroi_off, 1;;;
+	csp SP_R : csp SP_L
+	bg black, E_NORMAL
+	l_show ":l;img\same.bmp"
+鮫島「この気配……近づいている……只ならぬ
+　　　ものの気配がする！」\
+鮫島「この鮫島、命に代えてもお二人をお守り
+　　　せねば！！！」\
+
+
+
+
+
+;;;;;第8話終了;;;;;
+	speak_mode
+	textclear
+	vsp SP_R, 0
+	vsp SP_L, 0
+	bg black, E_SLOW
+;;共通記録の書き換え
+	csvopen "arisa.szk", "rc"
+	csvread %adv_clear
+	csvclose
+	if %adv_clear >= 8 goto *story08_after
+	mov %adv_clear, 8
+	csvopen "arisa.szk", "wc"
+	csvwrite %adv_clear
+	csvclose
+#FFFF33補足説明#FFFFFFが追加されました。
+#FFFF33用語集#FFFFFFに単語が追加されました。\
+*story08_after
+	r_show suzur_nc
+すずか「どうしようかな？」
+csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タイトルに戻る", *title_back, "第９話へ進む", *story09
+
+*story08_condicil
+	gosub *condicil
+	goto *story08_after
+*story08_glossary
+	gosub *glossary
+	goto *story08_after
+
+
+
+
+
+
+
+
+;;;;;第9話;;;;;
+*story09
+	mov %adv_noroi_off, 0
+	csp SP_R : csp SP_L : print E_FAST
+	stop
+	talk_mode
+	bgm ms_kyoto
+	bg "img/blackboard.bmp", E_FAST
+	r_in ari_n
+	l_in suzu_n
+	r_show ari_qes
+アリサ「なんかさ、鮫島が物凄い勢いで外に出
+　　　　て行ったんだけど」\
+	l_show suzu_nc
+すずか「ひょっとして追っ手がこっちに来て、
+　　　　一人で戦いに行ったとか……」\
+	r_show ari_tun
+アリサ「ないない。あの鮫島がそんなカッコい
+　　　　いことするはずないわよ」\
+	l_show suzu_n
+すずか「確かにそうだねー」\
+
+
+	csp SP_R : csp SP_L : print 1
+	bg "img/title#09.bmp", E_VFAST
+	wait 1000
+	delay 2000
+	bgm ms_setsume
+	bg "img/blackboard.bmp", E_FAST
+
+	speak_mode
+	r_show ari_n
+アリサ「ｑｕｏｔｅを使えばシンボルをいくつでも作れるわよね。@/
+同じ文字の並びから出来てるシンボルというのは、同じものなの。
+#33FF33/
+（ｄｅｆｉｎｅ　ｘ　’ａ）
+（ｄｅｆｉｎｅ　ｙ　’ａ）#FFFFFF
+この二つの式を評価するとｘとｙの値は#FFFF33全く同じ#FFFFFFになるわ」\
+	r_show suzur_qes
+すずか「確かにｘもｙも評価したら#33FF33ａ#FFFFFFになるから同じだよね。@/
+これって特別なことなのかな？」\
+	r_show ari_n
+アリサ「最初の式が#FFFF33読み込まれた時点#FFFFFFで、/
+『型がシンボル、中身がａという文字の並び』という値が作られて、箱の中に入れられるわ。@/
+ただ今後、#33FF33’ａ#FFFFFFを評価しても、別の式に#33FF33ａ#FFFFFFが出てきても、/
+最初に作った箱の中身が使われて、値が新たに作られることはないの。@/
+	show_dgm ":l;img/dgm0901.bmp"
+つまり、最初の例の場合、ｘもｙも同じ値を使いまわしているの」\
+	csp SP_DGM0
+	r_show suzur_n
+すずか「シンボルは一度作ったら再利用されるんだね。環境にやさしいね」\
+	r_show ari_ase
+アリサ「それはもういいわよ……。@/
+	r_show ari_n
+中身が同じシンボルは全て同一のものであるってことだから、/
+表示を見れば同一かどうか分かるわ」\
+	r_show suzur_nc
+すずか「シンボルは、中身が同じだったら同じもの。@/
+つまり、表示が同じだったら同じものなんだ」\
+	r_show ari_n
+アリサ「これに対して、コンスの場合はこうはいかないの。
+#33FF33/
+（ｄｅｆｉｎｅ　ｚ　（ｃｏｎｓ　’ａ　’ｂ））
+（ｄｅｆｉｎｅ　ｗ　（ｃｏｎｓ　’ａ　’ｂ））#FFFFFF
+ｚもｗも値を#FFFF33表示#FFFFFFすると#33FF33（ａ　．　ｂ）#FFFFFFとなるわ。@/
+さっき言った通り、シンボルａとｂは使いまわされるわね。@/
+	show_dgm ":l;img/dgm0902.bmp"
+けど、それを格納しているコンスが異なるの」\
+	r_show suzur_qes
+すずか「つまり、ｚとｗでは値が異なるってこと？」\
+	r_show ari_n
+アリサ「関数ｃｏｎｓは、まず『型はコンス、中身はＣＡＲ部もＣＤＲ部も空っぽ』という値を作るの。@/
+それから、そのコンスのＣＡＲ部に第一引数、ＣＤＲ部に第二引数を入れるの。@/
+つまり、中身が同じであっても、コンスは使いまわされることはなく、必ず新しいものが使われるの」\
+	csp SP_DGM0
+	r_show suzur_nc
+すずか「ＣＡＲもＣＤＲも同じなのに、別々の２つの値が存在する。@/
+つまり、同姓同名の人が存在するのと同じような感じかな。@/
+ところで、
+#33FF33
+（ｄｅｆｉｎｅ　ｚ　’（ａ　．　ｂ））
+（ｄｅｆｉｎｅ　ｗ　’（ａ　．　ｂ））#FFFFFF
+こうならどうかな？@/
+　これも違うコンスが使われることになるの？」\
+	r_show ari_n
+アリサ「それも駄目。ｚとｗでは別々のコンスが割り当てられるわ。@/
+ただ、
+#33FF33
+（ｄｅｆｉｎｅ　ｐ　’（ａ　．　ｂ））
+（ｄｅｆｉｎｅ　ｑ　ｐ）#FFFFFF
+この場合、はｐとｑは同じコンスになるわ。@/
+	show_dgm ":l;img/dgm0903.bmp"
+ｑはｐの値――つまり、作ったコンスで束縛されるわけだから、/
+同じコンスが使われるというのは、当然ともいえるんだけどね」\
+	csp SP_DGM0
+	r_show suzur_qes
+すずか「表示が同じでも、#FFFF33全く同じ存在である値#FFFFFFと、@/
+#FFFF33中身は同じでも違う値#FFFFFFというものがあるというのは、なんとなく分かったけど、/
+これには何か注意することがあるのかな？」\
+	r_show ari_n
+アリサ「まず一点。値が同一であるかどうかは#33FF33ｅｑ？#FFFFFFという関数を使って判定するの。@/
+同一ならば＃ｔ、同一でなければ＃ｆを得ることが出来るわ。@/
+ただし、コンスやリストの見た目が同じであるかは中身を見ないと分からないから、この関数は使えないのよ。@/
+代わりに#33FF33ｅｑｕａｌ？#FFFFFFという関数を使うわ。@/
+ｅｑ？は値の中身を見ずに比較するから非常に高速だけど、/
+ｅｑｕａｌ？はコンスに対しては、中身を順次確かめていくからそこそこ時間がかかるの」\
+	r_show suzur_n
+すずか「シンボルに対してｅｑｕａｌ？を使うことはできないの？」\
+	r_show ari_n
+アリサ「できるわ。ｅｑ？で真になるものはｅｑｕａｌ？でも真になるの。@/
+逆に、ｅｑｕａｌ？で真になるからといって、ｅｑ？で真になるとは限らないのよ。
+#33FF33/
+（ｅｑ？　’ａ　’ａ）　　　　　　⇒＃ｔ
+（ｅｑｕａｌ？　’ａ　’ａ）　　　⇒＃ｔ
+（ｅｑ？　’（ａ）　’（ａ））　　⇒＃ｆ
+（ｅｑｕａｌ？　’（ａ）’（ａ））⇒＃ｔ#FFFFFF
+シンボルに関してはｅｑ？もｅｑｕａｌ？も同じ結果でしょ。@/
+基本的に#FFFF33表示が同じ#FFFFFFものをｅｑｕａｌ？で比較すると真になるの。@/
+ただし、関数なんかは違うけどね」\
+	r_show suzur_excc
+すずか「つまり、シンボルの比較はｅｑ？を使って非常に高速にできるけど、/
+コンスやリストの比較はｅｑｕａｌ？を使わないといけないから、そんなには速くないってことだね」\
+	r_show ari_n
+アリサ「もう一点は、同一のものを使っているかでリストの破壊的操作をした時の動作が異なるということね。
+#33FF33/
+（ｄｅｆｉｎｅ　ｘ　’（ａ　．　ｂ））
+（ｓｅｔ－ｃａｒ！　ｘ　’ｃ）
+（ｓｅｔ－ｃｄｒ！　ｘ　’ｄ）#FFFFFF
+これらの式を順番に評価していくと、ｘの値は
+#33FF33（ｃ　．　ｄ）#FFFFFFになるわ。@/
+ｓｅｔ！と同様に、ｓｅｔ－ｃａｒ！やｓｅｔ－ｃｄｒ！の返す値を利用してはいけないわよ」\
+	r_show suzur_nc
+すずか「#33FF33ｓｅｔ－ｃａｒ！#FFFFFFと#33FF33ｓｅｔ－ｃａｒ！#FFFFFFは名前の通り、/
+コンスのＣＡＲ部、ＣＤＲ部を書き換える関数だね。@/
+返す値じゃなくて、コンスの中身を書き換えるのに意味がある関数だからこれも副作用のある操作かな」\
+	r_show ari_n
+アリサ「コンスの元の中身を破壊して書き換えるから、これを#FFFF33破壊的操作#FFFFFFというの。@/
+これ自身は便利な場合もあるんだけど、さっきの話を持ち出すとちょっと厄介になって……@
+#33FF33/
+（ｄｅｆｉｎｅ　ｘ　’（ａ　．　ｂ））
+（ｄｅｆｉｎｅ　ｙ　’（ａ　．　ｂ））
+（ｄｅｆｉｎｅ　ｚ　ｙ）
+（ｓｅｔ－ｃａｒ！　ｘ　’ｃ）
+（ｓｅｔ－ｃｄｒ！　ｙ　’ｄ）#FFFFFF
+これらの式を順番に評価すると、
+ｘの値は#33FF33（ｃ　．　ｂ）#FFFFFF、@
+ｙの値は#33FF33（ａ　．　ｄ）#FFFFFF、@
+ｚの値は#33FF33（ａ　．　ｄ）#FFFFFFとなるわ。@
+	show_dgm ":l;img/dgm0904.bmp"
+直接値を書き換えてないｚもｙの変更に伴って書き換わっているというのがポイントね」\
+	csp SP_DGM0
+	r_show suzur_n
+すずか「ｙとｚは同じコンスに束縛されているからそういうことが起こるんだね」\
+	r_show ari_n
+アリサ「まあ、これくらいだったら明らかだからいいけど、
+#33FF33/
+（ｄｅｆｉｎｅ　ｘ　’（８　９　１０））
+（ｄｅｆｉｎｅ　ｙ　（ｃｄｒ　ｘ））#FFFFFF
+この時点ではｘは#33FF33（８　９　１０）#FFFFFFで、
+ｙは#33FF33（９　１０）#FFFFFFよね。@/
+ここで、
+#33FF33/
+（ｓｅｔ－ｃａｒ！　ｙ　１９）#FFFFFF
+これを評価すると、ｙの値が#33FF33（１９　１０）#FFFFFFになるのは分かると思うけど、@/
+ｘの値も#33FF33（８　１９　１０）#FFFFFFに書き換わってしまうの。@/
+	show_dgm ":l;img/dgm0905.bmp"
+原因はさっきのと同じだけど、こっちは少し気づきにくいわね」\
+	csp SP_DGM0
+	r_show suzur_T_T
+すずか「ｙはｘの一部を共有してるからｙを書き換えると、ｘも書き換わるんだ。@/
+これって、下手をすると、書き換えるつもりのない変数まで書き換えそうで怖いな」\
+	r_show ari_n
+アリサ「そういったことを避ける一番簡単な手はリストの破壊的操作を使わないことよ。@/
+けど、使いたい場面というのもあるから、その場合はリストが共有されてないかしっかり考えることね」\
+	r_show ari_n
+アリサ「さて、練習問題だけど『使わない方がいい』といったものをいきなり使う練習を出すのも考え物よね。@/
+	r_show ari_tun
+だから、違う問題を出すわ！@決して、問題を作るのがめんどくさかったわけじゃないんだからね！！」\
+	r_show suzur_dere
+すずか「アリサちゃん……そんなに必死にならなくていいよ」\
+	r_show ari_n
+アリサ「というわけで、練習問題の前にヒントを出すわよ。@/
+以前、階乗を求める関数を作ったけど、これを少し違った方法で作るわよ
+#33FF33/
+（ｄｅｆｉｎｅ　（ｆａｃｔ２　ｎ）
+　（ｆａｃｔ２ｉ　ｎ　１））
+（ｄｅｆｉｎｅ　（ｆａｃｔ２ｉ　ｎ　ｘ）
+　（ｉｆ　（＝　ｎ　０）
+　　　　　ｘ
+　　　　　（ｆａｃｔ２ｉ　（－　ｎ　１）
+　　　　　　　　　　　　　（＊　ｘ　ｎ））））#FFFFFF
+３の階乗を求める時は#33FF33（ｆａｃｔ２　３）#FFFFFFのように使うわ」\
+	r_show suzur_nc
+すずか「関数が２つになったね。@/
+といっても、ｆａｃｔ２はｆａｃｔ２ｉを呼び出すだけみたいだけど。@/
+ｆａｃｔ２ｉは再帰をしているけど、#33FF33ｎ#FFFFFFがどんどん小さくなって、最後には０になるから、/
+いつかは呼び出しが終わるっていうのは、前と同じだね」\
+	r_show ari_n
+アリサ「注目すべきは#33FF33ｘ#FFFFFFの方ね。@/
+仮に#33FF33（ｆａｃｔ２　３）#FFFFFFを評価したとしましょう。@/
+最初にｆａｃｔ２ｉが呼び出される時にはｘは１でｎは３。@/
+次に、ｆａｃｔ２ｉが呼び出される時にはｘは１×３でｎは２、@/
+そして、ｘが１×３×２×１となった時、ｎは０だから、ｆａｃｔ２ｉの結果は６になる。@/
+ね、少しややこしいけど、ちゃんと階乗が計算できてるでしょ」\
+	r_show suzur_n
+すずか「ｘには計算途中の数が入っているって感じかな。@/
+ｘは最初１だから、０の階乗を求めてもちゃんと１という正しい結果が得られるね」\
+	r_show ari_n
+アリサ「いまいち分からなかったら、さっきの階乗の関数をよーく見直す事。@/
+いい？　いまのうちにしっかり見直しておくのよ、練習問題の物凄いヒントだからね！」\
+
+	mov %adv_rmode, 0         ;右クリック無効
+	bgm ms_ex
+	csp SP_R : csp SP_L
+	bg black, E_NORMAL
+	r_load ari_n
+	bg "img/blackboard.bmp", E_FAST
+	skipoff
+	mov %adv_tmp, 0
+	mov %save_flag, 0  ;セーブ不能
+*ex09_prev
+	gosub *create_new_env  ;自由にいじれるように新しい環境を作る
+	mov %arg0, %ret
+	mov %adv_tmp3, %arg0
+	gosub *push  ;GC対策
+	mov %arg1, %global_env
+	gosub *nconc
+	;;;使う関数を先に定義
+	mov $sarg0, "(define (s n) (si n 0))"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov $sarg0, "s"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *push     ;S(s)
+	;;;END
+*ex09
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「#33FF33（ｓ　ｎ）#FFFFFFを評価すると１＋２＋…＋ｎが返るように#FFFF33関数ｓｉを#FFFFFF定義しなさい。/
+ただし、ｓは次のように定義されているわ
+#33FF33/
+（ｄｅｆｉｎｅ　（ｓ　ｎ）
+　（ｓｉ　ｎ　０））#FFFFFF」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex09_tab  ;Tab
+	if $sarg0 == "" goto *ex09
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex09
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	;;;検証1
+	mov $sarg0, "(s 0)"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret != 0 goto *ex09_miss
+	;;;検証2
+	mov $sarg0, "(s 6)"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret == 21 gosub *pop : goto *ex09_2_prev  ;s<S()
+*ex09_miss
+;;;sの再定義をcheck;;;
+	mov $sarg0, "s"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *pop      ;s<S()
+	if %arg0 != %ret goto *ex09_miss2
+	mov %arg0, %ret
+	gosub *push     ;S(s)
+	;;;END
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex09
+*ex09_miss2
+	r_show ari_muka
+アリサ「……なかなか面白いことをやってくれるわね。@/
+	r_show ari_do
+最初からやり直し！！！」\
+	r_show ari_n
+	inc %adv_tmp
+	gosub *pop      ;adv_tmp3<S()
+	goto *ex09_prev
+
+*ex09_2_prev
+	mov $sarg0, "si"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *push     ;S(si)
+*ex09_2
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「引数#33FF33１０#FFFFFFをつけて#FFFF33ｓ#FFFFFFを呼び出しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex09_2_tab  ;Tab
+	if $sarg0 == "" goto *ex09_2
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex09_2
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *push     ;S(ret, si)
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	gosub *pop      ;ret<S(si)
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret == 55 gosub *pop : goto *ex09_end
+;;;sの再定義をcheck;;;
+	mov $sarg0, "si"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *pop      ;si<S()
+	if %arg0 != %ret goto *ex09_2_miss
+	mov %arg0, %ret
+	gosub *push     ;S(si)
+;;;end;;;
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex09_2
+
+*ex09_2_miss
+	textclear
+	r_show ari_muka
+アリサ「……なかなか面白いことをやってくれるわね。@/
+	r_show ari_do
+最初からやり直し！！！」\
+	r_show ari_n
+	inc %adv_tmp
+	gosub *pop      ;adv_tmp3<S()
+	goto *ex09_prev
+
+
+
+*ex09_tab
+csel "続ける", *ex09, "ヒント", *ex09_hint,  "タイトルに戻る", *ex09_bye
+*ex09_2_tab
+csel "続ける", *ex09_2, "ヒント", *ex09_2_hint,  "タイトルに戻る", *ex09_2_bye
+
+*ex09_bye
+	mov %adv_rmode, 1        ;右クリック有効
+	textclear
+	csp SP_R
+	stop
+	sub %sp, 2      ;new env, s(si) <S()
+	goto *title
+
+*ex09_2_bye
+	goto *ex09_bye
+
+*ex09_hint
+	textclear
+アリサ「受け取る引数は２つだから#33FF33（ｌａｍｂｄａ　（ｎ　ｘ）　式）#FFFFFFと書くといいわ。@/
+言うまでもなく、再帰をする式を書く事になるわ。@/
+当然、ｎは毎回１ずつ引いていくといいわね。@/
+あと、ｎが０の時ｘを返すと先に決めておきましょう。@/
+そうすると、全体は
+#33FF33/
+（ｄｅｆｉｎｅ　ｓｉ
+　（ｌａｍｂｄａ　（ｎ　ｘ）
+　　（ｉｆ　（＝　ｎ　０）
+　　　　　　ｘ
+　　　　　　（ｓｉ　（－　ｎ　１）　？））））#FFFFFF
+と書けるわね。@/
+#33FF33？#FFFFFFの部分に何を入れたらいいかは頑張って考えてね。@/
+ｘには途中までの計算結果が入っているというのが重要よ。@/
+あと、最初はｘが０であるというのも忘れたら駄目だからね。@/
+ｎが０の場合、１の場合、２の場合くらいで考えて、三つとも正しく動いたらたぶん正しいわよ。@/
+……まあ、本当は０の場合とｎ＋１の場合を考えて、正しいことが分かれば十分なんだけどね。@/
+どうしても分からなかったら、どうにかしてこの問題の少し前に言ってた階乗の例を見ることね」\
+	goto *ex09
+
+
+;;;3/13;;;
+;ゆのは
+;「他人様の好意に縋って食べさせて貰っているのに、
+;　いけないよねこんなに食べたら……
+;　ゆのは、明日からちょいのせ中で我慢します……」
+;ゆのはは小さな手で目元の涙をぬぐと、;
+;まるで無理をしているみたいに
+;痛々しい笑みを浮かべた。
+;このヒントじゃなくて、本文の階乗の説明を丁寧にすべき。
+
+
+*ex09_2_hint
+	textclear
+アリサ「単純に#33FF33（関数　引数）#FFFFFFの式を書けばいいわ」\
+	goto *ex09_2
+
+
+
+*ex09_end
+	mov %adv_rmode, 1        ;右クリック有効
+	gosub *pop  ;new env<S()
+	saveon
+	mov %save_flag, 1  ;セーブ可能
+	textclear
+	add %adv_miss, %adv_tmp
+	bgm ms_setsume
+	if %adv_tmp == 0 goto *s_09_2
+	if %adv_tmp >=4   goto *s_09_3
+*s_09_1
+アリサ「まあまあだったわね」\
+	goto *s_09_4
+*s_09_2
+	r_show ari_hrt
+アリサ「全く問題ないようね」\
+	goto *s_09_4
+*s_09_3
+	r_show ari_ase
+アリサ「ちょっと失敗が多いわね」\
+	goto *s_09_4
+*s_09_4
+
+
+	r_show suzur_qes
+すずか「わざわざ前にやった問題を、別の書き方でやったけど意味はあるの？」\
+	r_show ari_n
+アリサ「じゃあ、もう一回再帰の関数を書くわね。
+#33FF33/
+（ｄｅｆｉｎｅ　（ｆａｃｔ２ｉ　ｎ　ｘ）
+　（ｉｆ　（＝　ｎ　０）
+　　　　　ｘ
+　　　　　（ｆａｃｔ２ｉ　（－　ｎ　１）
+　　　　　　　　　　　　　（＊　ｘ　ｎ））））#FFFFFF
+ここで注目するべきところが、関数の最後。@/
+ｆａｃｔ２ｉを呼び出してるだけでしょ」\
+	r_show suzur_n
+すずか「確かに、呼び出しの後には何もやってないね。@/
+前に書いた再帰の関数は
+#33FF33（＊　ｎ　（ｆａｃｔ　（－　ｎ　１）））#FFFFFF
+といった風に、呼び出しの後に掛け算をしていたよね」\
+	r_show ari_n
+アリサ「普通、再帰を行うと、新しい環境が次々作られるんだけど、@/
+関数の最後で再帰呼び出しをして、その後、特に何もしない場合は環境を取っておく必要がないわよね。@/
+だから、そういう場合は、自動的に処理が最適化されるの。@/
+例えば、ｆａｃｔ２ｉの場合は、『ｆａｃｔ２ｉの呼び出し』をせずに、@/
+『ｎとｘの束縛を書き換えてもう一回関数の中身を評価』をするの。@/
+普通に関数を呼ぶ場合と結果は変わらないけど、環境を無駄に作ったりしないから、速度が上がるし、容量も食わないの。@/
+	r_show ari_hrt
+『再帰なんかでループをやって大丈夫か？』と心配した人もこれで安心でしょ」\
+	r_show suzur_nc
+すずか「『関数の最後で再帰呼び出しをする』と関数呼び出しにはならずに、@/
+引数を書き換えて、もう一回関数の中身の評価を繰り返すんだね」\
+	r_show ari_n
+アリサ「関数の最後でする再帰呼び出しを#FFFF33末尾再帰#FFFFFFといい、@/
+これを単純な繰り返しにすることを#FFFF33末尾再帰の最適化#FFFFFFというわ。@/
+多くのＬｉｓｐインタプリタは標準でこれを行うの。@/
+だから、Ｌｉｓｐは繰り返しのための特殊な構文を必要としないの。@/
+	r_show ari_ase
+……まあ、必要はなくても持ってたりはするんだけどね。@/
+	r_show ari_n
+また、Ｓｃｈｅｍｅにおいては、再帰でなくても、関数の最後で別の関数を呼び出す場合でも同じような最適化がされて、/
+#FFFF33末尾呼出の最適化#FFFFFFなんて呼ばれたりするわ。@/
+ただし、これに関しては、ここでは割愛させてもらうわね」\
+	r_show suzur_n
+すずか「安心して再帰が書けるのはわかったよ。@/
+けどね、アリサちゃん。@/
+	r_show suzur_qes
+今回の内容はリストじゃなかった？」\
+	r_show ari_do
+アリサ「うるちゃいうるちゃいうるちゃい！！！」\
+
+	stop;;;bgm;;;
+	vsp SP_R, 0
+	bg black, E_NORMAL
+;;	bg "img/blackboard.bmp", E_NORMAL
+mov %adv_noroi_off, 1
+	bg black, E_NORMAL
+	talk_mode
+大阪某所　　ＰＭ　２３：１５\
+	l_show ":l;img/jiku2.bmp"
+局員「はぁ……なんで俺が犯人の捜索なんて面
+　　　倒なことをやらされるんだよ……」\
+局員「潜伏先の情報も曖昧だし、相変わらずい
+　　　い加減な仕事をしてくれるぜ……」\
+局員「それにしても老人を相手にするのに強力
+　　　なデバイスをもらったけど、こんなに強
+　　　力なのは要らないだろ」\
+	r_in ":l;img/same.bmp"
+鮫島「……ならば試してみますか？」\
+局員「あ！　お前は！！　例の#FFFF33魔法老人#FFFFFF！」\
+鮫島「……（殺す）」\
+	stop
+	csp SP_R : csp SP_L
+	bg black, E_WIPE2
+	bgm ms_battle2
+	gosub *battle09
+	if %ret == 0 goto *battle09_after
+	;;敗北
+	textclear
+	stop
+	goto *title
+*battle09_after
+	bgm ms_ab2
+	l_load ":l;img/jiku2.bmp"
+	r_load ":l;img/same.bmp"
+	print E_FAST
+鮫島「退け！　退けば命まではとらん！」\
+局員「ひっ、ひぃぃぃーーー！」\
+	l_out
+鮫島「とりあえず、この場は凌げたか……」\
+鮫島「しかし、今の隠れ家が突き止められるの
+　　　も時間の問題……」\
+鮫島「さて、どうしたものやら……」\
+
+
+
+
+
+
+
+
+;;;;;第9話終了;;;;;
+	speak_mode
+	textclear
+	vsp SP_R, 0
+	vsp SP_L, 0
+	bg black, E_SLOW
+;;共通記録の書き換え
+	csvopen "arisa.szk", "rc"
+	csvread %adv_clear
+	csvclose
+	if %adv_clear >= 9 goto *story09_after
+	mov %adv_clear, 9
+	csvopen "arisa.szk", "wc"
+	csvwrite %adv_clear
+	csvclose
+#FFFF33補足説明#FFFFFFが追加されました。
+#FFFF33用語集#FFFFFFに単語が追加されました。\
+*story09_after
+	r_show suzur_nc
+すずか「どうしようかな？」
+csel "補足説明を読む", *story09_condicil, "用語集を読む", *story09_glossary, "タイトルに戻る", *title_back, "第１０話へ進む", *story10
+
+*story09_condicil
+	gosub *condicil
+	goto *story09_after
+*story09_glossary
+	gosub *glossary
+	goto *story09_after
+
+
+
+
+
+
+
+
+
+
+
+
+;;;;;第10話;;;;;
+*story10
+	mov %adv_noroi_off, 0
+	csp SP_R : csp SP_L : print E_FAST
+	stop
+	talk_mode
+	bgm ms_kyoto
+	bg "img/blackboard.bmp", E_FAST
+	r_in ari_n
+	l_in suzu_n
+すずか「新たな魔法プログラムをデバイスに入
+　　　　れるのもいいけど、デバイス自体を強
+　　　　化するのはどうかな？」\
+	r_show ari_qes
+アリサ「何かあてでもあるの？」\
+	l_show suzu_hrt
+すずか「実はね、取扱説明書にデバイスの改造
+　　　　の方法が少し載ってるから、やってみ
+　　　　ようかなって思ってるの」\
+	r_show ari_ase
+アリサ「デバイスってそんな簡単に改造できる
+　　　　の？」\
+
+	csp SP_R : csp SP_L : print 1
+	bg "img/title#10.bmp", E_VFAST
+	wait 1000
+	delay 2000
+	bgm ms_setsume
+	bg "img/blackboard.bmp", E_FAST
+
+	speak_mode
+	r_show ari_n
+アリサ「それはさておき、前回にやった、最後に再帰をする関数というのを書いてみましょう。@
+#33FF33/
+（ｄｅｆｉｎｅ　（ｃｏｎｔ？　ｘ　ｌ）
+　（ｃｏｎｄ
+　　（（ｎｕｌｌ？　ｌ）　＃ｆ）
+　　（（ｅｑ？　ｘ　（ｃａｒ　ｌ））　＃ｔ）
+　　（ｅｌｓｅ
+　　　（ｃｏｎｔ？　ｘ　（ｃｄｒ　ｌ）））））#FFFFFF
+こう定義された関数ｃｏｎｔ？は、シンボルと、リストを受け取って、/
+リストの要素として、そのシンボルが含まれていれば＃ｔ、含まれていなければ＃ｆを返すわ。@
+#33FF33/
+（ｃｏｎｔ？　’ｂ　’（ａ　ｂ　ｃ））⇒＃ｔ
+（ｃｏｎｔ？　’ｄ　’（ａ　ｂ　ｃ））⇒＃ｆ#FFFFFF
+だから、評価するとこうなるわね」\
+	r_show suzur_nc
+すずか「受け取ったリストが空リストなら、シンボルを含んでいるはずがないから＃ｆ、@/
+そうでなければ、リストの第一要素と受け取ったシンボルを比較、同一なら＃ｔ、@/
+そうでなければ、リストのＣＤＲ――第一要素を取り除いたリストとシンボルを引数として再帰するんだね」\
+	r_show ari_n
+アリサ「関数の最後で再帰してるから、これは関数呼び出しにならずに、@/
+ｌの束縛を書き換えて再び評価することになるの。@
+#33FF33（ｃｏｎｔ？　’ｂ　’（ａ　ｂ　ｃ））#FFFFFF
+これを評価した場合、最初、#33FF33ｌ#FFFFFFの値は#33FF33（ａ　ｂ　ｃ）#FFFFFF、@/
+ｃｏｎｄでｅｌｓｅの部分が評価されて、#33FF33ｌ#FFFFFFの値が#33FF33（ｂ　ｃ）#FFFFFFに書き換わる、@/
+それから、もう一回関数の中身が評価されて、ｃｏｎｄの#33FF33（ｅｑ？　ｘ　（ｃａｒ　ｌ））#FFFFFFの部分で真となるから、/
+結果は#33FF33＃ｔ#FFFFFFとなるのよ」\
+	r_show suzur_n
+すずか「再帰する時に、リストのＣＤＲを送るといえば、リストの長さを返す関数もそうだったね」\
+	r_show ari_n
+アリサ「あれも、この形式に書き換えると、
+#33FF33/
+（ｄｅｆｉｎｅ　（ｌｅｎ　ｌ）
+　（ｌｅｎｉ　ｌ　０））
+（ｄｅｆｉｎｅ　（ｌｅｎｉ　ｌ　ｎ）
+　（ｉｆ　（ｎｕｌｌ？　ｌ）
+　　　　　ｎ
+　　　　　（ｌｅｎｉ　（ｃｄｒ　ｌ）
+　　　　　　　　　　　（＋　ｎ　１））））#FFFFFF
+と書けるわね」\
+	r_show suzur_excc
+すずか「途中の状態を引数に持たすことによって、上手くやってるんだね」\
+	r_show ari_n
+アリサ「とりあえず、末尾再帰の話はこれくらいにしておきましょうか」\
+	r_show suzur_n
+すずか「再帰を書く場合、なるべくはこの形式で書く方がいいんだよね」\
+	r_show ari_n
+アリサ「話は変わるけど、今まで、関数は少なくても一つの引数を受け取ってたわよね。/
+けど、引数を一つも受け取らない関数というものもあるの。
+#33FF33/
+（ｄｅｆｉｎｅ　ｆ
+　（ｌａｍｂｄａ　（）
+　　５７））#FFFFFF
+この関数ｆは、引数を受け取らず、常に５７を返すわ。@/
+呼び出す時は#33FF33（ｆ）#FFFFFFのように書くの」\
+	r_show suzur_nc
+すずか「同じように考えると、ｄｅｆｉｎｅの糖衣構文を使う時は、
+#33FF33/
+（ｄｅｆｉｎｅ　（ｆ）
+　５７）#FFFFFF
+とすればいいんだね」\
+	r_show ari_n
+アリサ「さて、Ｌｉｓｐには#33FF33ｅｖａｌ#FFFFFFという関数があるの。@/
+これは、式を受け取ってそれを評価したものを返すわ。
+#33FF33/
+（ｅｖａｌ　’９）　　　　　⇒９
+（ｅｖａｌ　’（＋１　２））⇒３#FFFFFF
+見ての通り、リストを渡すと、それを式として評価するわ」\
+	r_show suzur_n
+すずか「値であるリストが、ｅｖａｌという関数によって式として扱われるんだね」\
+	r_show ari_n
+アリサ「さらに、#33FF33ｒｅａｄ#FFFFFFという関数があって、@/
+これを呼び出すと、入力待ち状態になり、入力をリストとして受け取るわ。@/
+使う時は、引数を付けずに#33FF33（ｒｅａｄ）#FFFFFFのように呼び出すの」\
+	r_show suzur_n
+すずか「ｒｅａｄは入力を受け付けて、それをリストや、シンボル、数として受け取って返すんだね」\
+	r_show ari_n
+アリサ「ｒｅａｄとｅｖａｌを組み合わせて、
+#33FF33/
+（ｅｖａｌ　（ｒｅａｄ））#FFFFFF
+のように書くと、入力を一回受け付けて、それを評価するわ。@/
+	r_show ari_exc
+すると、なんと普段インタプリタがしていることと同じことができるの」\
+	r_show suzur_T_T
+すずか「それは凄いね。けど、インタプリタは『読み込み』『評価』『表示』の三つをやってるんだよね。@/
+これだけだと、『表示』が足りない気がするな」\
+	r_show ari_n
+アリサ「値を画面に表示するには#33FF33ｗｒｉｔｅ#FFFFFFという関数を使うわ。@/
+これは第一引数をそのまま画面に表示するの。だから、
+#33FF33/
+（ｗｒｉｔｅ　（ｅｖａｌ　（ｒｅａｄ）））#FFFFFF
+これで、式を読み込んで、評価して、表示するわ」\
+	r_show suzur_qes
+すずか「なんだか凄いね。ただ、これだけだとインタプリタの一連の動作を一回するだけだよね。@/
+繰り返し行ったりはできないのかな？」\
+	r_show ari_n
+アリサ「それは関数の再帰を使えばいけるわ。
+#33FF33
+（ｄｅｆｉｎｅ　（ｒｅｐｌ）
+　（ｗｒｉｔｅ　（ｅｖａｌ　（ｒｅａｄ）））
+　（ｒｅｐｌ））#FFFFFF
+これでｒｅｐｌを呼び出せば、一連の動作を永遠に繰り返すわ」\
+	r_show suzur_nc
+すずか「関数ｒｅｐｌは二つの式を持っているから、順番に評価するんだね。@/
+まず、入力を受け取り評価してそれを表示、@/
+次に、再帰をするけど、これは関数の最後だから、単純に関数の内容を繰り返し評価するんだ」\
+	r_show ari_n
+アリサ「最後に、#33FF33ｅｘｉｔ#FFFFFFという入力がきたら終わるようにしましょう。
+#33FF33
+（ｄｅｆｉｎｅ　（ｒｅｐｌ）
+　（ｌｅｔ　（（ｉ　（ｒｅａｄ））））
+　　（ｃｏｎｄ
+　　　（（ｅｑ？　ｉ　’ｅｘｉｔ）　＃ｔ）
+　　　（ｅｌｓｅ
+　　　　（ｗｒｉｔｅ　（ｅｖａｌ　ｉ））
+　　　　（ｒｅｐｌ）））））#FFFFFF
+局所変数ｉが入力された式に束縛されて、そのｉの値を使うようになったわ。@/
+これで、ｅｘｉｔという入力がくるまで一連の動作を繰り返すわ」\
+	r_show suzur_n
+すずか「これって応用したら、結構いろいろできそうだね」\
+	r_show ari_n
+アリサ「まあ、そんなこんなで、今回は練習問題はなし。@/
+久々に自由に打ち込んでいいわよ。@/
+ただし、ＲＥＰＬを作る場合は、下手したら永遠に終われない関数定義をしてしまう恐れがあるから、@/
+今のうちにセーブをしておいた方がいいわよ」\
+
+	mov %adv_rmode, 0         ;右クリック無効
+	bgm ms_ex
+	csp SP_R : csp SP_L
+	bg black, E_NORMAL
+	r_load ari_n
+	bg "img/blackboard.bmp", E_FAST
+	skipoff
+	mov %adv_tmp, 0
+	mov %save_flag, 0  ;セーブ不能
+	gosub *create_new_env  ;自由にいじれるように新しい環境を作る
+	mov %arg0, %ret
+	mov %adv_tmp3, %arg0
+	gosub *push  ;GC対策
+	mov %arg1, %global_env
+	gosub *nconc
+*ex10
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「気が済んだらＴａｂキーを押して終わってね」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex10_end  ;Tab
+	if $sarg0 == "" goto *ex10
+textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex10
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *lobject_to_string
+	textclear
+アリサ「結果は『$sret』ね」\
+	inc %adv_tmp
+	goto *ex10
+
+*ex10_end
+	mov %adv_rmode, 1        ;右クリック有効
+	gosub *pop
+	saveon
+	mov %save_flag, 1  ;セーブ可能
+	textclear
+	bgm ms_setsume
+	if %adv_tmp == 1 goto *s_10_2
+	if %adv_tmp == 0 goto *s_10_1
+アリサ「まあ、そんなところね」\
+	goto *s_10_3
+*s_10_1
+	r_show ":l;img/arin.bmp"
+アリサ「ありーん」\
+アリサ「一回も試さないってどういうことよ……」\
+	goto *s_10_3
+*s_10_2
+アリサ「一回で大丈夫なの？　まあ、べつにいいけど……」\
+	goto *s_10_3
+*s_10_3
+
+
+	r_show ari_n
+アリサ「また話を変えるけど、コンスを作成する関数ｃｏｎｓ。@/
+これって、第２引数がリストの場合、リストの先頭に一つ要素を加えたリストを返す関数とも考えられるの。
+#33FF33/
+（ｃｏｎｓ　’ａ　’（ｂ　ｃ））⇒（ａ　ｂ　ｃ）#FFFFFF
+なぜ、そのようになるかは、リストの構造の図を描けばすぐに分かるわ」\
+;;図表示?
+	r_show suzur_excc
+すずか「なるほど、確かになるね」\
+	r_show ari_n
+アリサ「今度はこれを使ってリストの要素の順番を逆にする関数を作ってみましょうか」\
+	r_show suzur_n
+すずか「#33FF33（ａ　ｂ　ｃ）#FFFFFFを受け取ったら#33FF33（ｃ　ｂ　ａ）#FFFFFFを返すような関数だね」\
+	r_show ari_n
+アリサ「末尾再帰の形で書く場合を考えてみましょう。すると全体の形は、
+#33FF33/
+（ｄｅｆｉｎｅ　（ｒｅｖ　ｌ）
+　（ｒｅｖｉ　ｌ　Ａ））
+（ｄｅｆｉｎｅ　（ｒｅｖｉ　ｌ　ｘ）
+　Ｂ）#FFFFFF
+こう書けるわ。後はＡとＢを考えるだけね。@/
+まず、送られてきたリストが空リストの場合は、返す値は空リストになるわ。@/
+そうでない時、引数として送られてきたリストを見る時は、普通は先頭の要素から見ていくことになるの。@/
+だから、ｌのＣＤＲを取りながら再帰することになるわね。@/
+ｒｅｖｉは、最後にｘを返すとすると、Ａのところにはなんて書いたらいいと思う？」\
+	r_show suzur_nc
+すずか「えーと、ｒｅｖｉはｌに要素がある限り再帰をするけど、@/
+ｌが空リストの場合ｘを返すことになるから、@/
+最初からｌが空リストのことを考えると、Ａの部分は空リスト#33FF33’（）#FFFFFFだね」\
+	r_show ari_n
+アリサ「その通り。そうなると、この関数は、
+#33FF33/
+（ｄｅｆｉｎｅ　（ｒｅｖ　ｌ）
+　（ｒｅｖｉ　ｌ　’（）））
+（ｄｅｆｉｎｅ　（ｒｅｖｉ　ｌ　ｘ）
+　（ｉｆ
+　　（ｎｕｌｌ？　ｌ）
+　　ｘ
+　　（ｒｅｖｉ　（ｃｄｒ　ｌ）　Ｃ）））#FFFFFF
+あとはＣの部分を考えないとね。@/
+ここで、さっきいったｃｏｎｓを使うの」\
+	r_show suzur_dotc
+すずか「実際に#33FF33（ｒｅｖ　’（ａ　ｂ　ｃ））#FFFFFFという呼び出しをした場合を考えるね。@/
+リストの先頭の要素から見ていくんだから、#33FF33ａ#FFFFFFを見た時点で、ｘを#33FF33（ａ）#FFFFFFにして、@/
+#33FF33ｂ#FFFFFFを見た時点で、ｘを#33FF33（ｂ　ａ）#FFFFFFにして、@/
+#33FF33ｃ#FFFFFFを見た時点で、ｘを#33FF33（ｃ　ｂ　ａ）#FFFFFFにして再帰すると上手くいきそうだね。@/
+これって、元のｘにｌの先頭の要素を加えてるわけだからｃｏｎｓを使えるんだ。@/
+	r_show suzur_n
+だから、#33FF33（ｃｏｎｓ　（ｃａｒ　ｌ）　ｘ）#FFFFFFを新たなｘにして再帰すればいいんだね」\
+	r_show ari_n
+アリサ「そう。だから、最終的に、
+#33FF33/
+（ｄｅｆｉｎｅ　（ｒｅｖ　ｌ）
+　（ｒｅｖｉ　ｌ　’（）））
+（ｄｅｆｉｎｅ　（ｒｅｖｉ　ｌ　ｘ）
+　（ｉｆ
+　　（ｎｕｌｌ？　ｌ）
+　　ｘ
+　　（ｒｅｖｉ
+　　　（ｃｄｒ　ｌ）
+　　　（ｃｏｎｓ　（ｃａｒ　ｌ）　ｘ））））#FFFFFF
+こう書くことによってこの関数は完成するわ。@/
+末尾再帰を使った関数は最初は書きにくいかもしれないけど、/
+こうやって順を追って考えていったら案外楽に書けるのよ」\
+	r_show suzur_n
+すずか「今回は独立したいくつかの話をしたって感じだね」\
+	r_show ari_n
+アリサ「これまでの内容に、ちょっと新しいことを取り入れると、結構いろんなことを書けるってことよ。@/
+ただ、末尾再帰でない再帰も重要だから、そっちも練習が必要よ。@/
+余裕があれば、#33FF33（ａ　ｂ）#FFFFFFと#33FF33（ｃ　ｄ）#FFFFFFを受け取って、#33FF33（ａ　ｂ　ｃ　ｄ）#FFFFFFを返す/
+関数を書いてみるといいわ」\
+
+
+
+	vsp SP_R, 0
+	bg black, E_NORMAL
+	r_load ari_ase
+	l_load suzu_hrt
+	bgm ms_after
+	bg "img/blackboard.bmp", E_NORMAL
+	talk_mode
+すずか「やっぱり○ツパーツは便利だね」\
+アリサ「デバイスのパーツがまさか寺町通りに
+　　　　売ってるなんて……」\
+すずか「説明書どおりにやったらちゃんと強化
+　　　　できてよかったよ」\
+アリサ「おまけになんて親切な取扱説明書なの
+　　　　かしら……」\
+すずか「これで最低でも、攻撃力は１２０％、
+　　　　一撃必殺の技量も６３％は向上するは
+　　　　ずだよ」\
+アリサ「すずか、その数字見て元ネタが分かる
+　　　　人なんてほとんどいないから」\
+
+
+
+
+;;;;;第10話終了;;;;;
+	speak_mode
+	textclear
+	vsp SP_R, 0
+	vsp SP_L, 0
+	bg black, E_SLOW
+;;共通記録の書き換え
+	csvopen "arisa.szk", "rc"
+	csvread %adv_clear
+	csvclose
+	if %adv_clear >= 10 goto *story10_after
+	mov %adv_clear, 10
+	csvopen "arisa.szk", "wc"
+	csvwrite %adv_clear
+	csvclose
+#FFFF33補足説明#FFFFFFが追加されました。
+#FFFF33用語集#FFFFFFに単語が追加されました。\
+*story10_after
+	r_show suzur_nc
+すずか「どうしようかな？」
+csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タイトルに戻る", *title_back, "第１１話へ進む", *story11
+
+*story10_condicil
+	gosub *condicil
+	goto *story10_after
+*story10_glossary
+	gosub *glossary
+	goto *story10_after
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;;;;;第11話;;;;;
+*story11
+	mov %adv_noroi_off, 0
+	csp SP_R : csp SP_L : print E_FAST
+	stop
+	talk_mode
+	bgm ms_kyoto
+	bg "img/blackboard.bmp", E_FAST
+	r_in ari_n
+	l_in suzu_n
+	l_show suzu_nc
+すずか「それにしても、私たちいつまで京都に
+　　　　いるんだろうね」\
+	r_show ari_tun
+アリサ「ほとぼりが冷めるまでまとうかと思っ
+　　　　たんだけど、鮫島の話によると、まだ
+　　　　動くにはまずいらしいの」\
+	l_show suzu_dotc
+すずか「それは困ったね……」\
+アリサ「もう、なのはに連絡しようかしら」\
+	l_show suzu_n
+すずか「ある程度ほとぼりが冷めるまで待たな
+　　　　いと、迷惑だよ」\
+	r_show ari_ase
+アリサ「デバイスを貰うところまではともかく
+　　　　局員を一人倒しちゃったのがまずかっ
+　　　　たわね。ちょっと後悔してる」\
+
+
+	csp SP_R : csp SP_L : print 1
+	bg "img/title#11.bmp", E_VFAST
+	wait 1000
+	delay 2000
+	bgm ms_setsume
+	bg "img/blackboard.bmp", E_FAST
+
+	speak_mode
+	r_show ari_n
+アリサ「以前、『関数を返す関数』というのをやったわね」\
+	r_show suzur_nc
+すずか「確か、
+#33FF33/
+（ｄｅｆｉｎｅ　（ｆ　ｎ）
+　（ｌａｍｂｄａ　（ｘ）
+　　（＋　ｘ　ｎ）））#FFFFFF
+こんな感じのやつだね」\
+	r_show ari_n
+アリサ「今度は関数を受け取る関数というのを作ってみましょう。
+#33FF33/
+（ｄｅｆｉｎｅ　（ｃ７２　ｇ）
+　（ｇ　７２））#FFFFFF
+こうやって定義された関数ｃ７２は引数として関数を一つ受け取り、７２をつけてそれを呼び出すの。@/
+実際に使ってみましょう。
+#33FF33
+（ｃ７２
+　（ｌａｍｂｄａ　（ｎ）　（＋　ｎ　１）））#FFFFFF
+この式の値は７３となるわ」\
+	r_show suzur_excc
+すずか「新しい環境でｇがｌａｍｂｄａの式を評価して出来上がった関数に束縛されるから、/
+#33FF33（ｇ　７２）#FFFFFFは実際、#33FF33（（ｌａｍｂｄａ　…）　７２）#FFFFFFと同じことになるんだね」\
+	r_show ari_n
+アリサ「ただ、これだけじゃ面白くないから、もう少し実用性のあるものを書いてみましょうか。@/
+例えば、#33FF33（２　５　９）#FFFFFFのように、数をいくつか含むリストを受け取って、/
+それらの合計を返す関数を考えてみましょうか」\
+	r_show suzur_nc
+すずか「それなら、
+#33FF33/
+（ｄｅｆｉｎｅ　（ｓｕｍ　ｌ）
+　（ｓｕｍｉ　ｌ　０））
+（ｄｅｆｉｎｅ　（ｓｕｍｉ　ｌ　ｘ）
+　（ｉｆ
+　　（ｎｕｌｌ？　ｌ）
+　　　ｘ
+　　　（ｓｕｍｉ　（ｃｄｒ　ｌ）
+　　　　　　　　　（＋　ｘ（ｃａｒ　ｌ）））））#FFFFFF
+こう書いたら上手くいくね」\
+	r_show ari_n
+アリサ「じゃあ、今度は同じように、リストを受け取って、それらを全て掛け合わせたものを返す関数は？」\
+	r_show suzur_nc
+すずか「それもほとんど同じだね。
+#33FF33/
+（ｄｅｆｉｎｅ　（ｍｕｌ　ｌ）
+　（ｍｕｌｉ　ｌ　１））
+（ｄｅｆｉｎｅ　（ｍｕｌｉ　ｌ　ｘ）
+　（ｉｆ
+　　（ｎｕｌｌ？　ｌ）
+　　ｘ
+　　（ｍｕｌｉ　（ｃｄｒ　ｌ）
+　　　　　　　　（＊　ｘ（ｃａｒ　ｌ）））））#FFFFFF
+さっきと比べて、ｘの最初の値が１になったのと、＋が＊に変わっただけだね」\
+	r_show ari_n
+アリサ「ほとんど同じでしょ。こういう場合は、
+#33FF33/
+（ｄｅｆｉｎｅ　（ｆ　ｇ　ｎ　ｌ）
+　（ｆｉ　ｇ　ｌ　ｎ））
+（ｄｅｆｉｎｅ　（ｆｉ　ｇ　ｌ　ｘ）
+　（ｉｆ
+　　（ｎｕｌｌ？　ｌ）
+　　ｘ
+　　（ｆｉ　ｇ
+　　　　　　（ｃｄｒ　ｌ）
+　　　　　　（ｇ　ｘ（ｃａｒ　ｌ）））））#FFFFFF
+とすればいいの。@
+足し算の場合、#33FF33（ｆ　＋　０　’（２　５　９））#FFFFFFと書いたらよくて、@
+掛け算の場合、#33FF33（ｆ　＊　１　’（２　５　９））#FFFFFFと書けばいいわ。@
+これで２回同じような関数を書く手間が省けたでしょ」\
+	r_show suzur_n
+すずか「引数として関数をとることによって、似たような関数を一つの関数で済ませることができるんだね」\
+	r_show ari_n
+アリサ「こんな関数の代表として、#33FF33ｍａｐ#FFFFFFという関数があるの。@/
+この関数は『関数』と『リスト』を受け取って、リストのそれぞれの要素に関数を作用させたリストを作るの。
+#33FF33/
+（ｍａｐ　ｎｕｌｌ？　’（ａ　（）　ｂ））#FFFFFF
+この式の値は、#33FF33（＃ｆ　＃ｔ　＃ｆ）#FFFFFFとなるわ。@
+#33FF33（ｎｕｌｌ？　ａ）#FFFFFFは#33FF33＃ｆ#FFFFFF、
+#33FF33（ｎｕｌｌ？　（））#FFFFFFは#33FF33＃ｔ#FFFFFF、
+#33FF33（ｎｕｌｌ？　ｂ）#FFFFFFは#33FF33＃ｆ#FFFFFF。
+これらをリストにしたのが結果となってるの」\
+	r_show suzur_nc
+すずか「それじゃあ、
+#33FF33/
+（ｍａｐ
+　（ｌａｍｂｄａ　（ｎ）　（＊　ｎ　ｎ））
+　’（３　５　８））#FFFFFF
+この式の値は#33FF33（９　２５　６４）#FFFFFFとなるわけだね」\
+	r_show ari_n
+アリサ「ｍａｐの第一引数に、引数を二つ取る関数を付ける場合、リストを二つ付ければいいわ。
+#33FF33/
+（ｍａｐ
+　＋
+　’（１　３　５）
+　’（２　４　６））#FFFFFF
+この式の値は#33FF33（３　７　１１）#FFFFFFとなるわ。@/
+二つのリストから一つずつ要素が使われてるのが分かるでしょ」\
+	r_show suzur_qes
+すずか「じゃあ、ｍａｐは第一引数が何個引数を取る関数かによって、/
+受け取るリストの数が決まるってこと？」\
+	r_show ari_n
+アリサ「そういうこと。でもまあ、/
+最初は引数を一つ取る関数の場合――#33FF33（ｍａｐ　関数　リスト）#FFFFFFという形だけ分かってたらいいわ。@/
+ちなみに、ＮＳｃＬｉｓｐｅｒではｍａｐはフリーモードでしか使えないから注意してね」\
+	r_show suzur_n
+すずか「受け取るリストが一つと分かってたら、ＣＤＲを取りながら再帰したら書けそうだね」\
+	r_show ari_exc
+アリサ「それじゃあ、書いてみましょうか。@/
+練習問題として」\
+	r_show suzur_n
+すずか「！？」\
+	r_show ari_n
+アリサ「まあ、いきなりは酷いから少しヒントを書くわね。@/
+まずは、リストを受け取って、それと同じリストを作って返す関数を作ってみましょう。
+#33FF33
+（ｄｅｆｉｎｅ　（ｆ　ｌ）
+　（ｉｆ
+　　（ｎｕｌｌ？　ｌ）
+　　’（）
+　　（ｃｏｎｓ
+　　　（ｃａｒ　ｌ）
+　　　（ｆ　（ｃｄｒ　ｌ）））））#FFFFFF
+リストから要素を一つずつ取り出して、それをｃｏｎｓを使って繋いでいくの」\
+	r_show suzur_nc
+すずか「受け取ったリストのＣＡＲを取り出して、それをＣＡＲ部に持つコンスを作る。@/
+そのコンスのＣＤＲ部には、受け取ったリストのＣＤＲを引数としてｆを呼び出したものを入れる。@/
+確かに、同じリストが出来上がるね」\
+	r_show ari_n
+アリサ「次に、数のみを含むリストを受け取り、それぞれの要素に１を足したリストを返す関数を考えてみましょう。
+#33FF33
+（ｄｅｆｉｎｅ　（ｇ　ｌ）
+　（ｉｆ
+　　（ｎｕｌｌ？　ｌ）
+　　’（）
+　　（ｃｏｎｓ
+　　　（＋　１　（ｃａｒ　ｌ））
+　　　（ｇ　（ｃｄｒ　ｌ）））））#FFFFFF
+大ヒントだから、じっくりとよく見るのよ」\
+	r_show suzur_nc
+すずか「この関数ｇはリストの各要素に１を加えたリストを作るんだよね。@/
+だから、
+#33FF33/
+（ｇ　’（１　２　３））#FFFFFF
+は
+#33FF33/
+（ｍａｐ
+　（ｌａｍｂｄａ　（ｘ）　（＋　１　ｘ））
+　’（１　２　３））#FFFFFF
+に書き換えれるわけだね。@/
+そう考えると、ｇの定義の#33FF33（＋　１　（ｃａｒ　ｌ））#FFFFFF部分が#33FF33（＋　１　ｘ）#FFFFFFに相当するから、@/
+この部分を少し書き換えたらリストを一つだけ受け取るｍａｐが定義できそうな気がするな」\
+	r_show ari_n
+アリサ「それじゃあ、やってみましょうか」\
+
+
+	mov %adv_rmode, 0         ;右クリック無効
+	bgm ms_ex
+	csp SP_R : csp SP_L
+	bg black, E_NORMAL
+	r_load ari_n
+	bg "img/blackboard.bmp", E_FAST
+	skipoff
+	mov %adv_tmp, 0
+	mov %save_flag, 0  ;セーブ不能
+*ex11_prev
+	gosub *create_new_env  ;自由にいじれるように新しい環境を作る
+	mov %arg0, %ret
+	mov %adv_tmp3, %arg0
+	gosub *push  ;GC対策
+	mov %arg1, %global_env
+	gosub *nconc
+*ex11
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「関数ｍａｐ１を『引数を一つ取る関数』と『リスト』の２つの引数をとる、簡易版のｍａｐとして定義しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex11_tab  ;Tab
+	if $sarg0 == "" goto *ex11
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex11
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	;;;検証1
+	mov $sarg0, "(map1 (lambda (x) (* x 2)) '(19))"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *get_tag
+	if %ret != TAG_CONS goto *ex11_miss
+	gosub *car      ;CAR( '(38) ) ?
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret != 38 goto *ex11_miss
+	;;;検証2
+	mov $sarg0, "(map1 number? '(1 a))"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *get_tag
+	if %ret != TAG_CONS goto *ex11_miss
+	gosub *push     ;S( (#t #f)? )
+	gosub *car      ;CAR( (#t #f)? )
+	if %ret != %sharp_t gosub *pop : goto *ex11_miss
+	gosub *pop      ;(#t #f) < S()
+	mov %arg0, %ret
+	gosub *cdr     ;CDR( (#t #f)? ) => (#f)?
+	mov %arg0, %ret
+	gosub *get_tag
+	if %ret != TAG_CONS goto *ex11_miss
+	gosub *car      ;CAR( (#f)? )
+	if %ret == %sharp_f goto *ex11_2_prev
+*ex11_miss
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex11
+
+*ex11_2_prev
+	mov $sarg0, "map1"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *push     ;S(map1)
+*ex11_2
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「引数として、
+#33FF33（ｌａｍｂｄａ　（ｘ）　（＋　ｘ　１））#FFFFFFと、
+#33FF33’（１　２）#FFFFFFを付けてｍａｐ１を呼び出しなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex11_2_tab  ;Tab
+	if $sarg0 == "" goto *ex11_2
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex11_2
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *push     ;S(ret, map1)
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	gosub *pop      ;ret<S(map1)
+	mov %arg0, %ret
+	gosub *get_tag
+	if %ret != TAG_CONS goto *ex11_2_miss_check
+	gosub *push     ;S( (2 3)?, map1 )
+	gosub *car
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret != 2 goto *ex11_2_miss_check
+	gosub *pop      ;(2 3)? < S(map1)
+	mov %arg0, %ret
+	gosub *cdr      ;CDR( (2 3)? ) => (3)?
+	mov %arg0, %ret
+	gosub *get_tag
+	if %ret != TAG_CONS goto *ex11_2_miss_check
+	gosub *car      ;CAR( (3)? ) => 3?
+	mov %arg0, %ret
+	gosub *get_data
+	if %ret == 3  gosub *pop : goto *ex11_end
+*ex11_2_miss_check
+;;;sの再定義をcheck;;;
+	mov $sarg0, "map1"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *pop      ;map1<S()
+	if %arg0 != %ret goto *ex11_2_miss
+	mov %arg0, %ret
+	gosub *push     ;S(map1)
+;;;end;;;
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex11_2
+
+*ex11_2_miss
+	textclear
+	r_show ari_muka
+アリサ「……なかなか面白いことをやってくれるわね。@/
+	r_show ari_do
+最初からやり直し！！！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex11
+
+
+
+*ex11_tab
+csel "続ける", *ex11, "ヒント", *ex11_hint,  "タイトルに戻る", *ex11_bye
+*ex11_2_tab
+csel "続ける", *ex11_2, "ヒント", *ex11_2_hint,  "タイトルに戻る", *ex11_2_bye
+
+*ex11_bye
+	mov %adv_rmode, 1        ;右クリック有効
+	textclear
+	csp SP_R
+	stop
+	gosub *pop      ;new env<S()
+	goto *title
+
+*ex11_2_bye
+	gosub *pop      ;map1<S(new env)
+	goto *ex11_bye
+
+*ex11_hint
+	textclear
+アリサ「受け取る引数は２つだから#33FF33（ｌａｍｂｄａ　（ｆ　ｌ）　式）#FFFFFFと書くといいわ。@/
+あとは、リストの各要素に１を加えたリストを返す関数
+#33FF33
+（ｄｅｆｉｎｅ　（ｇ　ｌ）
+　（ｉｆ
+　　（ｎｕｌｌ？　ｌ）
+　　’（）
+　　（ｃｏｎｓ
+　　　（＋　１　（ｃａｒ　ｌ））
+　　　（ｇ　（ｃｄｒ　ｌ）））））#FFFFFF
+これの定義を少し書き換えたらいいの。@/
+まずは、すでに言った通り、引数の数が変わるわね。@/
+それから、#33FF33（＋　１　（ｃａｒ　ｌ））#FFFFFFの部分。@/
+ここでは、リストの要素に１を加えてるけど、ｍａｐ１は関数ｆを受け取ると、/
+リストの要素を引数として、ｆを呼び出したものを使うから、/
+#33FF33（ｆ　（ｃａｒ　ｌ））#FFFFFFと書けるわね。@/
+再帰の部分は、ｌはＣＤＲを取るけど、ｆはそのまま使うから、/
+#33FF33（ｍａｐ１　ｆ　（ｃｄｒ　ｌ））#FFFFFFと書けばいいわ」\
+	goto *ex11
+
+*ex11_2_hint
+	textclear
+アリサ「単純に#33FF33（関数　引数　引数）#FFFFFFの式を書けばいいわ」\
+	goto *ex11_2
+
+
+
+*ex11_end
+	mov %adv_rmode, 1        ;右クリック有効
+	gosub *pop  ;new env<S()
+	saveon
+	mov %save_flag, 1  ;セーブ可能
+	textclear
+	add %adv_miss, %adv_tmp
+	bgm ms_setsume
+	if %adv_tmp == 0 goto *s_11_2
+	if %adv_tmp >=4   goto *s_11_3
+*s_11_1
+アリサ「まあまあだったわね」\
+	goto *s_11_4
+*s_11_2
+	r_show ari_hrt
+アリサ「全く問題ないようね」\
+	goto *s_11_4
+*s_11_3
+	r_show ari_ase
+アリサ「ちょっと失敗が多いわね」\
+	goto *s_11_4
+*s_11_4
+
+
+	r_show ari_n
+アリサ「どうだった？　慣れてないうちは結構難しいと思うけど、/
+こんな風に、関数を受け取る関数を書いたり、関数を返す関数を自然に書くことができるのがＬｉｓｐの面白いところなの」\
+	r_show suzur_dot
+すずか「けど、これまで結構いろんなことをやってきたと思うけど、どれも触りだけで、ちゃんとしたものを作ってないよね」\
+	r_show ari_n
+アリサ「まあ、それはこのリリカルＬｉｓｐの限界といったところかしら。@/
+ちゃんとした勉強をしたかったら、ちゃんとした本を読んでとしか言い様がないわね」\
+	r_show suzur_ase
+すずか「……１１話まできてその台詞は酷いよ」\
+	r_show ":l;img/arin.bmp"
+アリサ「ありーん」\
+	r_show ari_n
+アリサ「それじゃあ、次回はある程度まとまったモノを作ってみましょうか」\
+
+
+
+
+
+
+	vsp SP_R, 0
+	bg black, E_NORMAL
+	r_load ari_tun
+	l_load suzu_n
+	bgm ms_after
+	bg "img/blackboard.bmp", E_NORMAL
+	talk_mode
+アリサ「迷惑とはいえ、やっぱり近いうちに、
+　　　　なのはに連絡を入れるべきよ。このま
+　　　　まじゃ春休みが終わっちゃうわ」\
+	l_show suzu_nc
+すずか「確かに、このまま動けないっていうの
+　　　　も困るし、仕方ないかなぁ」\
+	r_show ari_exc
+アリサ「それじゃあ、今日はもう遅いし、明日
+　　　　にでも電話をかけましょう」\
+	l_show suzu_n
+すずか「そうだね」\
+
+
+
+
+;;;;;第11話終了;;;;;
+	speak_mode
+	textclear
+	vsp SP_R, 0
+	vsp SP_L, 0
+	bg black, E_SLOW
+;;共通記録の書き換え
+	csvopen "arisa.szk", "rc"
+	csvread %adv_clear
+	csvclose
+	if %adv_clear >= 11 goto *story11_after
+	mov %adv_clear, 11
+	csvopen "arisa.szk", "wc"
+	csvwrite %adv_clear
+	csvclose
+#FFFF33補足説明#FFFFFFが追加されました。
+#FFFF33用語集#FFFFFFに単語が追加されました。\
+*story11_after
+	r_show suzur_nc
+すずか「どうしようかな？」
+csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タイトルに戻る", *title_back, "第１２話へ進む", *story12
+
+*story11_condicil
+	gosub *condicil
+	goto *story11_after
+*story11_glossary
+	gosub *glossary
+	goto *story11_after
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;;;;;第12話;;;;;
+*story12
+	mov %adv_noroi_off, 0
+	csp SP_R : csp SP_L : print E_FAST
+	stop
+	talk_mode
+	bgm ms_kyoto
+	bg "img/blackboard.bmp", E_FAST
+	r_in ari_n
+	l_in suzu_n
+	r_show ari_qes
+アリサ「おかしいわね……」\
+	l_show suzu_qes
+すずか「どうしたの？」\
+アリサ「なのはに電話を掛けたんだけど出ない
+　　　　のよ。メールも送ったんだけど、返事
+　　　　がないし……」\
+すずか「忙しいのかな？」\
+	r_show ari_tun
+アリサ「仕方ないわね。もうしばらく待って、
+　　　　もう一度電話をかけてみましょう」\
+
+	csp SP_R : csp SP_L : print 1
+	bg "img/title#12.bmp", E_VFAST
+	wait 1000
+	delay 2000
+	bgm ms_setsume
+	bg "img/blackboard.bmp", E_FAST
+
+	speak_mode
+	r_show ari_n
+アリサ「シンボル#FFFF33ｏ#FFFFFFって団子に見えるわよね」\
+	r_show suzur_qes
+すずか「そうかな？」\
+	r_show ari_muka
+アリサ「ここは『そうだね』といわないと話が続かないところなの！」\
+	r_show suzur_qes
+すずか「それで、団子がどうかしたの？」\
+	r_show ari_n
+アリサ「リストの中に団子が１つ#33FF33（ｏ）#FFFFFF、団子が２つ#33FF33（ｏ　ｏ）#FFFFFF。@/
+これらはただのリストだけど、それぞれを１、２と考えることもできるわよね。@/
+そうすると、数を使わずにリストを使って『かず』を表現できそうでしょ」\
+	r_show suzur_n
+すずか「えーと、#33FF33（ｏ　ｏ　ｏ）#FFFFFFというリストを３だと思い込めってことだよね」\
+	r_show ari_n
+アリサ「そういうこと。より具体的には、リストの中に含まれる、シンボル#33FF33ｏ#FFFFFFの数を『かず』とみなすの。@/
+ここではシンボル#33FF33ｏ#FFFFFFのことを『団子』と呼びましょう。@/
+特別な場合として、０は空リストを使って表すことにするわね。@/
+例を挙げるなら、
+０は#33FF33（）#FFFFFF
+１は#33FF33（ｏ）#FFFFFF
+２は#33FF33（ｏ　ｏ）#FFFFFF
+３は#33FF33（ｏ　ｏ　ｏ）#FFFFFF
+こういう風に思い込むってことよ。@/
+こういう風にして作られる数を『団子数』ということにしましょう。@/
+これを使った四則演算をこれから考えるわね」\
+	r_show suzur_nc
+すずか「ｃｏｎｓを使って、
+#33FF33（ｃｏｎｓ　’ｏ　’（ｏ　ｏ））#FFFFFF
+とすれば、#33FF33（ｏ　ｏ　ｏ）#FFFFFFになって、１増やしたことになるし、@/
+ｃｄｒを使って、
+#33FF33（ｃｄｒ　’（ｏ　ｏ））#FFFFFF
+とすれば、#33FF33（ｏ）#FFFFFFになって、１減らしたことになるね」\
+	r_show ari_n
+アリサ「そういう計算を関数として定義してみましょう。@/
+ただし、直接#33FF33’（ｏ　ｏ）#FFFFFFみたいにリストを書くのはかっこ悪いから、/
+団子数の計算は全て関数呼び出しだけで済むように作るわよ。@/
+とりあえず、重要な関数を三つ作りましょう。@/
+まず、必要になるのは０を表す団子数を返す関数。
+#33FF33/
+（ｄｅｆｉｎｅ　（ｚｅｒｏ）
+　’（））#FFFFFF@
+そして、団子数を受け取って、それに１加えた団子数を返す関数。
+#33FF33/
+（ｄｅｆｉｎｅ　（ｉｎｃ　ｎ）
+　（ｃｏｎｓ　’ｏ　ｎ））#FFFFFF@
+最後に、団子数を受け取って、それから１引いた団子数を返す関数。
+#33FF33/
+（ｄｅｆｉｎｅ　（ｄｅｃ　ｎ）
+　（ｃｄｒ　ｎ））#FFFFFF@
+とりあえず、この三つの関数があれば自由に団子の数を作れるわ」\
+	r_show suzur_excc
+すずか「えーと、#33FF33ｚｅｒｏ#FFFFFFで団子数０が得られて、@/
+#33FF33ｉｎｃ#FFFFFFで１大きい団子数が得られるわけだから、@
+０は#33FF33（ｚｅｒｏ）#FFFFFF
+１は#33FF33（ｉｎｃ（ｚｅｒｏ））#FFFFFF
+２は#33FF33（ｉｎｃ（ｉｎｃ（ｚｅｒｏ）））#FFFFFF
+３は#33FF33（ｉｎｃ（ｉｎｃ（ｉｎｃ（ｚｅｒｏ））））#FFFFFF
+という風にして作ることができるね。@/
+確かに、これで、どんな自然数でも表すことができるね」\
+	r_show ari_n
+アリサ「次に、団子数の足し算を考えてみましょう。@
+『（ｏ）足す（ｏ　ｏ）』
+を計算する場合をとりあえず考えるわね。@/
+まず、右の#33FF33（ｏ　ｏ）#FFFFFFから、団子を一つ、左の#33FF33（ｏ）#FFFFFFに譲るの。@/
+すると、左は#33FF33（ｏ　ｏ）#FFFFFF、右が#33FF33（ｏ）#FFFFFFになるわね。@/
+右にはまだ団子が余ってるからもう一回団子を譲ると、/
+左は#33FF33（ｏ　ｏ　ｏ）#FFFFFF、右は空リストになるわ。@/
+右には譲る団子がなくなったから足し算は終わり。@/
+こうすれば、１足す２が３になるでしょ」\
+	r_show suzur_nc
+すずか「右に団子がなければ左の団子数を返す。@/
+右に団子があれば、それを一つ左に譲って、計算を繰り返す。@/
+これを式にすると、
+#33FF33/
+（ｄｅｆｉｎｅ　（ａｄｄ　ｘ　ｙ）
+　（ｉｆ　（ｎｕｌｌ？　ｙ）
+　　　　　ｘ
+　　　　　（ａｄｄ　（ｉｎｃ　ｘ）
+　　　　　　　　　　（ｄｅｃ　ｙ））））#FFFFFF
+という風に書くことができるね。@
+#33FF33/
+（ａｄｄ
+　（ｉｎｃ　（ｚｅｒｏ））
+　（ｉｎｃ　（ｉｎｃ　（ｚｅｒｏ））））#FFFFFF
+この式の値は#33FF33（ｏ　ｏ　ｏ）#FFFFFFとなるから、ちゃんと１足す２が計算できてるのが分かるね」\
+	r_show ari_n
+アリサ「次は、引き算。@
+『（ｏ　ｏ　ｏ）引く（ｏ　ｏ）』
+を考えてみましょう。@/
+まず、右も左も団子が余っているから、左右両方から団子を一つ減らすの。@/
+すると、左は#33FF33（ｏ　ｏ）#FFFFFF、右は#33FF33（ｏ）#FFFFFFになるわね。@/
+まだ左右両方に団子があるから、これを繰り返すの。@/
+すると、左は#33FF33（ｏ）#FFFFFF、右は空リストになるわ。@/
+右の団子がなくなったから引き算は終わり。@/
+これで、３引く２が１になるわね。@/
+足し算と違ってちょっとややこしいのが、引かれる数より、引く数の方が大きい場合。@/
+これに対処するためには、左の団子がなくなった時点で計算をやめること。@/
+そうすれば、２引く３みたいな計算をした時の答えは０になるわ」\
+	r_show suzur_nc
+すずか「左右どちらかの団子がなくなれば左の団子数を返す。@/
+団子があれば、左右両方の団子をひとつ減らして、計算を繰り返す。@/
+これを式にすると、
+#33FF33/
+（ｄｅｆｉｎｅ　（ｓｕｂ　ｘ　ｙ）
+　（ｃｏｎｄ
+　　（（ｎｕｌｌ？　ｘ）　ｘ）
+　　（（ｎｕｌｌ？　ｙ）　ｘ）
+　　（ｅｌｓｅ
+　　　（ｓｕｂ　（ｄｅｃ　ｘ）
+　　　　　　　　（ｄｅｃ　ｙ）））））#FFFFFF
+こういう風に書けるね。@
+#33FF33/
+（ｓｕｂ
+　（ｉｎｃ　（ｉｎｃ　（ｚｅｒｏ）））
+　（ｉｎｃ　（ｚｅｒｏ）））#FFFFFF
+この式の値は#33FF33（ｏ）#FFFFFFとなるから、ちゃんと２引く１が計算できてるね」\
+	r_show ari_n
+アリサ「さて、掛け算になってくると少し難しくなるわよ。@/
+今回は具体的な数じゃなくて、
+『ｘ掛けるｙ』
+を考えてみましょう。@/
+これは、『０にｘをｙ回足す』という風にも考えられるわね。@/
+だから、
+#33FF33/
+（ｄｅｆｉｎｅ　（ｍｕｌ　ｘ　ｙ）
+　（ｍｕｌｉ　ｘ　ｙ　（ｚｅｒｏ）））#FFFFFF
+と書いてしまって、#33FF33ｍｕｌｉ#FFFFFFの方で再帰を使えば掛け算ができるわね。@/
+それじゃあ、実際にやってもらおうかしら。@/
+難しいと思ったらＴａｂキーでヒントを見るといいわ」\
+
+	mov %adv_rmode, 0         ;右クリック無効
+	bgm ms_ex
+	csp SP_R : csp SP_L
+	bg black, E_NORMAL
+	r_load ari_n
+	bg "img/blackboard.bmp", E_FAST
+	skipoff
+	mov %adv_tmp, 0
+	mov %save_flag, 0  ;セーブ不能
+*ex12_prev
+	gosub *create_new_env  ;自由にいじれるように新しい環境を作る
+	mov %arg0, %ret
+	mov %adv_tmp3, %arg0
+	gosub *push  ;GC対策
+	mov %arg1, %global_env
+	gosub *nconc
+;;定義済み関数
+	mov $sarg0, "(begin (define (zero) '()) (define (inc x) (cons 'o x)) (define (dec x) (cdr x)) )"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov $sarg0, "(define (add x y) (if (null? y) x (add (inc x) (dec y))))"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov $sarg0, "(define (mul x y) (muli x y (zero)))"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+;;
+*ex12
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「関数ｍｕｌｉを定義しなさい。/
+ただし、ｚｅｒｏ、ｉｎｃ、ｄｅｃ、ａｄｄ、ｍｕｌは既に定義されて、/
+ｍｕｌｉはｍｕｌの中から#33FF33（ｍｕｌｉ　ｘ　ｙ　（ｚｅｒｏ））#FFFFFFと呼ばれるわ」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex12_tab  ;Tab
+	if $sarg0 == "" goto *ex12
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex12
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	;;;検証1
+	mov $sarg0, "(mul (inc (zero)) (zero))"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *adv_length
+	if %ret != 0 goto *ex12_miss
+	;;;検証2
+	mov $sarg0, "(mul (inc (inc (zero))) (inc (inc (inc (zero)))))"
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *adv_length
+	if %ret == 6 goto *ex12_2_prev
+*ex12_miss
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex12
+
+*ex12_2_prev
+	mov $sarg0, "muli"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *push     ;S(muli)
+*ex12_2
+	mov %gc_run, 0  ;GC起動回数を初期化
+	mov $sarg0, ""
+	textclear
+!s0アリサ「関数ｍｕｌを使って『２掛ける３』という団子数の計算をしなさい」!sd
+	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+	getret %ret
+	if %ret == 1 goto *ex12_2_tab  ;Tab
+	if $sarg0 == "" goto *ex12_2
+	textclear
+!s0アリサ「計算中……」!sd
+	repaint
+	gosub *check_lr_parenthesis
+	if %ret != 0 gosub *parenthesis_error : goto *ex12_2
+	gosub *input_to_lobject
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *eval
+	mov %arg0, %ret
+	gosub *push     ;S(ret, muli)
+	gosub *lobject_to_string
+	textclear
+	アリサ「結果は『$sret』ね」\
+	gosub *pop      ;ret<S(muli)
+	mov %arg0, %ret
+	gosub *adv_length
+	if %ret == 6 gosub *pop : goto *ex12_end
+;;;muliの再定義をcheck;;;
+	mov $sarg0, "muli"
+	gosub *create_symbol
+	mov %arg0, %ret
+	mov %arg1, %adv_tmp3
+	gosub *assoc
+	mov %arg0, %ret
+	gosub *cdr
+	mov %arg0, %ret
+	gosub *pop      ;muli<S()
+	if %arg0 != %ret goto *ex12_2_miss
+	mov %arg0, %ret
+	gosub *push     ;S(muli)
+;;;end;;;
+	textclear
+	r_show ari_die
+アリサ「違うわ。やり直し！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex12_2
+
+*ex12_2_miss
+	textclear
+	r_show ari_muka
+アリサ「……なかなか面白いことをやってくれるわね。@/
+	r_show ari_do
+最初からやり直し！！！」\
+	r_show ari_n
+	inc %adv_tmp
+	goto *ex12
+
+
+
+*ex12_tab
+csel "続ける", *ex12, "ヒント", *ex12_hint,  "タイトルに戻る", *ex12_bye
+*ex12_2_tab
+csel "続ける", *ex12_2, "ヒント", *ex12_2_hint,  "タイトルに戻る", *ex12_2_bye
+
+*ex12_bye
+	mov %adv_rmode, 1        ;右クリック有効
+	textclear
+	csp SP_R
+	stop
+	gosub *pop      ;new env<S()
+	goto *title
+
+*ex12_2_bye
+	gosub *pop      ;muli<S(new env)
+	goto *ex12_bye
+
+*ex12_hint
+	textclear
+アリサ「受け取る引数は３つだから#33FF33（ｌａｍｂｄａ　（ｘ　ｙ　ｎ）　式）#FFFFFFと書くといいわ。@/
+今回重要なのは『ｘ掛けるｙ』は『０にｘをｙ回足す』と言い換えれることね。@/
+『ｙ回』というのは、『ｙに団子がある限り』と言い換えれるわ。@/
+だから、ｙ空リストでなければ、ｘはｘのまま、ｙは１引いて、ｎを『ｎ足すｘ』にして再帰するといいわ。@/
+具体的には
+#33FF33（ｍｕｌｉ　ｘ　（ｄｅｃ　ｙ）　（ａｄｄ　ｎ　ｘ））#FFFFFF
+ね。@/
+あとは、ｉｆを使って、ｙが空リストならば#33FF33ｎ#FFFFFFを返して、そうでなければ再帰するようにすればいいわ」\
+	goto *ex12
+
+*ex12_2_hint
+	textclear
+アリサ「団子数の掛け算は#33FF33（ｍｕｌ　団子数　団子数）#FFFFFFと表せるわ。@/
+２は#33FF33（ｉｎｃ（ｉｎｃ（ｚｅｒｏ）））#FFFFFF、/
+３は#33FF33（ｉｎｃ（ｉｎｃ（ｉｎｃ（ｚｅｒｏ））））#FFFFFFとすればいいわよ」\
+	goto *ex12_2
+
+
+
+*ex12_end
+	mov %adv_rmode, 1        ;右クリック有効
+	gosub *pop  ;new env<S()
+	saveon
+	mov %save_flag, 1  ;セーブ可能
+	textclear
+	add %adv_miss, %adv_tmp
+	bgm ms_setsume
+	if %adv_tmp == 0 goto *s_12_2
+	if %adv_tmp >=2   goto *s_12_3
+*s_12_1
+アリサ「まあまあだったわね」\
+	goto *s_12_4
+*s_12_2
+	r_show ari_hrt
+アリサ「全く問題ないようね」\
+	goto *s_12_4
+*s_12_3
+	r_show ari_ase
+アリサ「ちょっと失敗が多いわね」\
+	goto *s_12_4
+*s_12_4
+
+
+	r_show ari_n
+アリサ「お疲れ様。よくできたわね」\
+	r_show suzur_qes
+すずか「次は割り算かな？」\
+	r_show ari_n
+アリサ「掛け算が自分で書けたんだから、割り算もきっと自分で書けるわ。@/
+だから、ここで解説はしないけど、フリーモードで試してみてもいいかもしれないわね」\
+	r_show suzur_qes
+すずか「数を使わずに、四則演算ができるって言うのは凄いと思うけど、@/
+ところでさ、これって何かの役に立つの？」\
+	r_show ari_dere
+アリサ「……それを言ったらおしまいだから」\
+	r_show suzur_exc
+すずか「まあ、リリカルＬｉｓｐ自体、役に立つかどうかって問われたら返答に困るし、@/
+そういう点では、リリカルＬｉｓｐ最後の練習問題としてはある意味正しいのかな」\
+	r_show ari_ase
+アリサ「すずか、フォローになってないわよ……」\
+
+
+	stop
+	vsp SP_R, 0
+	bg black, E_NORMAL
+	r_load ari_n
+	l_load suzu_n
+	bg "img/blackboard.bmp", E_NORMAL
+	talk_mode
+	lsp SP_FILL, ":c;img/nano_pink.bmp", 0, 0
+	print E_FAST
+	csp SP_FILL
+	print E_FAST
+	bgm ms_nano
+	l_show suzu_qes
+すずか「今ピンクの光が見えなかった？」\
+	r_show ari_exc
+アリサ「あのピンク色……まさか！！」\
+	l_show":l;img/same.bmp"
+鮫島「お二人ともお逃げ下さい！」\
+	mov %adv_noroi_off, 1
+	csp SP_R : csp SP_L
+	print E_FAST
+	quake 6,400	
+	delay 1000
+	bg "img/yama_b.bmp", E_LWIPE_FAST
+	r_in ari_n
+アリサ「なんとか振り切れた！？」\
+	l_in ":l;img/nano.bmp"
+なのは「もう追いついてるよ……」\
+	r_show ari_tun
+アリサ「あ！！！」\
+なのは「デバイスを盗み出した上、局員に危害
+　　　　を加えた人達って、アリサちゃん達だ
+　　　　ったんだ……」\
+	r_show ari_ase
+アリサ「なのは……」\
+なのは「理由はたぶん魔法が使いたかったとか
+　　　　そんなところだと思うけど」\
+なのは「悪魔らしいやり方で話を聞かせてもら
+　　　　うから」\
+	r_show ":l;img/same.bmp"
+鮫島「できれば穏やかに話を聞いてもらいたか
+　　　ったのですが……」\
+
+	stop
+	csp SP_R : csp SP_L
+	bg black, E_WIPE2
+	bgm ms_battlen
+	gosub *battle12
+	if %ret == 0 goto *battle12_after_win
+*battle12_after_lost
+	bgm ms_epilogue1
+	l_load ":l;img/nano.bmp"
+	r_load ari_n
+	bg "img/yama_b.bmp", E_FAST
+
+
+なのは「アリサちゃん、おとなしく捕まってく
+　　　　れるかな？」\
+	r_show ari_tun
+アリサ「鮫島……あんたの出番よ」\
+	r_show ":l;img/same.bmp"
+鮫島「出番とは？」\
+	r_show ari_n
+	bgm ms_epilogue2
+アリサ「責任を取るのは大人の仕事。子供が取
+　　　　る必要はないわ」\
+	r_show ":l;img/same.bmp"
+鮫島「そっ……それは、つまり……」\
+	l_in ":l;img/jiku2.bmp"
+局員「この老人だ！　こいつが俺を襲ってきた
+　　　んだ！」\
+鮫島「あ、こら！　貴様！！」\
+局員「ひっ、ひぃぃぃーーー！」\
+	l_out
+	r_show suzur_n
+すずか「私達は別に誰も襲ってないよ」\
+	l_show ":l;img/nano.bmp"
+なのは「確かに、記録としては攻撃を仕掛けた
+　　　　のは全て『老人』――つまり鮫島さん
+　　　　となってるけど……」\
+	r_show ari_n
+アリサ「私達は何もやってないわ！　悪いのは
+　　　　多分鮫島よ！　きっとそうよ！！」\
+	r_show ":l;img/same.bmp"
+鮫島（アリサお嬢様、『多分』とか『きっと』
+　　　とは何ですか……）\
+なのは「うーん、なんだかよく分からなくなっ
+　　　　てきたよ。どうしようかな」\
+	r_show suzur_dere
+すずか「なのはちゃん！　私達が信じられない
+　　　　の！　ずっと友達だったじゃない！」\
+なのは「すずかちゃん!w250…!w250…!w500うん。私は信じる。
+　　　　二人を信じるよ！！」\
+	r_show ":l;img/same.bmp"
+鮫島（ずっとアリサお嬢様の世話をしてきた私
+　　　の立場は……）\
+なのは「それでは、この男をアースラへ連行し
+　　　　てください」\
+	l_show ":l;img/jiku.bmp"
+局員「了解しました。なのはさん！！」\
+	csp SP_R : csp SP_L
+	lsph SP_CRC, ":a;img/same_curcle.bmp", 0, 0
+	bg black, E_SLOW
+	c_show ":l;img/same.bmp"
+	vsp SP_CRC, 1
+	print E_CURCLE
+;;エフェクト
+鮫島「魔法はもうこりごりでやんす……」\
+	csp SP_C : print E_SLOW
+エンディング１『#FFFF33哀しみの鮫島#FFFFFF』\
+	gosub *save_allclear
+	csp SP_CRC
+	gosub *ending
+	;;;
+	textclear
+	csp SP_R : csp SP_L
+	stop
+	goto *title
+	;;;
+
+
+
+*battle12_after_win
+	stop
+;;	bgm ms_epilogue2
+	l_load suzu_dot
+	r_load ari_ase
+	bg "img/yama_b.bmp", E_FAST
+すずか「はわわ……」\
+アリサ「やっちゃったー……」\
+	l_show ":l;img/same.bmp"
+鮫島「大丈夫です。加減はしています。命に別
+　　　状はないはずです」\
+	l_show suzu_dere
+すずか「鮫島さんって……」\
+	r_show ari_dere
+アリサ「めちゃくちゃ強かったんだ……」\
+	csp SP_R : csp SP_L
+	bg black, E_SLOW
+その後、三人は時空管理局によって捕らえられ
+た。しかし、特例により、三人は保護観察とい
+う処分となった。\
+ただし、鮫島は時空管理局嘱託魔導師として、
+従事することとなった。\
+	bgm ms_nano
+その後、ある任務で鮫島は重症を負い、現在は
+治療中。\
+重傷を負うこととなった経緯は現在調査中であ
+る。\
+恐らく、Ｓ＋クラス相当の魔導師に攻撃された
+ものとみられる。\
+鮫島の応急処置をした医務官は次のような言葉
+を聞いている。\
+鮫島「ああ、!w300ピンクの光が……!w300ピンクの光が見
+　　　える……」\
+エンディング２『#FFFF33ピンクの光#FFFFFF』\
+	gosub *save_allclear
+	gosub *ending
+	;;;
+	textclear
+	csp SP_R : csp SP_L
+	stop
+	goto *title
+	;;;
+
+
+
+;;;;(define (muli x y n) (if (null? y) n (muli x (dec y) (add x n))))
+;;2話開始MesBox
+
+
+
+
+*save_allclear
+;;共通記録の書き換え
+	csvopen "arisa.szk", "rc"
+	csvread %adv_clear
+	csvclose
+	if %adv_clear >= 12 return
+	mov %adv_clear, 12
+	csvopen "arisa.szk", "wc"
+	csvwrite %adv_clear
+	csvclose
+	return
+
+
+
+
+
+;;;;;第12話終了;;;;;
+	speak_mode
+	textclear
+	vsp SP_R, 0
+	vsp SP_L, 0
+	bg black, E_SLOW
+;;共通記録の書き換え
+	csvopen "arisa.szk", "rc"
+	csvread %adv_clear
+	csvclose
+	if %adv_clear >= 12 goto *story12_after
+	mov %adv_clear, 12
+	csvopen "arisa.szk", "wc"
+	csvwrite %adv_clear
+	csvclose
+#FFFF33補足説明#FFFFFFが追加されました。
+#FFFF33用語集#FFFFFFに単語が追加されました。\
+*story12_after
+	r_show suzur_nc
+すずか「どうしようかな？」
+csel "補足説明を読む", *story12_condicil, "用語集を読む", *story12_glossary, "タイトルに戻る", *title_back, "第１３話へ進む", *story13
+
+*story12_condicil
+	gosub *condicil
+	goto *story12_after
+*story12_glossary
+	gosub *glossary
+	goto *story12_after
+
+
+
+
+
+
+
+
+アリサ「まあ、そんなこんなで、次の説明に入りましょうか」\
+	r_show suzu_n
+すずか「もうめんどくさいからここまでで終わりましょう」\
+アリサ「！？」\
+すずか「では、皆さんごきげんよう」\
+	r_show ":l;img/arin.bmp"
+アリサ「ありーん」\
+end
+
+
+
+
+
+
+
+
+
+
+
+*adv_length
+	mov %arg2, 0
+*adv_length_l1
+	gosub *get_tag
+	if %ret != TAG_CONS mov %ret, %arg2 : return 
+	mov %arg1, %arg0
+	mov %arg0, %arg2
+	gosub *push     ;S(count)
+	mov %arg0, %arg1
+	gosub *cdr      ;lst = CDR(lst)
+	mov %arg0, %ret
+	gosub *pop      ;count<S()
+	mov %arg2, %ret
+	inc %arg2
+	goto *adv_length_l1
+
+
+
+
+
+
+
+
+
+
+
+
+*sc
+	itoa $sarg0, %tmp
+	if %tmp < 10 mov $sarg0, "sc/000" + $sarg0 + ".bmp"
+	if %tmp >= 10 && %tmp < 100 mov $sarg0, "sc/00" + $sarg0 + ".bmp"
+	if %tmp >= 100 && %tmp < 1000 mov $sarg0, "sc/0" + $sarg0 + ".bmp"
+	if %tmp >= 1000 mov $sarg0, "sc/" + $sarg0 + ".bmp"
+	getscreenshot 320, 240
+	savescreenshot $sarg0
+	inc %tmp
+	return
+
+
+
+
+;;4.3sec=130frm
+
+
+;;花、枠、鮫島、ザフィーラ、スタッフ(文字)
+*ending
+	saveoff   ;;;
+
+	lsph SP_INU01, ":l;img/inu01.bmp", 0, 0          ;344x131
+	lsph SP_INU02, ":l;img/inu02.bmp", 0, 0
+	lsph SP_INU01_R, ":l;img/inu01_r.bmp", 0, 0
+	lsph SP_INU02_R, ":l;img/inu02_r.bmp", 0, 0
+	lsph SP_SAME_HEAD, ":l;img/same_head.bmp", 0, 0  ;192x287(147)
+	lsph SP_SAME_BODY, ":l;img/same_body.bmp", 0, 0  ;192x214(107)
+	lsph SP_SAME_FOOT, ":l;img/same_foot.bmp", 0, 0  ;192x24
+	lsph SP_FLOWER, ":l;img/flower.bmp", 0, 0        ;362x235
+	lsph SP_S, ":l;img/s.bmp", 0, 0                  ;34x76
+	lsph SP_ST, ":l;img/st.bmp", 0, 0                ;76x34
+	lsph SP_EFRAME, ":l;img/eframe.bmp", 0, 0
+	lsph SP_FILL, ":l;img/curtain.bmp", 0, 0
+	mov %adv_tmp3, 0 ;フレームごとに加算
+	mov %adv_sx, 896
+	mov %adv_sy, 538
+	mov %adv_sr, 0
+
+	mov %adv_ix, 972
+	mov %adv_id, 0
+	mov %arg0, 60
+	mov %arg1, 530
+
+	bgmfadeout 3000
+	bgm ms_ending
+*ending_loop0
+	resettimer
+	gosub *draw_back
+	gosub *draw_frame
+	gosub *draw_staff
+	draw
+	;;comment;;gosub *sc
+	inc %adv_tmp3
+	waittimer 33
+	if %adv_tmp3 == 272 goto *ending_loop1
+	goto *ending_loop0
+
+*ending_loop1
+	resettimer
+	gosub *draw_back
+	gosub *draw_frame
+	gosub *draw_inu
+	gosub *draw_staff
+	draw
+	;;comment;;gosub *sc
+	sub %adv_ix, 9
+	inc %adv_tmp3
+	waittimer 33
+;;	if %adv_ix < -344 goto *ending_loop2_pre  ;本当はadv_tmp3で制御するのが理想
+	if %adv_tmp3 == 667 goto *ending_loop2_pre
+	goto *ending_loop1
+
+*ending_loop2_pre
+*ending_loop2
+	resettimer
+	gosub *draw_back
+	gosub *draw_frame
+	gosub *draw_yurasame
+	gosub *draw_staff
+	draw
+	;;comment;;gosub *sc
+	sub %adv_sx, 20
+	inc %adv_tmp3
+	waittimer 33
+	if %adv_sx <= 650 goto *ending_loop2_2       ;移動済み
+	goto *ending_loop2
+
+*ending_loop2_2
+	resettimer
+	gosub *draw_back
+	gosub *draw_frame
+	gosub *draw_yurasame
+	gosub *draw_staff
+	draw
+	;;comment;;gosub *sc
+	add %adv_sr, 7
+	mod %adv_sr, 360
+	inc %adv_tmp3
+	waittimer 33
+	if %adv_tmp3 == 1090 goto *ending_loop3_pre
+	goto *ending_loop2_2
+
+*ending_loop3_pre
+	mov %adv_id, 1
+	mov %adv_ix, -344
+	mov %arg0, 60
+	mov %arg1, 530
+*ending_loop3
+	resettimer
+	gosub *draw_back
+	gosub *draw_frame
+	gosub *draw_yurasame
+	gosub *draw_inu
+	gosub *draw_staff
+	draw
+	;;comment;;gosub *sc
+	add %adv_sr, 7
+	mod %adv_sr, 360
+	add %adv_ix, 9
+	inc %adv_tmp3
+	waittimer 33
+	if %adv_tmp3 == 1515 goto *ending_loop4_pre
+	goto *ending_loop3
+
+*ending_loop4_pre
+	mov %adv_id, 0
+	mov %adv_ix, 972
+	mov %arg0, 55
+	mov %arg1, 500
+*ending_loop4
+	resettimer
+	gosub *draw_back
+	gosub *draw_frame
+	gosub *draw_inu
+	gosub *draw_yurasame
+	gosub *draw_staff
+	draw
+	;;comment;;gosub *sc
+	add %adv_sr, 7
+	mod %adv_sr, 360
+	sub %adv_ix, 5
+	inc %adv_tmp3
+	waittimer 33
+;;	if %adv_ix < -344 goto *ending_loop5_pre
+	if %adv_tmp3 == 2030 goto *ending_loop5_pre
+	goto *ending_loop4
+
+*ending_loop5_pre
+	mov %adv_id, 1
+	mov %adv_ix, -344
+	mov %arg0, 200
+	mov %arg1, 500
+*ending_loop5
+	resettimer
+	gosub *draw_back
+	gosub *draw_frame
+	gosub *draw_yurasame
+	gosub *draw_inu
+	gosub *draw_staff
+	draw
+	;;comment;;gosub *sc
+	add %adv_sr, 7
+	mod %adv_sr, 360
+	add %adv_ix, 27
+	inc %adv_tmp3
+	waittimer 33
+;;	if %adv_ix > 972 goto *ending_loop6_pre
+	if %adv_tmp3 == 2424 goto *ending_loop6_pre
+	goto *ending_loop5
+
+*ending_loop6_pre
+	mov %adv_id, 0
+	mov %adv_ix, 972
+	mov %arg0, 55
+	mov %arg1, 60
+*ending_loop6
+	resettimer
+	gosub *draw_back
+	gosub *draw_frame
+	gosub *draw_inu
+	gosub *draw_yurasame
+	gosub *draw_staff
+	draw
+	;;comment;;gosub *sc
+	add %adv_sr, 7
+	mod %adv_sr, 360
+	sub %adv_ix, 5
+	inc %adv_tmp3
+	waittimer 33
+;;	if %adv_ix < -344 goto *ending_loop7_pre
+	if %adv_tmp3 == 3060 goto *ending_loop7_pre
+	goto *ending_loop6
+
+*ending_loop7_pre
+	mov %adv_ix, 1300    ;ザフィーラの座標を利用
+*ending_loop7
+	resettimer
+	gosub *draw_back
+	gosub *draw_frame
+	gosub *draw_yurasame
+	drawsp2 SP_FILL, 0, 255, %adv_ix, 300, 100, 100, 0
+	draw
+	;;comment;;gosub *sc
+	add %adv_sr, 7
+	mod %adv_sr, 360
+	inc %adv_tmp3
+	sub %adv_ix, 55
+	if %adv_ix < 300 mov %adv_ix, 300
+	waittimer 33
+	if %adv_tmp3 == 3224 goto *ending_end
+;;	if %adv_tmp3 == 3133 goto *ending_end
+	goto *ending_loop7
+
+
+*ending_end
+	stop
+	bgmfadeout 100
+	csp SP_INU01
+	csp SP_INU02
+	csp SP_INU01_R
+	csp SP_INU02_R
+	csp SP_SAME_HEAD
+	csp SP_SAME_BODY
+	csp SP_SAME_FOOT
+	csp SP_FLOWER
+	csp SP_S
+	csp SP_ST
+	csp SP_EFRAME
+	csp SP_FILL
+	return
+
+
+
+
+;;;;;;;;;;
+;;;draw_inu
+;;in     : adv_ix, adv_id, adv_tmp3, arg0, arg1
+;;change : adv_tmp
+;;;;;;;;;;
+*draw_inu
+	mov %adv_tmp, %adv_tmp3
+	mod %adv_tmp, 20
+	if %adv_tmp < 10 && %adv_id == 0 drawsp2 SP_INU01, 0, 255, %adv_ix, %arg1, %arg0, %arg0, 0
+	if %adv_tmp < 10 && %adv_id == 1 drawsp2 SP_INU01_R, 0, 255, %adv_ix, %arg1, %arg0, %arg0, 0
+	if %adv_tmp >= 10 && %adv_id == 0 drawsp2 SP_INU02, 0, 255, %adv_ix, %arg1, %arg0, %arg0, 0
+	if %adv_tmp >= 10 && %adv_id == 1 drawsp2 SP_INU02_R, 0, 255, %adv_ix, %arg1, %arg0, %arg0, 0
+	return
+
+
+
+;;;;;;;;;;
+;;;draw_yurasame
+;;in     : adv_sx, adv_sy, adv_sr
+;;change : adv_tmp, adv_tmp1, adv_tmp2
+;;;;;;;;;;
+*draw_yurasame
+	;角度算出
+	sin %adv_tmp, %adv_sr
+	mul %adv_tmp, 10
+	div %adv_tmp, 1000
+	;Y減量算出
+	cos %adv_tmp1, %adv_tmp
+	mul %adv_tmp1, 97
+	div %adv_tmp1, 1000
+	;X減量算出
+	sin %adv_tmp2, %adv_tmp
+	mul %adv_tmp2, 97
+	div %adv_tmp2, 1000
+	drawsp2 SP_SAME_HEAD, 0, 255, %adv_sx-%adv_tmp2, %adv_sy-%adv_tmp1, 100, 100, 0
+	drawsp2 SP_SAME_FOOT, 0, 255, %adv_sx, %adv_sy+10, 100, 100, 0
+	drawsp2 SP_SAME_BODY, 0, 255, %adv_sx, %adv_sy, 100, 100, %adv_tmp
+	return
+
+
+
+;;change : adv_tmp
+*draw_back
+	;0-3060 (765x4(G^, B_, R^, G_))
+	if %adv_tmp3 < 765 goto *draw_back_l1
+	if %adv_tmp3 < 1530 goto *draw_back_l2
+	if %adv_tmp3 < 2295 goto *draw_back_l3
+	if %adv_tmp3 < 3060 goto *draw_back_l4
+	goto *draw_back_l5
+
+*draw_back_l1
+	mov %adv_tmp, %adv_tmp3
+	mul %adv_tmp, 150
+	div %adv_tmp, 754
+	add %adv_tmp, 50
+	drawfill 50, %adv_tmp, 200
+	return
+
+*draw_back_l2
+	mov %adv_tmp, %adv_tmp3
+	sub %adv_tmp, 765
+	mul %adv_tmp, 150
+	div %adv_tmp, 754
+	mov %adv_tmp, 150 - %adv_tmp
+	add %adv_tmp, 50
+	drawfill 50, 200, %adv_tmp
+	return
+
+*draw_back_l3
+	mov %adv_tmp, %adv_tmp3
+	sub %adv_tmp, 1530
+	mul %adv_tmp, 150
+	div %adv_tmp, 754
+	add %adv_tmp, 50
+	drawfill %adv_tmp, 200, 50
+	return
+
+*draw_back_l4
+	mov %adv_tmp, %adv_tmp3
+	sub %adv_tmp, 2295
+	mul %adv_tmp, 150
+	div %adv_tmp, 754
+	mov %adv_tmp, 150 - %adv_tmp
+	add %adv_tmp, 50
+	drawfill 200, %adv_tmp, 50
+	return
+
+*draw_back_l5
+	drawfill 200, 50, 50
+	return
+
+;;
+*draw_frame
+	if %adv_tmp3 < 90 return
+	if %adv_tmp3 > 130 drawsp2 SP_EFRAME, 0, 255, 400, 300, 100, 100, 0 : return
+
+	drawsp2 SP_FLOWER, 0, 255, 400, 100, 80, 80, 0
+	if %adv_tmp3 <= 99 return
+	;TL;[100, 102]
+	mov %adv_tmp2, %adv_tmp3
+	sub %adv_tmp2, 100
+	mul %adv_tmp2, -76
+	add %adv_tmp2, 207
+	if %adv_tmp2 < 55 mov %adv_tmp2, 55
+	for %adv_tmp = 207 to %adv_tmp2 step -76
+		drawsp2 SP_ST, 0, 255, %adv_tmp, 80, 100, 100, 0
+		next
+	if %adv_tmp3 <= 102 return
+
+	;L[103, 108]
+	mov %adv_tmp2, %adv_tmp3
+	sub %adv_tmp2, 103
+	mul %adv_tmp2, 76
+	add %adv_tmp2, 138
+	if %adv_tmp2 > 518 mov %adv_tmp2, 518
+	for %adv_tmp = 138 to %adv_tmp2 step 76
+		drawsp2 SP_S, 0, 255, 40, %adv_tmp, 100, 100, 0
+		next
+	if %adv_tmp3 <= 108 return
+
+	;B[109, 117]
+	mov %adv_tmp2, %adv_tmp3
+	sub %adv_tmp2, 109
+	mul %adv_tmp2, 76
+	add %adv_tmp2, 99
+	if %adv_tmp2 > 707 mov %adv_tmp2, 707
+	for %adv_tmp = 99 to %adv_tmp2 step 76
+		drawsp2 SP_ST, 0, 255, %adv_tmp, 530, 100, 100, 0
+		next
+	if %adv_tmp3 <= 117 return
+
+	;R[118, 123]
+	mov %adv_tmp2, %adv_tmp3
+	sub %adv_tmp2, 118
+	mul %adv_tmp2, -76
+	add %adv_tmp2, 518
+	if %adv_tmp2 < 138 mov %adv_tmp2, 138
+	for %adv_tmp = 518 to %adv_tmp2 step -76
+		drawsp2 SP_S, 0, 255, 760, %adv_tmp, 100, 100, 0
+		next
+	if %adv_tmp3 <= 123 return
+
+	;TR[124, 126]
+	mov %adv_tmp2, %adv_tmp3
+	sub %adv_tmp2, 124
+	mul %adv_tmp2, -76
+	add %adv_tmp2, 745
+	if %adv_tmp2 < 593 mov %adv_tmp2, 593
+	for %adv_tmp = 745 to %adv_tmp2 step -76
+		drawsp2 SP_ST, 0, 255, %adv_tmp, 80, 100, 100, 0
+		next
+;	if %adv_tmp3 <= 126 return
+	return
+
+
+
+;3060/22 = 139...2
+*draw_staff
+	if %adv_tmp3 < 141 return
+	if %adv_tmp3 == 141 gosub *draw_staff_l1
+	if %adv_tmp3 == 280 gosub *draw_staff_l2
+	if %adv_tmp3 == 419 gosub *draw_staff_l3
+	if %adv_tmp3 == 558 gosub *draw_staff_l4
+	if %adv_tmp3 == 697 gosub *draw_staff_l5
+	if %adv_tmp3 == 836 gosub *draw_staff_l6
+	if %adv_tmp3 == 975 gosub *draw_staff_l7
+	if %adv_tmp3 == 1114 gosub *draw_staff_l8
+	if %adv_tmp3 == 1253 gosub *draw_staff_l9
+	if %adv_tmp3 == 1392 gosub *draw_staff_l10
+	if %adv_tmp3 == 1531 gosub *draw_staff_l11
+	if %adv_tmp3 == 1670 gosub *draw_staff_l12
+	if %adv_tmp3 == 1809 gosub *draw_staff_l13
+	if %adv_tmp3 == 1948 gosub *draw_staff_l14
+	if %adv_tmp3 == 2087 gosub *draw_staff_l15
+	if %adv_tmp3 == 2226 gosub *draw_staff_l16
+	if %adv_tmp3 == 2365 gosub *draw_staff_l17
+	if %adv_tmp3 == 2504 gosub *draw_staff_l18
+	if %adv_tmp3 == 2643 gosub *draw_staff_l19
+	if %adv_tmp3 == 2782 gosub *draw_staff_l20
+	if %adv_tmp3 == 2921 gosub *draw_staff_l21
+	mov %adv_tmp, %adv_tmp3
+	sub %adv_tmp, 2
+	mod %adv_tmp, 139
+	if %adv_tmp < 8 mul %adv_tmp, 8 : goto *draw_staff_draw
+	if %adv_tmp >= 132 mov %adv_tmp, 139 - %adv_tmp : mul %adv_tmp, 8 : goto *draw_staff_draw
+	mov %adv_tmp, 255
+*draw_staff_draw
+	drawsp2 SP_TMP, 0, %adv_tmp, 400, 250, 100, 100, 0
+	drawsp2 SP_TMP1, 0, %adv_tmp, 400, 285, 100, 100, 0
+	drawsp2 SP_TMP2, 0, %adv_tmp, 400, 320, 100, 100, 0
+	drawsp2 SP_TMP3, 0, %adv_tmp, 400, 355, 100, 100, 0
+	return
+
+
+*draw_staff_l1
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFF企画　　　烏御堂", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l2
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFF制作プロデュース　　　御堂", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l3
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFF総合マネージメント　　　御堂", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l4
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFFゲームシステム設計　　　ｚｉｃｋ", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l5
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFFメインシナリオ　　　ｚｉｃｋ", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l6
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFFおまけシナリオ　　　ｎａｔｈｋｉ", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l7
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFF画面演出　　　ｚｉｃｋ", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l8
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFFメイングラフィック　　　ｔａｓｏ", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l9
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFFサブグラフィック　　　ハルマＫ７", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF　　　　　　　　　　　ｂｕｇｙｏ", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF　　　　　　　　　　　御堂　　　", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l10
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFFドッター　　　ハルマＫ７", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l11
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFF魔方陣提供　　　ｓｅｉｚｉｔｕ様", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l12
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFFメインプログラマ　　　ｚｉｃｋ", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l13
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFFミニゲーム　　　ｚｉｃｋ", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l14
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFFその他雑用　　　ｂｕｇｙｏ", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l15
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFFお手伝いさん　　　ｊａｒｕ　　", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF　　　　　　　　　ｎａｔｈｋｉ", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l16
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFFねこ耳　　　ｎａｔｈｋｉ", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l17
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFFデバッグ　　　ｎａｔｈｋｉ", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF　　　　　　　Ｔｅｃｈ　　", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF　　　　　　　ｔａｋｕ　　", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF　　　　　　　リィン　　　", 0, 0
+	return
+
+*draw_staff_l18
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFFＷｅｂ広報　　　ｂｏｋｋｏ", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF　　　　　　　　ｂｕｇｙｏ", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l19
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFF楽曲提供　　　ＳＥＮＴＩＶＥ様", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l20
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFF後援　　　ｎａｏ　　", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF　　　　　あるみさん", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+*draw_staff_l21
+	lsph SP_TMP,  ":s/30,30,1;#FFFFFF製作　　　λ＋烏御堂", 0, 0
+	lsph SP_TMP1, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP2, ":s/30,30,1;#FFFFFF", 0, 0
+	lsph SP_TMP3, ":s/30,30,1;#FFFFFF", 0, 0
+	return
+
+
+*title_back
+	stop
+	csp SP_R
+	bg black, 1
+	goto *title
+

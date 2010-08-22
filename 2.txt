@@ -1,0 +1,931 @@
+;;;;;;;;;;
+;;;注意
+;;;  補足説明、用語集にはgosubで飛んでくる
+;;;;;;;;;;
+
+
+
+;;;;;補足説明;;;;;
+;;;各補足にgotoで飛ぶ(選択肢なのでやむなし)
+;;;各補足から*condicil_loopにgotoで飛ぶ
+;;;クリア状態における判定は*condicil_loopで行う
+;;;;;
+*condicil
+	speak_mode
+	textclear
+	csp SP_R : csp SP_L
+	r_load ari_n
+	bg "img/blackboard.bmp", E_FAST
+*condicil_loop
+	if %adv_clear == 0 goto *condicil_00
+	if %adv_clear == 1 goto *condicil_01
+	if %adv_clear == 2 goto *condicil_02
+	if %adv_clear == 3 goto *condicil_03
+	if %adv_clear == 4 goto *condicil_04
+	if %adv_clear == 5 goto *condicil_05
+	if %adv_clear == 6 goto *condicil_06
+	if %adv_clear == 7 goto *condicil_07
+	if %adv_clear == 8 goto *condicil_08
+	if %adv_clear == 9 goto *condicil_09
+	if %adv_clear == 10 goto *condicil_10
+	if %adv_clear == 11 goto *condicil_11
+	if %adv_clear == 12 goto *condicil_12
+*condicil_end
+	textclear
+	csp SP_R
+	bg black, E_FAST
+	return
+
+*condicil_00
+アリサ「読みたい補足説明を選択してね」
+	csel "このソフトについて", *cdc_game, "戻る", *condicil_end
+*condicil_01
+アリサ「読みたい補足説明を選択してね」
+	csel "このソフトについて", *cdc_game, "戻る", *condicil_end
+*condicil_02
+アリサ「読みたい補足説明を選択してね」
+	csel "このソフトについて", *cdc_game, "シンボル・式の評価", *cdc_eval, "戻る", *condicil_end
+*condicil_03
+アリサ「読みたい補足説明を選択してね」
+	csel "このソフトについて", *cdc_game, "シンボル・式の評価", *cdc_eval, "型の調べ方", *cdc_type, "戻る", *condicil_end
+*condicil_04
+アリサ「読みたい補足説明を選択してね」
+	csel "このソフトについて", *cdc_game, "シンボル・式の評価", *cdc_eval, "型の調べ方", *cdc_type, "ｌｉｓｔ", *cdc_list, "図の描き方", *cdc_chart, "行儀の悪いリスト", *cdc_improperlist, "戻る", *condicil_end
+*condicil_05
+アリサ「読みたい補足説明を選択してね」
+	csel "このソフトについて", *cdc_game, "シンボル・式の評価", *cdc_eval, "型の調べ方", *cdc_type, "ｌｉｓｔ", *cdc_list, "図の描き方", *cdc_chart, "行儀の悪いリスト", *cdc_improperlist, "ｃｘｒ", *cdc_cxr, "戻る", *condicil_end
+*condicil_06
+アリサ「読みたい補足説明を選択してね」
+	csel "このソフトについて", *cdc_game, "シンボル・式の評価", *cdc_eval, "型の調べ方", *cdc_type, "ｌｉｓｔ", *cdc_list, "図の描き方", *cdc_chart, "行儀の悪いリスト", *cdc_improperlist, "ｃｘｒ", *cdc_cxr, "ｃｏｎｄでｉｆを作る？", *cdc_condif, "置き換えによる再帰", *cdc_recursion, "戻る", *condicil_end
+*condicil_07
+アリサ「読みたい補足説明を選択してね」
+	csel "このソフトについて", *cdc_game, "シンボル・式の評価", *cdc_eval, "型の調べ方", *cdc_type, "ｌｉｓｔ", *cdc_list, "図の描き方", *cdc_chart, "行儀の悪いリスト", *cdc_improperlist, "ｃｘｒ", *cdc_cxr, "ｃｏｎｄでｉｆを作る？", *cdc_condif, "置き換えによる再帰", *cdc_recursion, "方言によるスコープの違い", *cdc_scope, "戻る", *condicil_end
+*condicil_08
+アリサ「読みたい補足説明を選択してね」
+	csel "このソフトについて", *cdc_game, "シンボル・式の評価", *cdc_eval, "型の調べ方", *cdc_type, "ｌｉｓｔ", *cdc_list, "図の描き方", *cdc_chart, "行儀の悪いリスト", *cdc_improperlist, "ｃｘｒ", *cdc_cxr, "ｃｏｎｄでｉｆを作る？", *cdc_condif, "置き換えによる再帰", *cdc_recursion, "方言によるスコープの違い", *cdc_scope, "感嘆符！の付く関数", *cdc_ban, "戻る", *condicil_end
+*condicil_09
+アリサ「読みたい補足説明を選択してね」
+	csel "このソフトについて", *cdc_game, "シンボル・式の評価", *cdc_eval, "型の調べ方", *cdc_type, "ｌｉｓｔ", *cdc_list, "図の描き方", *cdc_chart, "行儀の悪いリスト", *cdc_improperlist, "ｃｘｒ", *cdc_cxr, "ｃｏｎｄでｉｆを作る？", *cdc_condif, "置き換えによる再帰", *cdc_recursion, "方言によるスコープの違い", *cdc_scope, "感嘆符！の付く関数", *cdc_ban, "置き換えによる末尾再帰", *cdc_tailrecursion, "リストの共有構造", *cdc_listshare, "戻る", *condicil_end
+*condicil_10
+アリサ「読みたい補足説明を選択してね」
+	csel "このソフトについて", *cdc_game, "シンボル・式の評価", *cdc_eval, "型の調べ方", *cdc_type, "ｌｉｓｔ", *cdc_list, "図の描き方", *cdc_chart, "行儀の悪いリスト", *cdc_improperlist, "ｃｘｒ", *cdc_cxr, "ｃｏｎｄでｉｆを作る？", *cdc_condif, "置き換えによる再帰", *cdc_recursion, "方言によるスコープの違い", *cdc_scope, "感嘆符！の付く関数", *cdc_ban, "置き換えによる末尾再帰", *cdc_tailrecursion, "リストの共有構造", *cdc_listshare, "ｅｖａｌ", *cdc_eval2, "ａｐｐｌｙ", *cdc_apply, "ａｐｐｅｎｄ", *cdc_append, "戻る", *condicil_end
+*condicil_11
+アリサ「読みたい補足説明を選択してね」
+	csel "このソフトについて", *cdc_game, "シンボル・式の評価", *cdc_eval, "型の調べ方", *cdc_type, "ｌｉｓｔ", *cdc_list, "図の描き方", *cdc_chart, "行儀の悪いリスト", *cdc_improperlist, "ｃｘｒ", *cdc_cxr, "ｃｏｎｄでｉｆを作る？", *cdc_condif, "置き換えによる再帰", *cdc_recursion, "方言によるスコープの違い", *cdc_scope, "感嘆符！の付く関数", *cdc_ban, "置き換えによる末尾再帰", *cdc_tailrecursion, "リストの共有構造", *cdc_listshare, "ｅｖａｌ", *cdc_eval2, "ａｐｐｌｙ", *cdc_apply, "ａｐｐｅｎｄ", *cdc_append, "残余引数", *cdc_restparameter, "戻る", *condicil_end
+*condicil_12
+アリサ「読みたい補足説明を選択してね」
+	csel "このソフトについて", *cdc_game, "シンボル・式の評価", *cdc_eval, "型の調べ方", *cdc_type, "ｌｉｓｔ", *cdc_list, "図の描き方", *cdc_chart, "行儀の悪いリスト", *cdc_improperlist, "ｃｘｒ", *cdc_cxr, "ｃｏｎｄでｉｆを作る？", *cdc_condif, "置き換えによる再帰", *cdc_recursion, "方言によるスコープの違い", *cdc_scope, "感嘆符！の付く関数", *cdc_ban, "置き換えによる末尾再帰", *cdc_tailrecursion, "リストの共有構造", *cdc_listshare, "ｅｖａｌ", *cdc_eval2, "ａｐｐｌｙ", *cdc_apply, "ａｐｐｅｎｄ", *cdc_append, "残余引数", *cdc_restparameter, "団子数の割り算", *cdc_div, "戻る", *condicil_end
+
+*cdc_game
+アリサ「このソフトについて簡単に説明するわね。@/
+このソフトは物語を読みながら実際に触れてみて、Ｌｉｓｐを学んだ#FFFF33気分になる#FFFFFFものよ。@/
+本気でＬｉｓｐを学びたかったら、ちゃんとした本を買って勉強することを薦めるわ。@/
+まあ、それでもこのソフトで遊んでくれた方が私は嬉しいけど……。@
+ゲーム本編以外にあるのが、この#FFFF33補足説明#FFFFFFと#FFFF33用語集#FFFFFFね。@/
+どちらも、本編では言い切れなかったことの説明のために書かれたもので、物語の進行と共に増えていくわ」\
+アリサ「こんなもんやらなくてもＬｉｓｐぐらい知ってるというという人のために#FFFF33フリーモード#FFFFFFというものも用意したわ。@/
+これは、ＮＳｃＬｉｓｐｅｒを触るためだけの機能ね。@/
+ここで扱うＬｉｓｐは#FFFF33Ｓｃｈｅｍｅ#FFFFFFライクなもので、組み込み関数の名前は、ほぼＳｃｈｅｍｅよ。@/
+ただし、中身は……まあ、独自のＬｉｓｐ方言とでもいっておきましょう。@/
+関数と変数のネームスペースも同一で、ｆｕｎｃａｌｌとかは不必要になってるわ。@/
+ただ、継続がなかったりするから『Ｓｃｈｅｍｅです』とは言い難いわね」\
+	goto *condicil_loop
+
+*cdc_calc
+アリサ「四則演算について簡単に復習してみましょう。@
+足し算#33FF33（＋　１　１）#FFFFFF⇒#33FF33２#FFFFFF@
+引き算#33FF33（－　５　２）#FFFFFF⇒#33FF33３#FFFFFF@
+掛け算#33FF33（＊　６　４）#FFFFFF⇒#33FF33２４#FFFFFF@
+割り算#33FF33（／　９　３）#FFFFFF⇒#33FF33３#FFFFFF@
+『⇒』は『評価した結果は…』という意味で使ってるわ」\
+アリサ「どれも書き方は
+#33FF33（演算子　数１　数２）#FFFFFF
+となっているのが特徴ね。@/
+括弧の中で#FFFF33演算子、被演算子#FFFFFFという順番で現れているでしょ。@/
+Ｌｉｓｐでは四則演算に限らず、この順番はすべて共通で、
+#33FF33（演算子　被演算子１　被演算子２…被演算子ｎ）#FFFFFF
+という風に式を書くのよ」\
+	goto *condicil_loop
+
+*cdc_eval
+アリサ「シンボルと式の評価について簡単に復習してみましょう。@
+まず、式の評価というのは評価の対象となる#FFFF33式#FFFFFFと、#FFFF33環境#FFFFFFの二つを使って行われるの。@/
+環境は、変数の束縛の情報が入っているの。@/
+シンボルを評価すると、この環境から変数の値が探されて、それが結果となるわ。@/
+一度#33FF33（ｄｅｆｉｎｅ　ｘ　２）#FFFFFFを評価すると、環境に『ｘは２に束縛された』と記憶されるわ。@/
+この後の評価においても同じ環境が使われるから、/
+#33FF33ｘ#FFFFFFを評価すると２という結果になるわ。@
+一方、数を評価すると、結果は評価する前と同じ数になるの。@/
+#33FF33（＋　６　７）#FFFFFFみたいな式を評価するときにも、６が評価されて６になって、
+７が評価されて７になってから＋による足し算が行われて１３という結果になるのよ」\
+	goto *condicil_loop
+
+
+*cdc_type
+アリサ「#FFFF33型#FFFFFFとは、値の種類のことよ。@/
+例えば、#33FF33５７#FFFFFFという値の型は『数』、@/
+#33FF33ｓｈａｍａｌ#FFFFFFという値の型は『シンボル』よ。@/
+プログラミング言語によっては変数と型が結びついているものもあるけど、/
+Ｌｉｓｐは値と型が結びついていているの。@/
+だから、どんな変数も好きな型の値で束縛できるのよ」\
+アリサ「それから、値の型を調べる関数というものも用意されていて、
+#33FF33/
+（ｎｕｍｂｅｒ？　１９）⇒＃ｔ
+（ｓｙｍｂｏｌ？　１９）⇒＃ｆ
+（ｎｕｍｂｅｒ？　’ａ）⇒＃ｆ
+（ｓｙｍｂｏｌ？　’ａ）⇒＃ｔ#FFFFFF
+関数#33FF33ｎｕｍｂｅｒ？#FFFFFFは、引数の型が数なら#33FF33＃ｔ#FFFFFF、それ以外なら#33FF33＃ｆ#FFFFFFという値を返すわ。@/
+関数#33FF33ｓｙｍｂｏｌ？#FFFFFFは、引数の型がシンボルなら#33FF33＃ｔ#FFFFFF、それ以外なら#33FF33＃ｆ#FFFFFFという値を返すわ。@/
+この二つの値の意味や使い方は６話でやるわね。@/
+今は#FFFF33値の型を調べる関数がある#FFFFFFということを覚えておくといいわ」\
+	goto *condicil_loop
+
+*cdc_list
+アリサ「リストを作るうえで#33FF33ｌｉｓｔ#FFFFFFという便利な関数があるの。@
+この関数は、任意個の引数を取る関数で、次のように使うわ。@
+#33FF33/
+（ｌｉｓｔ　１　２　３）⇒（１　２　３）#FFFFFF
+これだけだと、#33FF33’（１　２　３）#FFFFFFと書くのと同じように思えるかもしれないけど、@
+#33FF33/
+（ｄｅｆｉｎｅ　ｘ　２）⇒ｘ
+（ｌｉｓｔ　１　ｘ　３）⇒（１　２　３）#FFFFFF
+この例を見れば分かるとおり、ｌｉｓｔは引数を評価してるの。@/
+単にリストをｑｕｏｔｅした、#33FF33’（１　ｘ　３）#FFFFFFを評価しても、/
+式の値は#33FF33（１　ｘ　３）#FFFFFFとしかならないの。@/
+この違いをちゃんと考えてｑｕｏｔｅとｌｉｓｔを使い分けてね。@/
+ただし、ＮＳｃＬｉｓｐｅｒではｌｉｓｔはフリーモードでしか使えないわ。@/
+試したかったら、フリーモードを使ってね」\
+	goto *condicil_loop
+
+*cdc_chart
+アリサ「リストの構造を考えるときは図を描くのが有効なの。@/
+図は案外単純な規則で描く事ができるのよ」\
+アリサ「#33FF33（Ａ　Ｘ　Ｙ　Ｂ）#FFFFFFのようなリストを考えてみましょう。@/
+まず、リストを見たら、箱を二つ書いて、一つ目の箱から矢印を下に出して、そこに一つ目の要素を描くの。この場合#33FF33Ａ#FFFFFFね。@/
+そして、二つ目の箱から矢印を右に出して、その先にリストの残りの部分の図を描くわ。@/
+	show_dgm ":l;img/dgm_cdc_chart01a.bmp"
+残りの部分というと、この場合は#33FF33（Ｘ　Ｙ　Ｂ）#FFFFFFのことで、今度はＡの代わりにＸを取り出して同じことをするわ。@/
+リストの最後の要素にたどり着いたら、一つ目の箱からは下に矢印を出して、そこに最後の要素を書いて、二つ目の箱には斜線を引くの。@/
+	show_dgm ":l;img/dgm_cdc_chart01b.bmp"
+この斜線は『空リストが入っています』という意味なのよ。これで、簡単なリストの図はもう描けるわね」\
+	csp SP_DGM0 : print E_FAST
+アリサ「次に、#33FF33（Ａ　．　Ｂ）#FFFFFFのようなコンスを考えてみましょう。@/
+これは箱を二つ書いて、一つ目からはＣＡＲの要素へ矢印を書き、二つ目からはＣＤＲの要素への矢印を描くだけよ。@/
+	show_dgm ":l;img/dgm_cdc_chart02a.bmp"
+最後に、#33FF33（Ｘ　Ａ　．　Ｂ）#FFFFFFという行儀の悪いリストも考えてみましょう。@/
+これは、最初は普通のリストと同じ書き方をしていくと、最後に#33FF33（Ａ　．　Ｂ）#FFFFFFというコンスが残るので、/
+あとは同じ書き方をするだけよ@/
+	show_dgm ":l;img/dgm_cdc_chart02b.bmp"
+普通のリストの図がかければこっちも書けるはずよ」\
+	csp SP_DGM0 : print E_FAST
+アリサ「それでは、実際にちょっと複雑な例を見てみましょう。@/
+いままで#33FF33Ａ#FFFFFF等と大文字で表してきた箇所はリストでもかまわないの。@
+#33FF33（（ａ　．　ｂ）ｃ（ｄ））#FFFFFF
+このリストを描くことを考えてみるわね。@/
+最初は例にならって、箱を二つ書いて、一つ目の箱から下に矢印を出すの。@/
+そして、最初の要素である#33FF33（ａ　．　ｂ）#FFFFFFを描くんだけど、これもコンスなので、/
+再び箱を書いてからａとｂへの矢印を描くわ。@/
+	show_dgm ":l;img/dgm_cdc_chart03a.bmp"
+あとは、これまでに言った規則を当てはめていくだけで自然に図が描けるはずよ。@/
+	show_dgm ":l;img/dgm_cdc_chart03b.bmp"
+スラスラと図が描けるようになるまで、適当なリストを見るたびに図を描いてみることをお勧めするわ」\
+	csp SP_DGM0 : print E_FAST
+	goto *condicil_loop
+
+*cdc_improperlist
+アリサ「リストとは@
+１．空リスト
+２．ＣＤＲにリストを持つコンス
+のことなの。@/
+リストの説明をしているのに、『２』の方でリストという言葉を使っているのが違和感を感じるかもしれないわね。@/
+まず、『１』より、空リストはリストね。@/
+それから、『２』より、ＣＤＲに空リストを持つコンスもリストね。@/
+そして、そのコンスをＣＤＲにもつコンスもリストと言えるわけ。@/
+とにかく、リストとは、#FFFF33最後のコンスのＣＤＲが必ず空リスト#FFFFFFなの。@/
+それじゃあ、#33FF33（ａ　ｂ　．　ｃ）#FFFFFFみたいに、最後のコンスのＣＤＲが空リスト以外のものは何かというと、@/
+これは#FFFF33行儀の悪いリスト#FFFFFFなどと呼ぶわ。@/
+普通、『リストに対して○○をする関数』に対して行儀の悪いリストを送ると正しくない結果が返るわ。@/
+リストがある程度分かるまでは行儀の悪いリストはあまり使わない方がいいと思うわ」\
+	goto *condicil_loop
+
+*cdc_cxr
+アリサ「Ｌｉｓｐではｃａｒやｃｄｒを重ねて使いたいときが多いの。@/
+例えば、#33FF33（ｃａｒ　（ｃａｒ　ｘ））#FFFFFFとか、#33FF33（ｃａｒ　（ｃｄｒ　ｘ））#FFFFFFといった感じにね。@/
+これらはよく使うから、簡単に書くための関数が用意されていて、それぞれは、#33FF33（ｃａａｒ　ｘ）#FFFFFF、#33FF33（ｃａｄｒ　ｘ）#FFFFFFという風に書けるの。@/
+#33FF33ｃａａｒ#FFFFFFは、ＣＡＲをとった後にＣＡＲを取る関数、/
+#33FF33ｃａｄｒ#FFFFFFは、ＣＤＲをとった後にＣＡＲを取る関数よ。@/
+他にも#33FF33ｃｄａｒ#FFFFFFみたいに、ａとｄを入れ替えた似たような関数がたくさんあるの。@/
+これらの関数の名前は、最初はｃ、最後はｒと決まっているわ。@/
+処理系によっては#33FF33ｃａｄａｄｄａｄｒ#FFFFFFみたいな長いものも用意されているけど、/
+ＮＳｃＬｉｓｐｅｒでは#33FF33ｃｘｘｒ#FFFFFFみたいに二つ続けたものしか用意されてないわ。@/
+おまけにこれらはフリーモードでしか使えないから注意してね」\
+	goto *condicil_loop
+
+*cdc_condif
+アリサ「ｃｏｎｄを使ってｉｆを作ってみましょう。
+#33FF33/
+（ｄｅｆｉｎｅ　ｍｙ－ｉｆ
+　（ｌａｍｂｄａ　（ｃ　ｘ　ｙ）
+　　（ｃｏｎｄ
+　　　（ｃ　ｘ）
+　　　（ｅｌｓｅ　ｙ））））#FFFFFF
+こうやって作った関数#33FF33ｍｙ－ｉｆ#FFFFFF。@
+#33FF33/
+（ｍｙ－ｉｆ　（＝　０　０）
+　　　　　　　１
+　　　　　　　２）⇒１#FFFFFF
+使ってみたらこんな結果になるし、一見上手くいきそうなんだけど、実は問題があるの。@/
+何でだと思う？」\
+アリサ「問題はｍｙ－ｉｆが関数であるが故に、引数を評価するところにあるわ。
+#33FF33
+（ｍｙ－ｉｆ　（＝　ｎ　０）
+　　　　　　　０
+　　　　　　　（ｆ　（－　ｎ　１）））#FFFFFF
+こんな式を評価しようとすると、ｎの値にかかわらず、関数ｆが呼ばれるわ。@/
+つまり、ｍｙ－ｉｆを使って再帰を書こうとすると、関数が呼ばれ続け、永遠に終わらないの。@/
+要するに関数である以上、ｃｏｎｄを使ってｉｆを書いたり、その逆もできないって言うこと。@/
+そういったことをやりたい場合は#FFFF33マクロ#FFFFFFと呼ばれるものを使うんだけど、/
+ＮＳｃＬｉｓｐｅｒはマクロを実装してないからこの話は割愛するわね」\
+	goto *condicil_loop
+
+*cdc_recursion
+アリサ「関数の呼び出しを考えるとき、仮引数を実引数で置き換えると分かりやすいという話があったわよね。@/
+これを、再帰を使う関数で考えてみましょう。@
+#33FF33/
+（ｄｅｆｉｎｅ　ｆ
+　（ｌａｍｂｄａ　（ｎ）
+　　（ｉｆ
+　　　（＝　ｎ　０）
+　　　１
+　　　（＊　ｎ　（ｆ　（－　ｎ　１））））））#FFFFFF
+関数ｆをこう定義した後に、#33FF33（ｆ　２）#FFFFFFという式を評価する場合を考えるわね。@/
+関数の中に出てくる仮引数ｎを実引数２で置き換えると次のようになるわ。@
+#33FF33/
+（ｉｆ
+　（＝　２　０）
+　１
+　（＊　２　（ｆ　（－　２　１））））））#FFFFFF
+@ｉｆによって、第３引数が評価されるので、評価されるのは結局、
+#33FF33/
+（＊　２　（ｆ　（－　２　１）））#FFFFFF
+という式ね。@/
+この中に#33FF33（ｆ　（－　２　１））#FFFFFFという関数呼び出しがまた含まれているわね」\
+アリサ「ここで、
+#33FF33（＊　２　（ｆ　（－　２　１）））#FFFFFF
+のｆの呼び出しの部分も仮引数ｎを実引数１で置き換えることを考えましょう。@/
+ただし、ｉｆの部分は評価される式だけを取り出すわね。そうすると、@
+#33FF33/
+（＊　２　（＊　１　（ｆ　（－　１　１））））#FFFFFF
+さらに、仮引数ｎを実引数０で置き換えると、@
+#33FF33/
+（＊　２　（＊　１　１））#FFFFFF
+これでようやく関数呼び出しが終わって、式の値が求まるわね」\
+アリサ「ここで重要なのが、このような関数では、再帰が終わるまで、/
+実際の計算（この場合掛け算）が待たされるということ。@/
+部分式を評価したもので置き換えていくと、式がどんどん長くなっていくのが特徴ね」\
+	goto *condicil_loop
+
+*cdc_scope
+アリサ「次のような３つの式を考えてみましょう。
+#33FF33
+（ｄｅｆｉｎｅ　ｙ　１）
+（ｄｅｆｉｎｅ　ｆ
+　（ｌａｍｂｄａ　（ｘ）
+　　（＋　ｘ　ｙ）））
+（ｄｅｆｉｎｅ　ｇ
+　（ｌａｍｂｄａ　（ｙ）
+　　（ｆ　２）））#FFFFFF
+ここで、#33FF33（ｇ　１０）#FFFFFFという式の値はどうなると思う？@/
+　レキシカルスコープであるＳｃｈｅｍｅでは、関数ｆからは、関数ｇの内側にあるｙは見えないの。@/
+だから、大域変数のｙの値が使われて、#33FF33３#FFFFFFとなるわ。@/
+ただし、Ｌｉｓｐ方言の一つであるｅｌｉｓｐでは、ｆからｇのｙが見えて、式の値は#33FF33１２#FFFFFFとなるの。@/
+これは、ｅｌｉｓｐが#FFFF33ダイナミックスコープ#FFFFFFという規則を採用しているからよ。@/
+ダイナミックスコープについてはここでは触れないから、興味があったら自分で調べてね」\
+	goto *condicil_loop
+
+*cdc_ban
+アリサ「#33FF33ｓｅｔ！#FFFFFFを始め、Ｓｃｈｅｍｅには名前の最後に『！』をつけた関数がいくつかあるの。@/
+これは#FFFF33変数の束縛#FFFFFFを変更する関数という意味なの。@/
+だから、内部でｓｅｔ！を呼び出す関数も名前の最後に『！』をつけたりもするわ。@/
+ちなみに、発音するときはこの『！』は『バン』と発音するのよ。@/
+ｓｅｔ！は『セットバン』という感じにね」\
+	goto *condicil_loop
+
+*cdc_tailrecursion
+アリサ「末尾再帰を使った関数に対して、仮引数を実引数で置き換えるという考え方を使ってみましょう。@/
+#33FF33/
+（ｄｅｆｉｎｅ　（ｆ　ｎ　ｘ）
+　（ｉｆ
+　　（＝　ｎ　０）
+　　ｘ
+　　（ｆ　（－　ｎ　１）
+　　　　　（＊　ｎ　ｘ））））#FFFFFF
+ここで、#33FF33（ｆ　２　１）#FFFFFFを評価する場合を考えるわね。@/
+ｉｆの部分は評価される式だけ取り出すとすると、まずは、@
+#33FF33（ｆ　（－　２　１）　（＊　２　１））#FFFFFF
+という式に変わるわね。これもまた関数呼び出しだから、仮引数ｎ、ｘを実引数１、２で置き換えると、@
+#33FF33（ｆ　（－　１　１）　（＊　１　２））#FFFFFF
+同様に仮引数ｎ、ｘを実引数０、２で置き換えると#33FF33２#FFFFFFになるわ。@/
+普通の再帰の場合と違って、部分式を評価したもので置き換えても式は長くならないの。
+だから、単純な繰り返しの形に自動的に変わるのよ」\
+	goto *condicil_loop
+
+*cdc_listshare
+アリサ「リストの破壊的操作をする場合、コンスが共有されているかどうかを気にする必要があるわ。@/
+その際、最低限覚えておくことは、ｃａｒやｃｄｒを使うと、それが共有されること。@/
+	show_dgm ":l;img/dgm_cdc_listshare01.bmp"
+	csp SP_DGM0 : print E_FAST
+それと、ｃｏｎｓを使うと必ず新しいコンスが作られるから共有されないということ。@/
+だから、新しいリストを作るときはｃｏｎｓを何度も呼ぶことになるわ。@/
+例えば、リストをコピーする関数を考えてみましょう。
+#33FF33/
+（ｄｅｆｉｎｅ　（ｃｐ　ｌ）
+　（ｉｆ
+　　（ｎｕｌｌ？　ｌ）
+　　’（）
+　　（ｃｏｎｓ
+　　　（ｃａｒ　ｌ）
+　　　（ｃｐ　（ｃｄｒ　ｌ）））））#FFFFFF
+これで、コンスを共有せずにコピーできるように見えるけど、実は問題があるの」\
+アリサ「この定義だと、#33FF33（（ａ）ｂ）#FFFFFFのようにコンスのＣＡＲにコンスがある場合、そのコンスが共有されてしまうわ。@/
+	show_dgm ":l;img/dgm_cdc_listshare02.bmp"
+	csp SP_DGM0 : print E_FAST
+そこで、型がコンスか確かめる述語#33FF33ｐａｉｒ？#FFFFFFを使って、次のように書き直せるの。@
+#33FF33
+（ｄｅｆｉｎｅ　（ｃｐ　ｌ）
+　（ｉｆ
+　　（ｐａｉｒ？　ｌ）
+　　（ｃｏｎｓ（ｃｐ　（ｃａｒ　ｌ））
+　　　　　　　（ｃｐ　（ｃｄｒ　ｌ）））
+　　ｌ））#FFFFFF
+もちろん、ｐａｉｒ？は、引数の型がコンスなら＃ｔ、そうでなければ＃ｆを返す関数よ。
+このように、再帰的にｃｐを呼び出すことによって、コンスを共有することなくリストをコピーできるわ。@/
+少々ややこしいかもしれないけど、しっかりと考えたら仕組みは自然と分かるはずよ」\
+	goto *condicil_loop
+
+*cdc_eval2
+アリサ「関数#33FF33ｅｖａｌ#FFFFFFの引数として、ｑｕｏｔｅした式を与えると、その式を評価してくれるわね。@/
+けど、式を評価するには何かが足りてないと思わない？@/
+　そう。式を評価するには『環境』が必ずいるでしょ。@/
+ＮＳｃＬｉｓｐｅｒでは、ｅｖａｌは式を評価する環境として、大域環境を使うようになってるけど、/
+処理系によってはｅｖａｌの第２引数として環境を指定するものもあるわ。@/
+環境の取得の方法とかいった詳細は自分で調べてね」\
+	goto *condicil_loop
+
+*cdc_apply
+アリサ「Ｌｉｓｐの便利な関数の一つとして、#33FF33ａｐｐｌｙ#FFFFFFというものがあるの。@/
+これは、関数と#FFFF33引数のリスト#FFFFFFを受け取って、関数呼び出しを行うものよ。@/
+とりあえず、実際に使ってみましょう。@
+#33FF33
+（ａｐｐｌｙ　＋　’（１　２））⇒３
+（ａｐｐｌｙ　ｃｏｎｓ
+　　　　　　　’（ａ　ｂ））⇒（ａ　．　ｂ）#FFFFFF
+関数に送る引数をリストの形で渡せるというのがこの関数の便利なところなの。@/
+どう便利かというと……@/
+使いたくなったときにきっと便利と気付くはずよ」\
+	goto *condicil_loop
+
+*cdc_append
+アリサ「１０話の最後にいった/
+『#33FF33（ａ　ｂ）#FFFFFFと#33FF33（ｃ　ｄ）#FFFFFFを受け取って、#33FF33（ａ　ｂ　ｃ　ｄ）#FFFFFFを返す関数』/
+というものを作ってみましょう。@/
+;図が欲しい
+第１引数の最後に入っている空リストを第２引数と置き換えたらいいんだから、リストをコピーする関数をすこし書き換えれば上手くいくわ。@
+#33FF33
+（ｄｅｆｉｎｅ　（ｆ　ｘ　ｙ）
+　（ｉｆ
+　　（ｎｕｌｌ？　ｘ）
+　　ｙ
+　　（ｃｏｎｓ
+　　　（ｃａｒ　ｘ）
+　　　（ｆ　（ｃｄｒ　ｘ）　ｙ））））#FFFFFF
+ちなみに普通、Ｌｉｓｐにはこれと同じ動作をする#33FF33ａｐｐｅｎｄ#FFFFFFという関数が最初から用意されているわ。@/
+ただし、ＮＳｃＬｉｓｐｅｒではフリーモードでしか使えないけどね」\
+	goto *condicil_loop
+
+*cdc_restparameter
+アリサ「これまで作ってきた関数は取れる引数の数が決まっていたわよね。@/
+ここでは任意個の引数を取ることのできる関数を作ってみましょう。@
+#33FF33/
+（ｄｅｆｉｎｅ　ｆ
+　（ｌａｍｂｄａ　ｘ
+　　ｘ））　　　　　⇒ｆ
+（ｆ　１　２　３）　⇒（１　２　３）#FFFFFF
+このように、#33FF33（ｌａｍｂｄａ　変数　式）#FFFFFFと書くと、/
+変数は#FFFF33実引数のリスト#FFFFFFで束縛されるの。@/
+変数のリストとは#33FF33（ｆ　１　２　３）#FFFFFFという関数呼び出しの場合、#33FF33（１　２　３）#FFFFFFのことよ」\
+アリサ「また、一つ以上の任意個の引数をとる場合は、
+#33FF33（ｌａｍｂｄａ　（ｘ　．　ｒｅｓｔ）　式）#FFFFFF
+のように書くといいわ。こうすると、ｘは一つ目の実引数に束縛されて、ｒｅｓｔが二つ目以降の引数のリストで束縛されるわ。@/
+二つ目以降の引数のリストとは、#33FF33（ｆ　１　２　３）#FFFFFFという関数呼び出しの場合、#33FF33（２　３）#FFFFFFのことよ。@/
+同様に、二つ以上の任意個の引数をとる場合は、
+#33FF33（ｌａｍｂｄａ　（ｘ　ｙ　．　ｒｅｓｔ）　式）#FFFFFF
+三つ以上の場合もやり方は同じよ」\
+	goto *condicil_loop
+
+*cdc_div
+アリサ「団子数の割り算を考えてみましょう。@/
+『ｘ割るｙ』は、ｘからｙを何回引けばｙがｘより大きくなるか、その回数を求めるものと考えられるわね。@/
+ただしこれをやるには、ｘとｙのどちらが大きいかを比較する関数を先に作る必要があるわね。@
+#33FF33/
+（ｄｅｆｉｎｅ　（ｇｅ？　ｘ　ｙ）
+　（ｉｆ
+　　（ｎｕｌｌ？　（ｓｕｂ　ｙ　ｘ））
+　　＃ｔ
+　　＃ｆ））#FFFFFF
+この関数は第１引数が第２引数以上ならば＃ｔ、そうでなければ＃ｆを返すわ。@/
+ｓｕｂは引く数の方が引かれる数以上なら団子数０を返すように作ってるからこう書けるのよ」\
+アリサ「じゃあ、この関数を使って割り算を作ってみましょう。
+#33FF33/
+（ｄｅｆｉｎｅ　（ｄｉｖ　ｘ　ｙ）
+　（ｄｉｖｉ　ｘ　ｙ　（ｚｅｒｏ））
+（ｄｅｆｉｎｅ　（ｄｉｖｉ　ｘ　ｙ　ｎ）
+　（ｉｆ
+　　（ｇｅ？　ｘ　ｙ）
+　　（ｄｉｖｉ
+　　　（ｓｕｂ　ｘ　ｙ）
+　　　ｙ
+　　　（ｉｎｃ　ｎ））
+　　ｎ））#FFFFFF
+ｙがｘよりも大きければｎを返す。@/
+そうでなければｘをｙ引いて、ｎを１加えて計算を繰り返す。@/
+こうやって割り算を定義できるわ。@/
+ただし、ｙが団子数０の場合、永遠に計算が終わらないから、/
+ｙが０かどうかｄｉｖで確かめた方がいいかもしれないわね」\
+	goto *condicil_loop
+
+
+
+
+;;;;;用語集;;;;;
+;;;各用語にgotoで飛ぶ(選択肢なのでやむなし)
+;;;各用語から*glossary_loopにgotoで飛ぶ
+;;;クリア状態における判定は*glossary_loopで行う
+;;;;;
+*glossary
+	speak_mode
+	textclear
+	csp SP_R : csp SP_L
+	r_load ari_n
+	bg "img/blackboard.bmp", E_FAST
+	mov %adv_tmp, 0
+*glossary_loop
+	if %adv_clear == 0 goto *glossary_00
+	if %adv_clear == 1 goto *glossary_01
+	if %adv_clear == 2 goto *glossary_02
+	if %adv_clear == 3 goto *glossary_03
+	if %adv_clear == 4 goto *glossary_04
+	if %adv_clear == 5 && %adv_tmp == 0 goto *glossary_05
+	if %adv_clear == 5 && %adv_tmp == 1 goto *glossary_05_2
+	if %adv_clear == 6 && %adv_tmp == 0 goto *glossary_06
+	if %adv_clear == 6 && %adv_tmp == 1 goto *glossary_06_2
+	if %adv_clear == 7 && %adv_tmp == 0 goto *glossary_07
+	if %adv_clear == 7 && %adv_tmp == 1 goto *glossary_07_2
+	if %adv_clear == 8 && %adv_tmp == 0 goto *glossary_08
+	if %adv_clear == 8 && %adv_tmp == 1 goto *glossary_08_2
+	if %adv_clear == 9 && %adv_tmp == 0 goto *glossary_09
+	if %adv_clear == 9 && %adv_tmp == 1 goto *glossary_09_2
+	if %adv_clear == 10 && %adv_tmp == 0 goto *glossary_10
+	if %adv_clear == 10 && %adv_tmp == 1 goto *glossary_10_2
+	if %adv_clear == 11 && %adv_tmp == 0 goto *glossary_11
+	if %adv_clear == 11 && %adv_tmp == 1 goto *glossary_11_2
+	if %adv_clear == 12 && %adv_tmp == 0 goto *glossary_12
+	if %adv_clear == 12 && %adv_tmp == 1 goto *glossary_12_2
+*glossary_end
+	textclear
+	csp SP_R
+	bg black, E_FAST
+	return
+
+*glossary_00
+アリサ「読みたい単語を選択してね」
+	csel "ＮＳｃＬｉｓｐｅｒ", *gls_nsclisper, "戻る", *glossary_end
+*glossary_01
+アリサ「読みたい単語を選択してね」
+	csel "ＮＳｃＬｉｓｐｅｒ", *gls_nsclisper, "Ｌｉｓｐ", *gls_lisp, "ＮＳｃｒｉｐｔｅｒ", *gls_nscripter, "式", *gls_expr, "評価", *gls_eval, "ＲＥＰＬ", *gls_repl, "演算子・被演算子", *gls_operator, "戻る", *glossary_end
+*glossary_02
+アリサ「読みたい単語を選択してね」
+	csel "ＮＳｃＬｉｓｐｅｒ", *gls_nsclisper, "Ｌｉｓｐ", *gls_lisp, "ＮＳｃｒｉｐｔｅｒ", *gls_nscripter, "式", *gls_expr, "評価", *gls_eval, "ＲＥＰＬ", *gls_repl, "演算子・被演算子", *gls_operator, "方言", *gls_hogen, "Ｓｃｈｅｍｅ", *gls_scheme,  "シンボル", *gls_symbol, "数", *gls_num, "束縛", *gls_bind, "変数", *gls_variable, "環境", *gls_env, "戻る", *glossary_end
+*glossary_03
+アリサ「読みたい単語を選択してね」
+	csel "ＮＳｃＬｉｓｐｅｒ", *gls_nsclisper, "Ｌｉｓｐ", *gls_lisp, "ＮＳｃｒｉｐｔｅｒ", *gls_nscripter, "式", *gls_expr, "評価", *gls_eval, "ＲＥＰＬ", *gls_repl, "演算子・被演算子", *gls_operator, "方言", *gls_hogen, "Ｓｃｈｅｍｅ", *gls_scheme,  "シンボル", *gls_symbol, "数", *gls_num, "束縛", *gls_bind, "変数", *gls_variable, "環境", *gls_env, "アトム", *gls_atom, "ｑｕｏｔｅ", *gls_quote, "値", *gls_value, "関数", *gls_function, "スペシャルフォーム", *gls_special, "戻る", *glossary_end
+*glossary_04
+アリサ「読みたい単語を選択してね」
+	csel "ＮＳｃＬｉｓｐｅｒ", *gls_nsclisper, "Ｌｉｓｐ", *gls_lisp, "ＮＳｃｒｉｐｔｅｒ", *gls_nscripter, "式", *gls_expr, "評価", *gls_eval, "ＲＥＰＬ", *gls_repl, "演算子・被演算子", *gls_operator, "方言", *gls_hogen, "Ｓｃｈｅｍｅ", *gls_scheme,  "シンボル", *gls_symbol, "数", *gls_num, "束縛", *gls_bind, "変数", *gls_variable, "環境", *gls_env, "アトム", *gls_atom, "ｑｕｏｔｅ", *gls_quote, "値", *gls_value, "関数", *gls_function, "スペシャルフォーム", *gls_special, "コンス", *gls_cons, "リスト", *gls_list, "Ｓ式", *gls_sform, "番地", *gls_address, "戻る", *glossary_end
+*glossary_05
+	mov %adv_tmp, 0
+アリサ「読みたい単語を選択してね」
+	csel "ＮＳｃＬｉｓｐｅｒ", *gls_nsclisper, "Ｌｉｓｐ", *gls_lisp, "ＮＳｃｒｉｐｔｅｒ", *gls_nscripter, "式", *gls_expr, "評価", *gls_eval, "ＲＥＰＬ", *gls_repl, "演算子・被演算子", *gls_operator, "方言", *gls_hogen, "Ｓｃｈｅｍｅ", *gls_scheme,  "シンボル", *gls_symbol, "数", *gls_num, "束縛", *gls_bind, "変数", *gls_variable, "環境", *gls_env, "アトム", *gls_atom, "ｑｕｏｔｅ", *gls_quote, "値", *gls_value, "関数", *gls_function, "スペシャルフォーム", *gls_special, "コンス", *gls_cons, "リスト", *gls_list, "Ｓ式", *gls_sform, "番地", *gls_address, "λ山", *gls_mtlambda, "ｌａｍｂｄａ", *gls_lambda, "束縛変数", *gls_bound, "次へ", *glossary_05_2, "戻る", *glossary_end
+*glossary_05_2
+	mov %adv_tmp, 1
+	csel "自由変数", *gls_free, "前へ", *glossary_05, "戻る", *glossary_end
+*glossary_06
+	mov %adv_tmp, 0
+アリサ「読みたい単語を選択してね」
+	csel "ＮＳｃＬｉｓｐｅｒ", *gls_nsclisper, "Ｌｉｓｐ", *gls_lisp, "ＮＳｃｒｉｐｔｅｒ", *gls_nscripter, "式", *gls_expr, "評価", *gls_eval, "ＲＥＰＬ", *gls_repl, "演算子・被演算子", *gls_operator, "方言", *gls_hogen, "Ｓｃｈｅｍｅ", *gls_scheme,  "シンボル", *gls_symbol, "数", *gls_num, "束縛", *gls_bind, "変数", *gls_variable, "環境", *gls_env, "アトム", *gls_atom, "ｑｕｏｔｅ", *gls_quote, "値", *gls_value, "関数", *gls_function, "スペシャルフォーム", *gls_special, "コンス", *gls_cons, "リスト", *gls_list, "Ｓ式", *gls_sform, "番地", *gls_address, "λ山", *gls_mtlambda, "ｌａｍｂｄａ", *gls_lambda, "束縛変数", *gls_bound, "次へ", *glossary_06_2, "戻る", *glossary_end
+*glossary_06_2
+	mov %adv_tmp, 1
+	csel "自由変数", *gls_free, "再帰", *gls_recursion, "糖衣構文", *gls_syntaxsugar, "前へ", *glossary_06, "戻る", *glossary_end
+*glossary_07
+	mov %adv_tmp, 0
+アリサ「読みたい単語を選択してね」
+	csel "ＮＳｃＬｉｓｐｅｒ", *gls_nsclisper, "Ｌｉｓｐ", *gls_lisp, "ＮＳｃｒｉｐｔｅｒ", *gls_nscripter, "式", *gls_expr, "評価", *gls_eval, "ＲＥＰＬ", *gls_repl, "演算子・被演算子", *gls_operator, "方言", *gls_hogen, "Ｓｃｈｅｍｅ", *gls_scheme,  "シンボル", *gls_symbol, "数", *gls_num, "束縛", *gls_bind, "変数", *gls_variable, "環境", *gls_env, "アトム", *gls_atom, "ｑｕｏｔｅ", *gls_quote, "値", *gls_value, "関数", *gls_function, "スペシャルフォーム", *gls_special, "コンス", *gls_cons, "リスト", *gls_list, "Ｓ式", *gls_sform, "番地", *gls_address, "λ山", *gls_mtlambda, "ｌａｍｂｄａ", *gls_lambda, "束縛変数", *gls_bound, "次へ", *glossary_07_2, "戻る", *glossary_end
+*glossary_07_2
+	mov %adv_tmp, 1
+	csel "自由変数", *gls_free, "再帰", *gls_recursion, "糖衣構文", *gls_syntaxsugar, "大域環境", *gls_globalenv, "スコープ", *gls_scope, "局所変数", *gls_localvar, "述語", *gls_predicate, "火星λ", *gls_mars, "前へ", *glossary_07, "戻る", *glossary_end
+*glossary_08
+	mov %adv_tmp, 0
+アリサ「読みたい単語を選択してね」
+	csel "ＮＳｃＬｉｓｐｅｒ", *gls_nsclisper, "Ｌｉｓｐ", *gls_lisp, "ＮＳｃｒｉｐｔｅｒ", *gls_nscripter, "式", *gls_expr, "評価", *gls_eval, "ＲＥＰＬ", *gls_repl, "演算子・被演算子", *gls_operator, "方言", *gls_hogen, "Ｓｃｈｅｍｅ", *gls_scheme,  "シンボル", *gls_symbol, "数", *gls_num, "束縛", *gls_bind, "変数", *gls_variable, "環境", *gls_env, "アトム", *gls_atom, "ｑｕｏｔｅ", *gls_quote, "値", *gls_value, "関数", *gls_function, "スペシャルフォーム", *gls_special, "コンス", *gls_cons, "リスト", *gls_list, "Ｓ式", *gls_sform, "番地", *gls_address, "λ山", *gls_mtlambda, "ｌａｍｂｄａ", *gls_lambd, "束縛変数", *gls_bound, "次へ", *glossary_08_2, "戻る", *glossary_end
+*glossary_08_2
+	mov %adv_tmp, 1
+	csel "自由変数", *gls_free, "再帰", *gls_recursion, "糖衣構文", *gls_syntaxsugar, "大域環境", *gls_globalenv, "スコープ", *gls_scope, "局所変数", *gls_localvar, "述語", *gls_predicate, "火星λ", *gls_mars, "副作用", *gls_sideeffect, "クロージャ", *gls_closure, "ＧＣ", *gls_gc, "前へ", *glossary_08, "戻る", *glossary_end
+*glossary_09
+	mov %adv_tmp, 0
+アリサ「読みたい単語を選択してね」
+	csel "ＮＳｃＬｉｓｐｅｒ", *gls_nsclisper, "Ｌｉｓｐ", *gls_lisp, "ＮＳｃｒｉｐｔｅｒ", *gls_nscripter, "式", *gls_expr, "評価", *gls_eval, "ＲＥＰＬ", *gls_repl, "演算子・被演算子", *gls_operator, "方言", *gls_hogen, "Ｓｃｈｅｍｅ", *gls_scheme,  "シンボル", *gls_symbol, "数", *gls_num, "束縛", *gls_bind, "変数", *gls_variable, "環境", *gls_env, "アトム", *gls_atom, "ｑｕｏｔｅ", *gls_quote, "値", *gls_value, "関数", *gls_function, "スペシャルフォーム", *gls_special, "コンス", *gls_cons, "リスト", *gls_list, "Ｓ式", *gls_sform, "番地", *gls_address, "λ山", *gls_mtlambda, "ｌａｍｂｄａ", *gls_lambda, "束縛変数", *gls_bound, "次へ", *glossary_09_2, "戻る", *glossary_end
+*glossary_09_2
+	mov %adv_tmp, 1
+	csel "自由変数", *gls_free, "再帰", *gls_recursion, "糖衣構文", *gls_syntaxsugar, "大域環境", *gls_globalenv, "スコープ", *gls_scope, "局所変数", *gls_localvar, "述語", *gls_predicate, "火星λ", *gls_mars, "副作用", *gls_sideeffect, "クロージャ", *gls_closure, "ＧＣ", *gls_gc, "リストの破壊的操作", *gls_listdestructive, "末尾再帰", *gls_tailrecursion, "末尾呼出", *gls_tailcall, "前へ", *glossary_09, "戻る", *glossary_end
+*glossary_10
+	mov %adv_tmp, 0
+アリサ「読みたい単語を選択してね」
+	csel "ＮＳｃＬｉｓｐｅｒ", *gls_nsclisper, "Ｌｉｓｐ", *gls_lisp, "ＮＳｃｒｉｐｔｅｒ", *gls_nscripter, "式", *gls_expr, "評価", *gls_eval, "ＲＥＰＬ", *gls_repl, "演算子・被演算子", *gls_operator, "方言", *gls_hogen, "Ｓｃｈｅｍｅ", *gls_scheme,  "シンボル", *gls_symbol, "数", *gls_num, "束縛", *gls_bind, "変数", *gls_variable, "環境", *gls_env, "アトム", *gls_atom, "ｑｕｏｔｅ", *gls_quote, "値", *gls_value, "関数", *gls_function, "スペシャルフォーム", *gls_special, "コンス", *gls_cons, "リスト", *gls_list, "Ｓ式", *gls_sform, "番地", *gls_address, "λ山", *gls_mtlambda, "ｌａｍｂｄａ", *gls_lambda, "束縛変数", *gls_bound, "次へ", *glossary_10_2, "戻る", *glossary_end
+*glossary_10_2
+	mov %adv_tmp, 1
+	csel "自由変数", *gls_free, "再帰", *gls_recursion, "糖衣構文", *gls_syntaxsugar, "大域環境", *gls_globalenv, "スコープ", *gls_scope, "局所変数", *gls_localvar, "述語", *gls_predicate, "火星λ", *gls_mars, "副作用", *gls_sideeffect, "クロージャ", *gls_closure, "ＧＣ", *gls_gc, "リストの破壊的操作", *gls_listdestructive, "末尾再帰", *gls_tailrecursion, "末尾呼出", *gls_tailcall, "前へ", *glossary_10, "戻る", *glossary_end
+*glossary_11
+	mov %adv_tmp, 0
+アリサ「読みたい単語を選択してね」
+	csel "ＮＳｃＬｉｓｐｅｒ", *gls_nsclisper, "Ｌｉｓｐ", *gls_lisp, "ＮＳｃｒｉｐｔｅｒ", *gls_nscripter, "式", *gls_expr, "評価", *gls_eval, "ＲＥＰＬ", *gls_repl, "演算子・被演算子", *gls_operator, "方言", *gls_hogen, "Ｓｃｈｅｍｅ", *gls_scheme,  "シンボル", *gls_symbol, "数", *gls_num, "束縛", *gls_bind, "変数", *gls_variable, "環境", *gls_env, "アトム", *gls_atom, "ｑｕｏｔｅ", *gls_quote, "値", *gls_value, "関数", *gls_function, "スペシャルフォーム", *gls_special, "コンス", *gls_cons, "リスト", *gls_list, "Ｓ式", *gls_sform, "番地", *gls_address, "λ山", *gls_mtlambda, "ｌａｍｂｄａ", *gls_lambda, "束縛変数", *gls_bound, "次へ", *glossary_11_2, "戻る", *glossary_end
+*glossary_11_2
+	mov %adv_tmp, 1
+	csel "自由変数", *gls_free, "再帰", *gls_recursion, "糖衣構文", *gls_syntaxsugar, "大域環境", *gls_globalenv, "スコープ", *gls_scope, "局所変数", *gls_localvar, "述語", *gls_predicate, "火星λ", *gls_mars, "副作用", *gls_sideeffect, "クロージャ", *gls_closure, "ＧＣ", *gls_gc, "リストの破壊的操作", *gls_listdestructive, "末尾再帰", *gls_tailrecursion, "末尾呼出", *gls_tailcall, "高階関数", *gls_higher, "前へ", *glossary_11, "戻る", *glossary_end
+*glossary_12
+	mov %adv_tmp, 0
+アリサ「読みたい単語を選択してね」
+	csel "ＮＳｃＬｉｓｐｅｒ", *gls_nsclisper, "Ｌｉｓｐ", *gls_lisp, "ＮＳｃｒｉｐｔｅｒ", *gls_nscripter, "式", *gls_expr, "評価", *gls_eval, "ＲＥＰＬ", *gls_repl, "演算子・被演算子", *gls_operator, "方言", *gls_hogen, "Ｓｃｈｅｍｅ", *gls_scheme,  "シンボル", *gls_symbol, "数", *gls_num, "束縛", *gls_bind, "変数", *gls_variable, "環境", *gls_env, "アトム", *gls_atom, "ｑｕｏｔｅ", *gls_quote, "値", *gls_value, "関数", *gls_function, "スペシャルフォーム", *gls_special, "コンス", *gls_cons, "リスト", *gls_list, "Ｓ式", *gls_sform, "番地", *gls_address, "λ山", *gls_mtlambda, "ｌａｍｂｄａ", *gls_lambda, "束縛変数", *gls_bound, "次へ", *glossary_12_2, "戻る", *glossary_end
+*glossary_12_2
+	mov %adv_tmp, 1
+	csel "自由変数", *gls_free, "再帰", *gls_recursion, "糖衣構文", *gls_syntaxsugar, "大域環境", *gls_globalenv, "スコープ", *gls_scope, "局所変数", *gls_localvar, "述語", *gls_predicate, "火星λ", *gls_mars, "副作用", *gls_sideeffect, "クロージャ", *gls_closure, "ＧＣ", *gls_gc, "リストの破壊的操作", *gls_listdestructive, "末尾再帰", *gls_tailrecursion, "末尾呼出", *gls_tailcall, "高階関数", *gls_higher, "前へ", *glossary_12, "戻る", *glossary_end
+
+*gls_nsclisper
+アリサ「#FFFF33ＮＳｃＬｉｓｐｅｒ#FFFFFFとは、２００７年１月に、#FFFF33ｚｉｃｋ#FFFFFFとかいう大学生が作ったＬｉｓｐインタプリタよ。@/
+Ｌｉｓｐインタプリタとは、Ｌｉｓｐというプログラミング言語で書かれた文字列を読み取りながら、解釈し、計算をするものね。@/
+本来はゲームを作るのが目的の#FFFF33ＮＳｃｒｉｐｔｅｒ#FFFFFFの上で作られているのが特徴なのよ。@/
+とりあえず、何を言ってるか分からないと感じたのなら『ゲームの中に高性能電卓機能が入ってる』と考えるのもいいかもしれないわ。@/
+かなり強引だけどね。@/
+作った動機は特になくて『気まぐれ』だったみたいで、まさか/
+ＮＳｃＬｉｓｐｅｒを使ってゲームを作ることになるとは思っていなかったみたい」\
+goto *glossary_loop
+
+*gls_lisp
+アリサ「#FFFF33Ｌｉｓｐ#FFFFFFとは１９５８年に#FFFF33Ｊｏｈｎ　ＭｃＣａｒｔｈｙ#FFFFFFさんによって作られた#FFFF33関数型言語#FFFFFFよ。@/
+関数型言語というのは、#FFFF33関数適用#FFFFFFと呼ばれる単純な手順を繰り返すことによってコンピュータに計算をさせる言語なの。@/
+純粋な関数型言語は変数の値を変更することを許さないんだけど、Ｌｉｓｐでは変数の値の変更は許されてるわ。@/
+Ｌｉｓｐはプログラムの文法が非常に単純で、それを美しいという人も多いのよ。@/
+ただ、どうしても括弧が多くなるのが初心者を遠ざけるところではあるわね。@/
+Ｌｉｓｐの大きな特徴がデータとコードの区別がないというところで、これについては第４話で触れるから」\
+	goto *glossary_loop
+
+*gls_nscripter
+アリサ「#FFFF33ＮＳｃｒｉｐｔｅｒ#FFFFFFとは#FFFF33高橋直樹#FFFFFFさんが作った#FFFF33アドベンチャーゲーム#FFFFFFを作るためのソフトよ。@/
+簡単で、多くの機能がついている上に商用利用以外は#FFFF33無料#FFFFFFなので多くの人がアドベンチャーゲームを作るのに使ってるわ。@/
+用意してある命令から言って、簡単なアクションゲームを動かすことくらいなら想定されてるみたいだけど、/
+さすがにプログラミング言語のインタプリタを動かすことは想定してなかったんじゃないかしら？」\
+	goto *glossary_loop
+
+*gls_expr
+アリサ「#FFFF33式#FFFFFFとは、#FFFF33プログラム#FFFFFFとか#FFFF33コード#FFFFFFと言われるものね。/
+要するにコンピュータに指示を出すために人間が記述する文章のようなものよ。@
+式は
+#33FF33ｅｌｍ#FFFFFF
+みたいな一つの要素と
+#33FF33（ｅｌｍ１　ｅｌｍ２　ｅｌｍ３）
+#FFFFFFみたいに、/
+括弧の中にいくつか要素を含んだもの、
+#33FF33（（ｅｌｍ１　（ｅｌｍ２））（ｅｌｍ３））#FFFFFF
+のように括弧を入れ子にしたようなものから成るわ。@/
+これらの詳しい意味は第４話あたりから触れるわね」\
+	goto *glossary_loop
+
+*gls_eval
+アリサ「#FFFF33評価#FFFFFFとは、人が記述したプログラムである式を簡単な形に変形することで、/
+プログラムを#FFFF33実行#FFFFFFすることに相当するわね。/
+式を評価するとかならず#FFFF33結果#FFFFFFである#FFFF33値#FFFFFFが返ってくるというのが特徴かしら。@/
+Ｌｉｓｐは大きな式を評価するとき、小さな部分から順に評価していき、その結果を使いながら大きな式を評価するの。@/
+第２話で触れるけど、
+#33FF33（＋　（＊　３　４）８）#FFFFFF
+みたいな式を書いたら、
+#33FF33（＊　３　４）#FFFFFF
+が先に評価される。というやつね」\
+	goto *glossary_loop
+
+*gls_repl
+アリサ「#FFFF33ＲＥＰＬ#FFFFFFとは#FFFF33Ｒｅａｄ－Ｅｖａｌｕａｔｅ－Ｐｒｉｎｔ　Ｌｏｏｐ#FFFFFFの略で、/
+Ｌｉｓｐインタプリタの対話形式の実行サイクルのことを指してるの。@/
+対話形式ではインタプリタは、キーボードから式を#FFFF33読み込み#FFFFFF、それを#FFFF33評価#FFFFFFし、その結果を#FFFF33表示#FFFFFFするの。@/
+この一連の流れのことをＲＥＰＬというわ。@/
+また、このことをトップレベルといったりもするわね。@/
+すぐに結果が見れるから、いろいろ試すときには便利なのよ」\
+	goto *glossary_loop
+
+*gls_hogen
+アリサ「Ｌｉｓｐとは元々計算のモデルを表現するために作られたもので、プログラミング言語ではなかったのよ。@/
+それをＭＩＴの学生がプログラムとして実装することによって、プログラミング言語としてのＬｉｓｐは生まれたの。@/
+その後、Ｌｉｓｐの核となる部分は実装が簡単なため、多くの人がＬｉｓｐインタプリタ・コンパイラを作ったらしいわ。@/
+けれど、独自拡張などによって、それぞれに違いがでたの。@/
+それで、一つ一つのＬｉｓｐをＬｉｓｐ#FFFF33方言#FFFFFFというのよ。@/
+現在、Ｌｉｓｐとだけ言ったら#FFFF33ＣｏｍｍｏｎＬｉｓｐ#FFFFFFを指すことが多いわね。@/
+ＣｏｍｍｏｎＬｉｓｐは多くの機能を詰め込んだＬｉｓｐで、非常に多機能だわ。@/
+それに対して#FFFF33Ｓｃｈｅｍｅ#FFFFFFはなるべく機能を少なくしたコンパクトな言語なのよ。@/
+現在Ｌｉｓｐ方言として使われてるのは主にこの二つね」\
+	goto *glossary_loop
+
+*gls_scheme
+アリサ「#FFFF33Ｓｃｈｅｍｅ#FFFFFFとは１９７５年に#FFFF33Ｇｅｒａｌｄ　Ｊ．Ｓｕｓｓｍａｎ#FFFFFFさんと/
+#FFFF33Ｇｕｙ　Ｌ．Ｓｔｅｅｌｅ　Ｊｒ．#FFFFFFさんが作ったＬｉｓｐ方言よ。@/
+#FFFF33静的スコープ#FFFFFF、#FFFF33末尾再帰の最適化#FFFFFF、#FFFF33継続#FFFFFFのサポートをしているのが特徴だけど、/
+まあ、ここではそこら辺は割愛するわ。@/
+とにかく重要なのは機能が極端に単純化されてるため、#FFFF33非常にシンプル#FFFFFFで、なお#FFFF33強力#FFFFFFなことよ。@/
+名著『#FFFF33計算機プログラムの構造と解釈#FFFFFF』にてＳｃｈｅｍｅが使われているところから、興味を持って触る人も多いようね。@/
+ちなみに、ＮＳｃＬｉｓｐｅｒはＳｃｈｅｍｅに近い文法だけど、厳密には違うから『ＳｃｈｅｍｅライクなＬｉｓｐ方言』/
+というのが正しいのかしら」\
+	goto *glossary_loop
+
+*gls_symbol
+アリサ「#FFFF33シンボル#FFFFFFは#FFFF33名前#FFFFFFを表現するためのＳｃｈｅｍｅの値よ。@/
+名前とは文字の並びで、間にスペースや括弧を含めることはできないわ。/
+あと、数字だけからなる場合は#FFFF33数#FFFFFFと見なされ、シンボルにはならないわ」\
+	goto *glossary_loop
+
+*gls_num
+アリサ「#FFFF33数#FFFFFFは数字の並びが読み込まれると作られる、Ｓｃｈｅｍｅの値よ。@/
+本物のＳｃｈｅｍｅは/
+多倍長の整数、有理数、複素数なども扱えるんだけど、ＮＳｃＬｉｓｐｅｒでは自然数しか扱えないわ。@/
+最初から巨大な数を扱えるのはなかなか爽快だから、Ｓｃｈｅｍｅがある程度分かってきたら、/
+本物のＳｃｈｅｍｅインタプリタを使って、大きな数の階乗でも求めてみることをお勧めするわ」\
+	goto *glossary_loop
+
+*gls_bind
+アリサ「#FFFF33束縛（ｂｉｎｄ）する#FFFFFFとは、#FFFF33値#FFFFFFに#FFFF33名前#FFFFFFを付けることよ。@/
+値とは数やシンボル等のこと。名前とはシンボルのことね。@/
+具体的には#FFFF33環境#FFFFFFに値と名前の結びつきが格納されるわ。@/
+単に#FFFF33束縛#FFFFFFとだけ言った場合、値と名前の結びつきのことを指すわね。@/
+Ｓｃｈｅｍｅでは#33FF33ｄｅｆｉｎｅ#FFFFFFを使うことによって新たな束縛を作ることができるわよ」\
+	goto *glossary_loop
+
+*gls_variable
+アリサ「#FFFF33変数#FFFFFFとは、#FFFF33値#FFFFFFと結びつけられた#FFFF33名前#FFFFFFのことね。@/
+一言で言えば、#FFFF33束縛されたシンボル#FFFFFFかしら。@/
+Ｓｃｈｅｍｅ上に変数という特殊な存在があるわけではなく、/
+シンボルと値の関係を保持する#FFFF33環境#FFFFFFと、/
+シンボルは評価されれば対応する値になるという規則によって生まれる概念的なものね。@/
+普通、束縛してないシンボルを評価すると/
+『束縛されてません』と怒られるわ。@/
+シンボルを評価するような式を書くと、Ｓｃｈｅｍｅは、そのシンボルは変数であるとみなすのよ」\
+	goto *glossary_loop
+
+*gls_env
+アリサ「#FFFF33環境#FFFFFFとは、#FFFF33値#FFFFFFと#FFFF33名前#FFFFFFの結びつきである/
+#FFFF33束縛#FFFFFFの集まりね。@/
+シンボルを評価すると、環境からそのシンボルを束縛している値を探し出し、その値を返すの。@/
+最初のうちは環境の存在を意識しなくても本当は大丈夫よ。@/
+Ｓｃｈｅｍｅの評価の規則を成す基本的な存在だから、/
+リリカルＬｉｓｐでは詳しく書いているわ」\
+	goto *glossary_loop
+
+
+
+
+
+*gls_operator
+アリサ「#33FF33（式１　式２…式ｎ）#FFFFFFのように、式の並びを括弧で囲んだ式の最初の要素#33FF33式１#FFFFFFを#FFFF33演算子#FFFFFF、@/
+それ以外の要素#33FF33式２～ｎ#FFFFFFを#FFFF33被演算子#FFFFFFというわ」\
+	goto *glossary_loop
+
+*gls_atom
+アリサ「括弧で囲われていない式のことを#FFFF33アトム#FFFFFFというわ。@/
+具体的には数とシンボルのことね」\
+	goto *glossary_loop
+
+*gls_quote
+アリサ「#FFFF33ｑｕｏｔｅ#FFFFFFは一つの引数を受け取り、それをそのまま返すスペシャルフォームよ。@
+#33FF33（ｑｕｏｔｅ　ｘ）#FFFFFFを評価するとシンボル#FFFF33ｘ#FFFFFFが結果として返るわ。@/
+引用符’を使うと#33FF33’ｘ#FFFFFFと書くことができるわ」\
+	goto *glossary_loop
+
+*gls_value
+アリサ「#FFFF33値#FFFFFFとはＬｉｓｐで扱えるデータのことよ。@/
+#FFFF33オブジェクト#FFFFFFということも多いわ。@/
+Ｌｉｓｐは式自身が値であり、式を評価して得られるものもまた値なの。@/
+まあ、これに関しては追々説明するわね」\
+	goto *glossary_loop
+
+*gls_type
+アリサ「#FFFF33型#FFFFFFとは値の種類のことよ。@/
+Ｌｉｓｐの変数は任意の型の値で束縛することができるのよ」\
+	goto *glossary_loop
+
+*gls_function
+アリサ「#FFFF33関数#FFFFFFはいくつかの引数を受け取って、それに対して処理をし、値を返すものよ。@/
+関数を呼び出すには
+#33FF33（関数　引数１　引数２…引数ｎ）#FFFFFF
+と書くわ。関数はその処理をする前に、全ての引数を評価するのが特徴ね。@
+#33FF33（＋　１　（＊　２　３））#FFFFFFみたいな式も、同様の規則で評価されるの。@/
+＋から見ると、#33FF33１#FFFFFFと#33FF33（＊　２　３）#FFFFFFが引数だから先に評価されるのよ。@/
+だから、括弧を入れ子にしても内側から評価されるのよ」\
+	goto *glossary_loop
+
+*gls_special
+アリサ「#FFFF33スペシャルフォーム#FFFFFFは関数と非常に良く似たものだけど、引数を評価しないのが特徴よ。@/
+受け取る引数の数が決まってないものも多いわ。@/
+スペシャルフォームは通常の評価とは違う特殊な規則で評価されるから注意してね」\
+	goto *glossary_loop
+
+*gls_cons
+アリサ「#FFFF33コンス#FFFFFFは２つの値を覚えることのできる型よ。@/
+#FFFF33対#FFFFFFといったりもするわ。@/
+関数ｃｏｎｓを使うことによって作り出せて、@/
+関数ｃａｒ、ｃｄｒを使うことによって、覚えている値を取り出せるわ」\
+	goto *glossary_loop
+
+*gls_list
+アリサ「#FFFF33リスト#FFFFFFとは、
+構造の上では『空リストか、リストをＣＤＲに持つコンス』、@
+見た目の上では『括弧の中にいくつかの値を並べたもの』と考えられるわ。@/
+だから、式もまたリストなの。@/
+シンボルを評価したら対応する値になるでしょ。@/
+だから、シンボルそのものを取得したければｑｕｏｔｅするわね。@/
+同様に、リストは評価したら関数呼び出しとして扱われるから、/
+リストそのものを取得したければｑｕｏｔｅするのよ」\
+	goto *glossary_loop
+
+*gls_sform
+アリサ「#FFFF33Ｓ式#FFFFFFとは、
+１．アトム
+２．（Ｓ式　．　Ｓ式）
+のことよ。@例えば、
+#33FF33１１#FFFFFF
+#33FF33ｓ#FFFFFF
+#33FF33（ｓ　．　１１）#FFFFFF
+#33FF33（ｔ　．　（ｓ　．　１１））#FFFFFF
+のことね」\
+アリサ「ただし、
+#33FF33（Ａ　．（Ｂ　．（Ｃ　．Ｄ）））#FFFFFF
+というＳ式は、書き方を省略して、
+#33FF33（Ａ　Ｂ　Ｃ　．　Ｄ）#FFFFFF
+と書くことができるわ。@/
+また、Ｄが空リスト#33FF33（）#FFFFFFの場合、さらに省略して、
+#33FF33（Ａ　Ｂ　Ｃ）#FFFFFF
+と書くことができるの。@/
+ただし、これはあくまでも書き方を省略したもので、どちらで書いても問題ないわ」\
+アリサ「Ｌｉｓｐの大きな特徴は、プログラムである式が全てＳ式で表現できて、@/
+それを評価したものを表示するときも、すべてＳ式を使って表示できるということなの。@/
+ただし、一部の値の表示はＳ式以外の表現で表されるわ。@/
+だから、入力の形式と出力の形式が完全に一致するわけではないのよ」\
+	goto *glossary_loop
+
+*gls_address
+アリサ「Ｌｉｓｐの値は箱の中に入っていると考えられるの。@/
+この箱はたくさん用意されているけど、一つ一つ固有の番号が付いていて、/
+その番号のことを#FFFF33番地#FFFFFF（Ａｄｄｒｅｓｓ）というの。@/
+この『箱』とは何かといったら、実際はメモリなど、計算機の記憶装置よ」\
+	goto *glossary_loop
+
+*gls_mtlambda
+アリサ「#FFFF33λ山#FFFFFFとは、京都の東山に位置しており、五山送り火で有名な山よ。@/
+何故山にλと描かれているのかはよく分かってないの。@/
+よく晴れた日にはλの文字が『大』の文字にも見えるのよ」\
+	goto *glossary_loop
+
+*gls_lambda
+アリサ「関数を作るのになんで#33FF33ｌａｍｂｄａ#FFFFFFという/
+名前？と思うかもしれないわね。@/
+気になった人は、#FFFF33λ計算#FFFFFFを勉強してみるといいわ。@/
+『計算論　計算可能性とラムダ計算』という本がお勧めよ。@/
+λ計算を勉強すると、改めてＬｉｓｐの面白さが分かると思うわ」\
+	goto *glossary_loop
+
+*gls_bound
+アリサ「束縛変数とは、仮引数のことよ。@
+#33FF33/
+（ｌａｍｂｄａ　（ｘ）　本体）#FFFFFF
+この式の値として得られる関数に対してｘのことを束縛変数といい、/
+ｘはこの関数に束縛されているというわ。@/
+束縛変数の値は関数を呼び出すときに付けた実引数の値になるわ。@/
+だから、束縛変数は名前を#33FF33本体#FFFFFFに出てこない別の名前に付け替えても、関数の働き自体は全く変わらないわ」\
+	goto *glossary_loop
+
+*gls_free
+アリサ「#FFFF33自由変数#FFFFFFとは関数本体に出てくる束縛変数以外の変数のことよ。@
+#33FF33/
+（ｌａｍｂｄａ　（ｘ）　（＋　ｘ　ｙ））#FFFFFF
+この式の値として得られる関数に現れる変数ｙが自由変数よ。@/
+自由変数の値はその式を評価した環境によって決まるわ。@/
+だから、自由変数を含む関数は同じ実引数をつけても違う値が返ることがあるわ」\
+	goto *glossary_loop
+
+*gls_recursion
+アリサ「#FFFF33再帰#FFFFFFとは自分のことを定義するのに自分自身を使うことよ。@
+#33FF33/
+（ｄｅｆｉｎｅ　ｆ
+　（ｌａｍｂｄａ　（ｎ）
+　　（ｉｆ　（＝　ｎ　０）
+　　　　　　０
+　　　　　　（ｆ　（－　ｎ　１）））））#FFFFFF
+例えば、この式はｆを定義してるのに、その値である関数は中でｆを使ってるでしょ。@/
+関数呼び出しとして自分自身を呼び出すことを#FFFF33再帰呼び出し#FFFFFFというわ」\
+	goto *glossary_loop
+
+*gls_syntaxsugar
+アリサ「#FFFF33糖衣構文#FFFFFF（Ｓｙｎｔａｘ　Ｓｕｇａｒ）とは、/
+既にある構文で実現できることを簡単に実現するために用意されている特殊な構文のことよ。@/
+特定の用途に限定された構文だけあって、上手く使えば式の見通しはよくなるわ」\
+	goto *glossary_loop
+
+*gls_scope
+アリサ「#FFFF33スコープ#FFFFFFとは変数が見える範囲のことよ。@/
+ＳｃｈｅｍｅやＣｏｍｍｏｎＬｉｓｐは#FFFF33レキシカルスコープ#FFFFFFといって、/
+内側から外側が見えるけど、外側からは内側が見えないのよ。@/
+	show_dgm ":l;img/dgm_gls_scope01.bmp"
+Ｌｉｓｐ方言によっては、これとは異なる#FFFF33ダイナミックスコープ#FFFFFFというものを採用しているものもあるわ」\
+	csp SP_DGM0 : print E_FAST
+	goto *glossary_loop
+
+*gls_localvar
+アリサ「局所変数とはある特定の範囲でだけ使える変数のことよ。@/
+Ｌｉｓｐで局所変数を作るにはｌａｍｂｄａか、その糖衣構文であるｌｅｔを使うわ」\
+	goto *glossary_loop
+
+*gls_globalenv
+アリサ「#FFFF33大域環境#FFFFFFとはトップレベルから入力された式を評価するのに使われる環境よ。@/
+新たな環境が作られても、最終的には大域環境に繋がるから、/
+大域環境に含まれている#FFFF33大域変数#FFFFFFは、どこからでも見ることができるわ」\
+	goto *glossary_loop
+
+*gls_predicate
+アリサ「#FFFF33述語#FFFFFFとは#33FF33＃ｔ#FFFFFFか#33FF33＃ｆ#FFFFFFを返す関数よ。@/
+#33FF33ｎｕｍｂｅｒ？#FFFFFFや#33FF33ｓｙｍｂｏｌ？#FFFFFFのように、基本的には名前の最後に『？』がつくのよ。@/
+ただ、#33FF33＝#FFFFFFのように『？』で終わらない名前のものもあるけどね。@/
+この『？』は『ピー』と発音するわ。述語（ｐｒｅｄｉｃａｔｅ）の頭文字なの。@/
+Ｓｃｈｅｍｅ以外のＬｉｓｐ方言では、キーボードから『？』を打ち込めない機種が存在したという歴史的経緯から、/
+#33FF33ｎｕｍｂｅｒｐ#FFFFFFのように、述語の最後がｐで終わってるものも多いわ」\
+	goto *glossary_loop
+
+*gls_mars
+アリサ「ググれ！」\
+アリサ「といいたいところだけど、ＵＲＬを載せておくわね。
+#FFFF33ｈｔｔｐ：／／ｔｈｅｍｉｓ．ａｓｕ．ｅｄｕ／ｚｏｏｍ－２００４０２０２Ａ．ｈｔｍｌ#FFFFFF
+きっと衝撃的な画像を目にすることになるわよ」\
+	goto *glossary_loop
+
+*gls_sideeffect
+アリサ「#FFFF33副作用#FFFFFFとは結果となる値を求めるのではなく、ほかの事をするための作用のことよ。@/
+例えば、変数の束縛を変更したり、文字を表示したりするのがこれに相当するわ」\
+	goto *glossary_loop
+
+*gls_closure
+アリサ「#FFFF33クロージャ#FFFFFF（関数閉包）とは、関数の中身と評価に使う環境を一緒にしたものよ。@/
+環境を一緒にすることによって、自由変数の値を取得することができるの。@/
+Ｓｃｈｅｍｅではｌａｍｂｄａによって作られる関数型の値はクロージャだから、特にこの言葉を気にしなくてもいいわよ」\
+	goto *glossary_loop
+
+*gls_gc
+アリサ「#FFFF33ＧＣ#FFFFFF（Ｇａｒｂａｇｅ　Ｃｏｌｌｅｃｔｉｏｎ）とは/
+必要のなくなった値の入った箱から値を捨て、その箱を再利用する仕組みのことよ。@/
+Ｌｉｓｐ処理系はＧＣを搭載しているので、プログラマが必要な値、必要でない値の判別をする必要がなくなり、/
+楽ができるのよ」\
+	goto *glossary_loop
+
+*gls_listdestructive
+;;図が欲しい
+アリサ「#FFFF33リストの破壊的操作#FFFFFFとは、コンスの中身を書き換える操作のことよ。@/
+#33FF33ｓｅｔ－ｃａｒ！#FFFFFF、#33FF33ｓｅｔ－ｃｄｒ！#FFFFFFを使うことによって行うわ。@/
+リストの破壊的操作は循環構造を作る場合もあるの。@/
+	show_dgm ":l;img/dgm_gls_listdestructive01.bmp"
+	csp SP_DGM0 : print E_FAST
+ＮＳｃＬｉｓｐｅｒは循環構造を持つリストを表示しようとすると無限ループに陥るし、/
+慣れないうちは使わない方がいいわよ」\
+	goto *glossary_loop
+
+*gls_tailrecursion
+アリサ「#FFFF33末尾再帰#FFFFFFとは関数の最後で行う再帰呼び出しのことよ。@/
+関数の最後とは、その式の値がそのまま関数の返す値となる箇所のことなの。
+Ｌｉｓｐで末尾再帰を行うと、それは自動的に関数呼び出しではなく、単純な繰り返しに変換されるから、@/
+無駄にメモリを使うことなく、高速に処理をおこうなうことができるのよ」\
+	goto *glossary_loop
+
+*gls_tailcall
+アリサ「#FFFF33末尾呼出#FFFFFFとは関数の最後で行う関数呼び出しのことよ。@/
+Ｓｃｈｅｍｅは末尾再帰を単純な繰り返しに変換するのと同様に、末尾呼出も繰り返しに変換するのよ」\
+	goto *glossary_loop
+
+*gls_higher
+アリサ「#FFFF33高階関数#FFFFFFとは受け取る引数や、返す値が関数である関数のことよ。@/
+この高階関数を簡単に扱えるのがＬｉｓｐの大きな特徴の一つなの。@/
+高階関数を使ったテクニックなどを勉強したかったら、ちゃんとした本でＬｉｓｐを勉強してね」\
+	goto *glossary_loop
+
+
+

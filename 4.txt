@@ -1,0 +1,960 @@
+;miss x 4
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;ここは後で消すこと
+*battle04_test
+	gosub *destroy_title
+	goto *battle04
+
+*battle09_test
+	gosub *destroy_title
+	goto *battle09
+
+*battle12_test
+	gosub *destroy_title
+	goto *battle12
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;共通
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+*battle_set_escact
+	rnd %tmp, 7
+	if %tmp == 0 mov $sret, "見逃す"
+	if %tmp == 1 mov $sret, "追い払う"
+	if %tmp == 2 mov $sret, "停戦交渉"
+	if %tmp == 3 mov $sret, "見逃してもらう"
+	if %tmp == 4 mov $sret, "逃走する"
+	if %tmp == 5 mov $sret, "敗走する"
+	if %tmp == 6 mov $sret, "退却する"
+	return
+
+*battle_show_state
+	itoa2 $stmp, %adv_hp
+	itoa2 $stmp2, %adv_maxhp
+	mov $stmp, ":s/20,20,1;#FFFFFF" + $stmp + "／" + $stmp2
+	lsph SP_TMP2, ":l;img/state_box.bmp", 10, 500
+	lsph SP_TMP1, $stmp, 65, 505
+	lsph SP_TMP, ":s/20,20,1;#FFFFFF鮫島", 15, 505
+	vsp SP_TMP, 1
+	vsp SP_TMP1, 1
+	vsp SP_TMP2, 1
+	return
+
+*battle_hide_state
+	vsp SP_TMP, 0
+	vsp SP_TMP1, 0
+	vsp SP_TMP2, 0
+	print 1
+	return
+
+*battle_prev_atc
+	talk_mode
+	csp SP_R
+	c_show ":l;img/same.bmp"
+	return
+
+*battle_prev_act
+	speak_mode
+	csp SP_R : csp SP_C : csp SP_L
+	r_show ":l;img/same.bmp"
+	return
+
+
+*battle_attack
+if %adv_same_level == 1 csel "鮫パンチ", *battle_punch, "鮫キック", *battle_kick, "鮫チョップ", *battle_chop
+if %adv_same_level == 2 csel "鮫パンチ", *battle_punch, "鮫キック", *battle_kick, "鮫チョップ", *battle_chop, "さめヘッド！！！", *battle_head, "さめダイナミック！！", *battle_dynamic, "竜巻拳・さめトルネード！", *battle_tornado
+if %adv_same_level == 3 csel "鮫パンチ", *battle_punch, "鮫キック", *battle_kick, "鮫チョップ", *battle_chop, "さめヘッド！！！", *battle_head, "さめダイナミック！！", *battle_dynamic, "竜巻拳・さめトルネード！", *battle_tornado, "サメビーム", *battle_beam, "サメオキシジェンデストロイヤー", *battle_destroyer, "サメスチールウール", *battle_steal
+if %adv_same_level == 4 csel "鮫パンチ", *battle_punch, "鮫キック", *battle_kick, "鮫チョップ", *battle_chop, "さめヘッド！！！", *battle_head, "さめダイナミック！！", *battle_dynamic, "竜巻拳・さめトルネード！", *battle_tornado, "サメビーム", *battle_beam, "サメオキシジェンデストロイヤー", *battle_destroyer, "サメスチールウール", *battle_steal, "ＳＡＭＥ　８８ｍ　ＧＵＮ", *battle_88, "ＳＡＭＥ　ＭＩＳＳＩＬＥ", *battle_missile, "ＳＡＭＥ　ＬＡＳＥＲ", *battle_laser
+if %adv_same_level == 5 csel "鮫パンチ", *battle_punch, "鮫キック", *battle_kick, "鮫チョップ", *battle_chop, "さめヘッド！！！", *battle_head, "さめダイナミック！！", *battle_dynamic, "竜巻拳・さめトルネード！", *battle_tornado, "サメビーム", *battle_beam, "サメオキシジェンデストロイヤー", *battle_destroyer, "サメスチールウール", *battle_steal, "ＳＡＭＥ　８８ｍ　ＧＵＮ", *battle_88, "ＳＡＭＥ　ＭＩＳＳＩＬＥ", *battle_missile, "ＳＡＭＥ　ＬＡＳＥＲ", *battle_laser, "５７歳の底力", *battle_57
+if %adv_same_level == 6 csel "鮫パンチ", *battle_punch, "鮫キック", *battle_kick, "鮫チョップ", *battle_chop, "さめヘッド！！！", *battle_head, "さめダイナミック！！", *battle_dynamic, "竜巻拳・さめトルネード！", *battle_tornado, "サメビーム", *battle_beam, "サメオキシジェンデストロイヤー", *battle_destroyer, "サメスチールウール", *battle_steal, "ＳＡＭＥ　８８ｍ　ＧＵＮ", *battle_88, "ＳＡＭＥ　ＭＩＳＳＩＬＥ", *battle_missile, "ＳＡＭＥ　ＬＡＳＥＲ", *battle_laser, "５７歳の底力", *battle_57, "鮫島の怒り", *battle_ikari
+
+
+
+
+
+
+
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;4話用
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+*battle04_eprev_atc
+	talk_mode
+	csp SP_R
+	c_show ":l;img/jiku.bmp"
+	return
+
+
+
+*battle04
+	mov %adv_rmode, 0
+	mov %adv_hp, 150
+	mov %adv_maxhp, 150
+	mov %adv_ehp, 300
+	mov %adv_noroi_off, 1 ;;;
+	vsp SP_R, 0 : vsp SP_L, 0
+	bg black, E_SLOW
+	mov %adv_same_level, 1
+	if %adv_noroi_kill >= 1 mov %adv_same_level, 2
+	if %adv_noroi_kill >= 10 mov %adv_same_level, 3
+	if %adv_noroi_kill >= 30 mov %adv_same_level, 4
+	if %adv_noroi_kill >= 50 mov %adv_same_level, 5
+	if %adv_noroi_kill >= 100 mov %adv_same_level, 6
+;	r_load ":l;img/same.bmp"
+	print E_NORMAL
+	goto *battle04_act
+
+*battle04_act
+	gosub *battle_set_escact
+	gosub *battle_show_state
+	gosub *battle_prev_act
+csel "たたかう", *battle04_attack, "魔法", *battle04_magic, $sret, *battle04_esc
+
+*battle04_esc
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「……失敗しました」\
+	goto *battle04_enemy
+
+
+*battle04_attack
+	mov $sadv_label, "*battle04_damage_a"
+	goto *battle_attack
+
+*battle04_magic
+	mov $sadv_label, "*battle04_damage_m"
+csel "サメウェーブ", *battle_wave, "サメブラスター", *battle_blaster, "サメシュート", *battle_shoot
+
+
+*battle04_damage_a
+	rnd %tmp, 9
+	add %tmp, 16
+	mul %ret, %tmp
+	div %ret, 10
+	mov %tmp, %ret  ;;これがないと何故か%retが消失した……
+	sub %adv_ehp, %tmp
+	gosub *battle04_effect_a
+	if %adv_ehp <= 0 goto *battle04_clear
+	goto *battle04_enemy
+
+*battle04_damage_m
+	sub %ret, %adv_miss
+	rnd %tmp, 3
+	add %tmp, 19
+	mul %ret, %tmp
+	div %ret, 10
+	mov %tmp, %ret  ;;これがないと何故か%retが消失した……
+	sub %adv_ehp, %tmp
+	gosub *battle04_effect_m
+	if %adv_ehp <= 0 goto *battle04_clear
+	goto *battle04_enemy
+
+
+*battle04_judge
+	if %adv_hp <= 0 goto *battle04_gameover
+	goto *battle04_act
+
+
+*battle04_enemy
+	gosub *battle04_eprev_atc
+	rnd %tmp, 3
+	if %tmp == 0 gosub *battle04_enemy0
+	if %tmp == 1 gosub *battle04_enemy1
+	if %tmp == 2 && %adv_ehp > 150 gosub *battle04_enemy2
+	if %tmp == 2 && %adv_ehp <= 150 gosub *battle04_enemy3
+	rnd %tmp, 6
+	add %ret, %tmp
+	mov %tmp, %ret
+	gosub *battle04_eeffect
+	sub %adv_hp, %tmp
+	goto *battle04_judge
+
+
+;;;変数の衝突に要注意
+*battle04_effect_m
+	csp SP_C
+	c_load ":l;img/jiku.bmp"
+	bg black, E_NORMAL
+	lsp SP_FILL, ":c;img/same_blue.bmp", 0, 0
+	print E_BUBBLE
+	csp SP_FILL
+	print 1
+	quake 4,200
+	itoa2 $sarg0, %tmp
+	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+	lsp SP_TMP, $sarg0, 360, 500
+	print E_NORMAL
+	delay 1000
+	csp SP_TMP
+	print E_FAST
+	return
+
+;;;変数の衝突に要注意
+*battle04_effect_a
+	csp SP_C
+	c_load ":l;img/jiku.bmp"
+	bg black, E_NORMAL
+	lsp SP_FILL, ":c;img/same_yellow.bmp", 0, 0
+	print E_FAST
+	csp SP_FILL
+	print 1
+	quake 4,200
+	itoa2 $sarg0, %tmp
+	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+	lsp SP_TMP, $sarg0, 360, 500
+	print E_NORMAL
+	delay 1000
+	csp SP_TMP
+	print E_FAST
+	return
+
+;;;変数の衝突に要注意
+*battle04_eeffect
+	csp SP_C
+	c_load ":l;img/same.bmp"
+	bg black, E_NORMAL
+	lsp SP_FILL, ":c;img/jiku_blue.bmp", 0, 0
+	print E_RAIN
+	csp SP_FILL
+	print 1
+	quake 4,200
+	itoa2 $sarg0, %tmp
+	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+	lsp SP_TMP, $sarg0, 360, 500
+	print E_NORMAL
+	delay 1000
+	csp SP_TMP
+	print E_FAST
+	return
+
+
+
+
+*battle04_gameover
+	csp SP_C
+	print E_SLOW
+鮫島は敗北した……\
+csel "再挑戦", *battle04, "タイトルに戻る", *battle04_lost
+
+*battle04_lost
+	mov %adv_rmode, 1
+	mov %ret, 1
+	return
+
+
+*battle04_clear
+	csp SP_C
+	print E_SLOW
+鮫島は勝利した！！\
+	speak_mode
+	r_show ":l;img/same.bmp"
+鮫島のレベルが上がった
+　・攻撃力が#FFFF33４#FFFFFF上昇した
+　・魔力が#FFFF33７#FFFFFF上昇した
+　・体力が#FFFF33５#FFFFFF上昇した\
+	csp SP_R
+	talk_mode
+	bg black, E_SLOW
+	mov %ret, 0
+	mov %adv_rmode, 1
+	return  ;;本編へ
+
+
+
+
+
+
+
+
+*battle04_enemy0
+＊「お前にはこの程度の低級魔法で十分！」\
+	mov %ret, 15
+	return
+*battle04_enemy1
+＊「こっ、この魔法しか使えない訳じゃないん
+　　だからなっ！」\
+	mov %ret, 15
+	return
+*battle04_enemy2
+＊「フォトンバレット発射！！」\
+	mov %ret, 15
+	return
+*battle04_enemy3
+＊「ちょっとだけ本気だからな！」\
+	mov %ret, 25
+	return
+
+
+
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;9話用
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+*battle09_eprev_atc
+	talk_mode
+	csp SP_R
+	c_show ":l;img/jiku2.bmp"
+	return
+
+*battle09
+	mov %adv_rmode, 0
+	mov %adv_hp, 200
+	mov %adv_maxhp, 200
+	mov %adv_ehp, 450
+	mov %adv_noroi_off, 1 ;;;
+	vsp SP_R, 0 : vsp SP_L, 0
+	bg black, E_SLOW
+	mov %adv_same_level, 1
+	if %adv_noroi_kill >= 1 mov %adv_same_level, 2
+	if %adv_noroi_kill >= 10 mov %adv_same_level, 3
+	if %adv_noroi_kill >= 30 mov %adv_same_level, 4
+	if %adv_noroi_kill >= 50 mov %adv_same_level, 5
+	if %adv_noroi_kill >= 100 mov %adv_same_level, 6
+	print E_NORMAL
+	goto *battle09_act
+
+*battle09_act
+	gosub *battle_set_escact
+	gosub *battle_show_state
+	gosub *battle_prev_act
+csel "たたかう", *battle09_attack, "魔法", *battle09_magic, $sret, *battle09_esc
+
+*battle09_esc
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「……失敗しました」\
+	goto *battle09_enemy
+
+
+*battle09_attack
+	mov $sadv_label, "*battle09_damage_a"
+	goto *battle_attack
+
+*battle09_magic
+	mov $sadv_label, "*battle09_damage_m"
+csel "サメウェーブ", *battle_wave, "サメブラスター", *battle_blaster, "サメシュート", *battle_shoot, "サメブレード", *battle_blade, "サメキャノン", *battle_cannon, "サメスマッシャー", *battle_smasher
+
+
+*battle09_damage_a
+	rnd %tmp, 11
+	add %tmp, 18
+	mul %ret, %tmp
+	div %ret, 10
+	mov %tmp, %ret  ;;これがないと何故か%retが消失した……
+	sub %adv_ehp, %tmp
+	gosub *battle09_effect_a
+	if %adv_ehp <= 0 goto *battle09_clear
+	goto *battle09_enemy
+
+*battle09_damage_m
+	sub %ret, %adv_miss
+	rnd %tmp, 3
+	add %tmp, 20
+	mul %ret, %tmp
+	div %ret, 10
+	mov %tmp, %ret  ;;これがないと何故か%retが消失した……
+	sub %adv_ehp, %tmp
+	gosub *battle09_effect_m
+	if %adv_ehp <= 0 goto *battle09_clear
+	goto *battle09_enemy
+
+
+*battle09_judge
+	if %adv_hp <= 0 goto *battle09_gameover
+	goto *battle09_act
+
+
+*battle09_enemy
+	gosub *battle09_eprev_atc
+	rnd %tmp, 4
+	if %tmp == 0 gosub *battle09_enemy0
+	if %tmp == 1 gosub *battle09_enemy1
+	if %tmp == 2 gosub *battle09_enemy2
+	if %tmp == 3 gosub *battle09_enemy3
+	rnd %tmp, 20
+	add %ret, %tmp
+	mov %tmp, %ret
+	gosub *battle09_eeffect
+	sub %adv_hp, %tmp
+	goto *battle09_judge
+
+
+;;;変数の衝突に要注意
+*battle09_effect_m
+	csp SP_C
+	c_load ":l;img/jiku2.bmp"
+	bg black, E_NORMAL
+	lsp SP_FILL, ":c;img/same_blue.bmp", 0, 0
+	print E_BUBBLE
+	csp SP_FILL
+	print 1
+	quake 4,200
+	itoa2 $sarg0, %tmp
+	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+	lsp SP_TMP, $sarg0, 360, 500
+	print E_NORMAL
+	delay 1000
+	csp SP_TMP
+	print E_FAST
+	return
+
+;;;変数の衝突に要注意
+*battle09_effect_a
+	csp SP_C
+	c_load ":l;img/jiku2.bmp"
+	bg black, E_NORMAL
+	lsp SP_FILL, ":c;img/same_yellow.bmp", 0, 0
+	print E_FAST
+	csp SP_FILL
+	print 1
+	quake 4,200
+	itoa2 $sarg0, %tmp
+	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+	lsp SP_TMP, $sarg0, 360, 500
+	print E_NORMAL
+	delay 1000
+	csp SP_TMP
+	print E_FAST
+	return
+
+;;;変数の衝突に要注意
+*battle09_eeffect
+	csp SP_C
+	c_load ":l;img/same.bmp"
+	bg black, E_NORMAL
+	lsp SP_FILL, ":c;img/jiku_blue.bmp", 0, 0
+	print E_RAIN
+	csp SP_FILL
+	print 1
+	quake 4,200
+	itoa2 $sarg0, %tmp
+	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+	lsp SP_TMP, $sarg0, 360, 500
+	print E_NORMAL
+	delay 1000
+	csp SP_TMP
+	print E_FAST
+	return
+
+
+*battle09_gameover
+	csp SP_C
+	print E_SLOW
+鮫島は敗北した……\
+csel "再挑戦", *battle09, "タイトルに戻る", *battle09_lost
+
+*battle09_lost
+	mov %adv_rmode, 1
+	mov %ret, 1
+	return
+
+
+*battle09_clear
+	csp SP_C
+	print E_SLOW
+鮫島は勝利した！！\
+	speak_mode
+	r_show ":l;img/same.bmp"
+鮫島のレベルが上がった
+　・攻撃力が#FFFF33６#FFFFFF上昇した
+　・魔力が#FFFF33５#FFFFFF上昇した
+　・体力が#FFFF33１０#FFFFFF上昇した\
+	csp SP_R
+	talk_mode
+	bg black, E_SLOW
+	mov %ret, 0
+	mov %adv_rmode, 1
+	return  ;;本編へ
+
+
+
+*battle09_enemy0
+＊「なんとかバスター発射！！」\
+	mov %ret, 22
+	return
+
+*battle09_enemy1
+＊「老人如きにＭＯＴＴＡＩＮＡＩが……喰ら
+　　え！　結構強い魔法！！」\
+	mov %ret, 27
+	return
+
+*battle09_enemy2
+＊「あんまし強くないのは手加減してるだけな
+　　んだからな！！」\
+	mov %ret, 20
+	return
+
+*battle09_enemy3
+＊「いいか、デバイスが強いんじゃないぞ、俺
+　　が強いんだぞ！！」\
+	mov %ret, 25
+	return
+
+
+
+
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;12話用
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+*battle12_eprev_atc
+	talk_mode
+	csp SP_R
+	c_show ":l;img/nano.bmp"
+	return
+
+*battle12
+	mov %adv_rmode, 0
+	mov %adv_hp, 300
+	mov %adv_maxhp, 300
+	mov %adv_ehp, 1000
+	mov %adv_noroi_off, 1 ;;;
+	vsp SP_R, 0 : vsp SP_L, 0
+	bg black, E_SLOW
+	mov %adv_same_level, 1
+	if %adv_noroi_kill >= 1 mov %adv_same_level, 2
+	if %adv_noroi_kill >= 10 mov %adv_same_level, 3
+	if %adv_noroi_kill >= 30 mov %adv_same_level, 4
+	if %adv_noroi_kill >= 50 mov %adv_same_level, 5
+	if %adv_noroi_kill >= 100 mov %adv_same_level, 6
+	print E_NORMAL
+	goto *battle12_act
+
+*battle12_act
+	gosub *battle_set_escact
+	gosub *battle_show_state
+	gosub *battle_prev_act
+csel "たたかう", *battle12_attack, "魔法", *battle12_magic, $sret, *battle12_esc
+
+*battle12_esc
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「……失敗しました」\
+	goto *battle12_enemy
+
+
+*battle12_attack
+	mov $sadv_label, "*battle12_damage_a"
+	goto *battle_attack
+
+*battle12_magic
+	mov $sadv_label, "*battle12_damage_m"
+csel "サメウェーブ", *battle_wave, "サメブラスター", *battle_blaster, "サメシュート", *battle_shoot, "サメブレード", *battle_blade, "サメキャノン", *battle_cannon, "サメスマッシャー", *battle_smasher, "サメエミッション", *battle_emission, "サメスナイプ", *battle_snipe, "サメランサー", *battle_lancer, "サメ☆キャラット", *battle_nekomimi
+
+
+*battle12_damage_a
+	rnd %tmp, 13
+	add %tmp, 20
+	mul %ret, %tmp
+	div %ret, 10
+	mov %tmp, %ret  ;;これがないと何故か%retが消失した……
+	sub %adv_ehp, %tmp
+	gosub *battle12_effect_a
+	if %adv_ehp <= 0 goto *battle12_clear
+	goto *battle12_enemy
+
+*battle12_damage_m
+	sub %ret, %adv_miss
+	rnd %tmp, 4
+	add %tmp, 21
+	mul %ret, %tmp
+	div %ret, 10
+	mov %tmp, %ret  ;;これがないと何故か%retが消失した……
+	sub %adv_ehp, %tmp
+	gosub *battle12_effect_m
+	if %adv_ehp <= 0 goto *battle12_clear
+	goto *battle12_enemy
+
+
+*battle12_judge
+	if %adv_hp <= 0 goto *battle12_gameover
+	goto *battle12_act
+
+
+*battle12_enemy
+	gosub *battle12_eprev_atc
+	rnd %tmp, 6
+	if %tmp == 0 gosub *battle12_enemy0
+	if %tmp == 1 gosub *battle12_enemy1
+	if %tmp == 2 gosub *battle12_enemy2
+	if %tmp == 3 gosub *battle12_enemy3
+	if %tmp == 4 gosub *battle12_enemy4
+	if %tmp == 5 gosub *battle12_enemy5
+	rnd %tmp, 20
+	add %ret, %tmp
+	mov %tmp, %ret
+	gosub *battle12_eeffect
+	sub %adv_hp, %tmp
+	goto *battle12_judge
+
+
+;;;変数の衝突に要注意
+*battle12_effect_m
+	csp SP_C
+	c_load ":l;img/nano.bmp"
+	bg black, E_NORMAL
+	lsp SP_FILL, ":c;img/same_blue.bmp", 0, 0
+	print E_BUBBLE
+	csp SP_FILL
+	print 1
+	quake 4,200
+	itoa2 $sarg0, %tmp
+	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+	lsp SP_TMP, $sarg0, 360, 500
+	print E_NORMAL
+	delay 1000
+	csp SP_TMP
+	print E_FAST
+	return
+
+;;;変数の衝突に要注意
+*battle12_effect_a
+	csp SP_C
+	c_load ":l;img/nano.bmp"
+	bg black, E_NORMAL
+	lsp SP_FILL, ":c;img/same_yellow.bmp", 0, 0
+	print E_FAST
+	csp SP_FILL
+	print 1
+	quake 4,200
+	itoa2 $sarg0, %tmp
+	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+	lsp SP_TMP, $sarg0, 360, 500
+	print E_NORMAL
+	delay 1000
+	csp SP_TMP
+	print E_FAST
+	return
+
+;;;変数の衝突に要注意
+*battle12_eeffect
+	csp SP_C
+	c_load ":l;img/same.bmp"
+	bg black, E_NORMAL
+	lsp SP_FILL, ":c;img/nano_pink.bmp", 0, 0
+	print E_RAIN
+	csp SP_FILL
+	print 1
+	quake 4,200
+	itoa2 $sarg0, %tmp
+	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+	lsp SP_TMP, $sarg0, 360, 500
+	print E_NORMAL
+	delay 1000
+	csp SP_TMP
+	print E_FAST
+	return
+
+
+*battle12_gameover
+	csp SP_C
+	print E_SLOW
+鮫島は敗北した……\
+	mov %ret, 1
+	mov %adv_rmode, 1
+	return
+
+
+*battle12_clear
+	csp SP_C
+	print E_SLOW
+鮫島は勝利した！！\
+	speak_mode
+	r_show ":l;img/same.bmp"
+鮫島のレベルが上がった
+　・攻撃力が#FFFF33９#FFFFFF上昇した
+　・魔力が#FFFF33１６#FFFFFF上昇した
+　・体力が#FFFF33８#FFFFFF上昇した\
+	csp SP_R
+	talk_mode
+	bg black, E_SLOW
+	mov %ret, 0
+	mov %adv_rmode, 1
+	return  ;;本編へ
+
+
+
+*battle12_enemy0
+なのは「ディバインシュート」\
+	mov %ret, 80
+	return
+
+*battle12_enemy1
+なのは「スターライトブレイカー」\
+	mov %ret, 120
+	return
+
+*battle12_enemy2
+なのは「ディバインシューター」\
+	mov %ret, 60
+	return
+
+*battle12_enemy3
+なのは「アクセルシューター」\
+	mov %ret, 50
+	return
+
+*battle12_enemy4
+なのは「フラッシュインパクト」\
+	mov %ret, 60
+	return
+
+*battle12_enemy5
+なのは「バレルショット」\
+	c_show ":l;img/same.bmp"
+鮫島は、なのはにバインドされた！\
+	c_show ":l;img/nano.bmp"
+なのは「エクセリオンバスター」\
+	mov %ret, 150
+	return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*battle_wave
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「思い出す……。
+　　　日本海の荒波に揉まれていたころを！」\
+鮫島「サメウェーブ！！！」\
+	mov %ret, 30
+	goto $sadv_label
+
+*battle_blaster
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「星のきらめきは人の想い……。
+　　　貴様に届け！
+　　　この私の熱い思い！！」\
+鮫島「サメブラスター！！！」\
+	mov %ret, 30
+	goto $sadv_label
+
+*battle_shoot
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「ボールは友達。
+　　　ポールは大きなお友達！！」\
+鮫島「サメシュート！！！」\
+	mov %ret, 30
+	goto $sadv_label
+
+*battle_blade
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「コバンザメの歯より削り出したこの剣が
+　　　セラミック装甲をも貫くぞ！！」\
+鮫島「サメブレード！！！」\
+	mov %ret, 40
+	goto $sadv_label
+
+*battle_cannon
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「それは、七度目の雪の季節。
+　　　どこか違う気がするが、かまわん！」\
+鮫島「サメキャノン！！！」\
+	mov %ret, 40
+	goto $sadv_label
+
+*battle_smasher
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「薙ぎ払え！」\
+鮫島「サメスマッシャー！！！」\
+	mov %ret, 40
+	goto $sadv_label
+
+*battle_emission
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「ハァ～ハァ～」\
+鮫島「サメエミッション！！！」\
+	mov %ret, 55
+	goto $sadv_label
+
+*battle_snipe
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「失敗をすれば『おしおき』
+　　　命を懸けたおしごと
+　　　狙った獲物は逃がさない！」\
+鮫島「サメスナイプ！！！」\
+	mov %ret, 50
+	goto $sadv_label
+
+*battle_lancer
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「サメバーサーク！！！」\
+鮫島「ドロー、モンスターカード！
+　　　ドロー、モンスターカード！！
+　　　ドロー、モンスターカード！！！」\
+	mov %ret, 60
+	goto $sadv_label
+
+*battle_nekomimi
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「ねた満つるところに我は在り
+　　　これを聞くところに汝在り
+　　　耳より出でよ！　神の雷！」\
+	mov %ret, 70
+	goto $sadv_label
+
+
+
+*battle_punch
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「私の拳が光って唸る！貴様を倒せと輝き
+　　　叫ぶ！」\
+鮫島「鮫パンチ」\
+	mov %ret, 10
+	goto $sadv_label
+
+*battle_kick
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「我が美脚が繰り出す芸術――」\
+鮫島「鮫キック」\
+	mov %ret, 11
+	goto $sadv_label
+
+*battle_chop
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「正確に斜め４５度を描く軌跡――」\
+鮫島「鮫チョップ」\
+	mov %ret, 11
+	goto $sadv_label
+
+*battle_head
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「引導を渡してくれる――」\
+鮫島「さめヘッド！！」\
+	mov %ret, 20
+	goto $sadv_label
+
+*battle_dynamic
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「Ｓｃｈｅｍｅはダイナミックスコープで
+　　　はないがそんなことは関係ない――」\
+鮫島「さめダイナミック！！」\
+	mov %ret, 17
+	goto $sadv_label
+
+*battle_tornado
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「元ネタが一体なんなのか、貴様には分か
+　　　るまい――」\
+鮫島「竜巻拳・さめトルネード！」\
+	mov %ret, 18
+	goto $sadv_label
+
+*battle_beam
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「出でよ！我が眼（まなこ）の力――」\
+鮫島「サメビーム」\
+	mov %ret, 30
+	goto $sadv_label
+
+*battle_destroyer
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「食らえ、最終回の威力――」\
+鮫島「サメオキシジェンデストロイヤー」\
+	mov %ret, 31
+	goto $sadv_label
+
+*battle_steal
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「この技の名前の意味は何なのか、これか
+　　　ら死ぬ貴様に教える必要はない――」\
+鮫島「サメスチールウール」\
+	mov %ret, 32
+	goto $sadv_label
+
+*battle_88
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「ロンメルに授かりし、我が秘法――」\
+鮫島「ＳＡＭＥ　８８ｍ　ＧＵＮ」\
+	mov %ret, 40
+	goto $sadv_label
+
+*battle_missile
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「貴様の耳には『鮫味噌』としか聞こえな
+　　　いだろう――」\
+鮫島「ＳＡＭＥ　ＭＩＳＳＩＬＥ」\
+	mov %ret, 43
+	goto $sadv_label
+
+*battle_laser
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「バニングス家の科学力は、
+　　　世界一ぃぃぃぃぃぃぃ――」\
+鮫島「ＳＡＭＥ　ＬＡＳＥＲ」\
+	mov %ret, 45
+	goto $sadv_label
+
+*battle_57
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「本編で出番の少ない私に与えられた数少
+　　　ない設定、それが年齢だ――」\
+鮫島「５７歳の底力」\
+	mov %ret, 57
+	goto $sadv_label
+
+*battle_ikari
+	gosub *battle_hide_state
+	gosub *battle_prev_atc
+鮫島「百を超えるフェレットを握りつぶしてき
+　　　た私の怒りを見せてやる――」\
+鮫島「どりゃぁぁぁああああ！！！」\
+	mov %ret, 200
+	goto $sadv_label
