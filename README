@@ -34,6 +34,5 @@ int main() {
   return 0;
 }
 % gcc -o a a.c
-% cat *.txt > cat_data
-% ./a < cat_data > nscript.dat
+% cat *.txt | tr -d \\r | ./a > nscript.dat
 
