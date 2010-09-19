@@ -25,544 +25,544 @@
 
 *define
 nsa
-	textgosub *text_cw
-	rmenu "文字を消す", windowerase, "回想", lookback, "セーブする", save, "ロードする", load
-	;エフェクト
-	numalias E_FAST, 10
-	numalias E_NORMAL, 11
-	numalias E_SLOW, 12
-	numalias E_RWIPE_SLOW, 13
-	numalias E_VFAST, 14
-	numalias E_RAIN, 15
-	numalias E_BUBBLE, 16
-	numalias E_WIPE2, 17
-	numalias E_LWIPE_FAST, 18
-	numalias E_CURCLE, 19
-	effect E_VFAST, 10, 100
-	effect E_FAST, 10, 200
-	effect E_NORMAL, 10, 500
-	effect E_SLOW, 10, 1000
-	effect E_RWIPE_SLOW, 15, 1000, "img/wipe_r.bmp"
-	effect E_LWIPE_FAST, 15, 200, "img/wipe_l.bmp"
-	effect E_RAIN, 15, 200, "img/25e.bmp"
-	effect E_BUBBLE, 15, 200, "img/17e.bmp"
-	effect E_WIPE2, 15, 600, "img/wipe2.bmp"
-	effect E_CURCLE, 15, 2000, "img/curcle.bmp"
-	;スプライト
-	numalias SP_FILL, 0
-	numalias SP_CLICK, 1
-	numalias SP_CLICK_MINI, 2
-	;;汎用
-	numalias SP_TMP, 10
-	numalias SP_TMP1, 11
-	numalias SP_TMP2, 12
-	numalias SP_TMP3, 13
-	;;Opening
-	numalias SP_LOGO0, 20
-	numalias SP_LOGO1, 21
-	numalias SP_LOGO_LAMBDA, 23
-	numalias SP_LOGO_KUMI, 24
-	numalias SP_LOGO_SAKURA, 25
-	numalias SP_LOGO_KARASU, 26
-	numalias SP_TITLE_SEN, 30
-	numalias SP_TITLE, 31
-	numalias SP_TITLE_HOSHI, 32
-	;;Ending
-	numalias SP_SAME_HEAD, 40
-	numalias SP_SAME_BODY, 41
-	numalias SP_SAME_FOOT, 42
-	numalias SP_INU01, 43
-	numalias SP_INU02, 44
-	numalias SP_INU01_R, 45
-	numalias SP_INU02_R, 46
-	numalias SP_FLOWER, 47
-	numalias SP_S, 48
-	numalias SP_ST, 49
-	numalias SP_EFRAME, 50
-	;;野球
-	numalias SP_BALL, 100
-	numalias SP_REIN01, 101
-	numalias SP_REIN02, 102
-	numalias SP_REIN03, 103
-	numalias SP_VITA01, 111
-	numalias SP_VITA02, 112
-	numalias SP_ARROW, 119
-	;;右クリック
-	numalias SP_RC_BACK, 210
-	numalias SP_RC_1, 201
-	numalias SP_RC_2, 202
-	numalias SP_RC_3, 203
-	numalias SP_RC_4, 204
-	numalias SP_RC_5, 205
-	;;noroi
-	numalias SP_NOROI_HALF, 800
-	numalias SP_NOROI, 801
-	numalias SP_NOROI_D1, 802
-	numalias SP_NOROI_D2, 803
-	numalias SP_NOROI_HD2, 804
-	numalias SP_NOROI_HD1, 805
-	;;立ち絵
-	numalias SP_CRC, 809
-	numalias SP_L, 810
-	numalias SP_R, 811
-	numalias SP_C, 812
-	;;ウサギ
-	numalias SP_USAGI, 816
-	numalias SP_USAGI_R, 817
-	;;図
-	numalias SP_DGM0, 850
-	numalias SP_DGM1, 851
-	numalias SP_DGM2, 852
-	numalias SP_DGM3, 853
-	;;その他
-	numalias SP_BACKGROUND, 900
-	numalias SP_DUMMY, 999
-	humanz 800  ;スプライト番号800以下は立ち絵より上に表示
-	windowback  ;ウインドウもそれに従う
-	usewheel
+  textgosub *text_cw
+  rmenu "文字を消す", windowerase, "回想", lookback, "セーブする", save, "ロードする", load
+  ;エフェクト
+  numalias E_FAST, 10
+  numalias E_NORMAL, 11
+  numalias E_SLOW, 12
+  numalias E_RWIPE_SLOW, 13
+  numalias E_VFAST, 14
+  numalias E_RAIN, 15
+  numalias E_BUBBLE, 16
+  numalias E_WIPE2, 17
+  numalias E_LWIPE_FAST, 18
+  numalias E_CURCLE, 19
+  effect E_VFAST, 10, 100
+  effect E_FAST, 10, 200
+  effect E_NORMAL, 10, 500
+  effect E_SLOW, 10, 1000
+  effect E_RWIPE_SLOW, 15, 1000, "img/wipe_r.bmp"
+  effect E_LWIPE_FAST, 15, 200, "img/wipe_l.bmp"
+  effect E_RAIN, 15, 200, "img/25e.bmp"
+  effect E_BUBBLE, 15, 200, "img/17e.bmp"
+  effect E_WIPE2, 15, 600, "img/wipe2.bmp"
+  effect E_CURCLE, 15, 2000, "img/curcle.bmp"
+  ;スプライト
+  numalias SP_FILL, 0
+  numalias SP_CLICK, 1
+  numalias SP_CLICK_MINI, 2
+  ;;汎用
+  numalias SP_TMP, 10
+  numalias SP_TMP1, 11
+  numalias SP_TMP2, 12
+  numalias SP_TMP3, 13
+  ;;Opening
+  numalias SP_LOGO0, 20
+  numalias SP_LOGO1, 21
+  numalias SP_LOGO_LAMBDA, 23
+  numalias SP_LOGO_KUMI, 24
+  numalias SP_LOGO_SAKURA, 25
+  numalias SP_LOGO_KARASU, 26
+  numalias SP_TITLE_SEN, 30
+  numalias SP_TITLE, 31
+  numalias SP_TITLE_HOSHI, 32
+  ;;Ending
+  numalias SP_SAME_HEAD, 40
+  numalias SP_SAME_BODY, 41
+  numalias SP_SAME_FOOT, 42
+  numalias SP_INU01, 43
+  numalias SP_INU02, 44
+  numalias SP_INU01_R, 45
+  numalias SP_INU02_R, 46
+  numalias SP_FLOWER, 47
+  numalias SP_S, 48
+  numalias SP_ST, 49
+  numalias SP_EFRAME, 50
+  ;;野球
+  numalias SP_BALL, 100
+  numalias SP_REIN01, 101
+  numalias SP_REIN02, 102
+  numalias SP_REIN03, 103
+  numalias SP_VITA01, 111
+  numalias SP_VITA02, 112
+  numalias SP_ARROW, 119
+  ;;右クリック
+  numalias SP_RC_BACK, 210
+  numalias SP_RC_1, 201
+  numalias SP_RC_2, 202
+  numalias SP_RC_3, 203
+  numalias SP_RC_4, 204
+  numalias SP_RC_5, 205
+  ;;noroi
+  numalias SP_NOROI_HALF, 800
+  numalias SP_NOROI, 801
+  numalias SP_NOROI_D1, 802
+  numalias SP_NOROI_D2, 803
+  numalias SP_NOROI_HD2, 804
+  numalias SP_NOROI_HD1, 805
+  ;;立ち絵
+  numalias SP_CRC, 809
+  numalias SP_L, 810
+  numalias SP_R, 811
+  numalias SP_C, 812
+  ;;ウサギ
+  numalias SP_USAGI, 816
+  numalias SP_USAGI_R, 817
+  ;;図
+  numalias SP_DGM0, 850
+  numalias SP_DGM1, 851
+  numalias SP_DGM2, 852
+  numalias SP_DGM3, 853
+  ;;その他
+  numalias SP_BACKGROUND, 900
+  numalias SP_DUMMY, 999
+  humanz 800  ;スプライト番号800以下は立ち絵より上に表示
+  windowback  ;ウインドウもそれに従う
+  usewheel
 
 
-	;定数
-	numalias MEM, 100
-	numalias MEM_END, 2999
-	numalias MEM_OVER, 3000
-	numalias STACK, 3000
-	numalias STACK_OVER, 4000
-	numalias SYMBOL_SET, 100
-	numalias SYMBOL_SET_END, 899
-	numalias SYMBOL_SET_OVER, 900
-	numalias SSTACK, 900
-	numalias SSTACK_OVER, 1000
-	numalias TAG_CONS, 0
-	numalias TAG_SYMBOL, 1
-	numalias TAG_NUM, 2
-	numalias TAG_SUBR, 3
-	numalias TAG_FSUBR, 4
-	numalias TAG_EXPR, 5
-	numalias TAG_FEXPR, 6
-	numalias TAG_FREE, 7
+  ;定数
+  numalias MEM, 100
+  numalias MEM_END, 2999
+  numalias MEM_OVER, 3000
+  numalias STACK, 3000
+  numalias STACK_OVER, 4000
+  numalias SYMBOL_SET, 100
+  numalias SYMBOL_SET_END, 899
+  numalias SYMBOL_SET_OVER, 900
+  numalias SSTACK, 900
+  numalias SSTACK_OVER, 1000
+  numalias TAG_CONS, 0
+  numalias TAG_SYMBOL, 1
+  numalias TAG_NUM, 2
+  numalias TAG_SUBR, 3
+  numalias TAG_FSUBR, 4
+  numalias TAG_EXPR, 5
+  numalias TAG_FEXPR, 6
+  numalias TAG_FREE, 7
 
-	;数値変数用エリアス
-	;;汎用変数
-	numalias tmp, 50
-	numalias ret, 51
-	numalias arg0, 52
-	numalias arg1, 53
-	numalias arg2, 54
-	numalias arg3, 55
-	numalias tmp1, 56
-	numalias tmp2, 57
-	numalias tmp3, 58
-	;;特殊変数
-	numalias sp, 59
-	numalias free_lst, 60
-	numalias i, 61
-	numalias gc_tmp ,62
-	numalias test_val, 63
-	numalias symbol_used, 64
-	numalias ssp, 65
-	;;オブジェクト
-	numalias nil, 66
-	numalias quote, 67
-	numalias global_env, 68
-	numalias sharp_t, 69
-	numalias sharp_f, 70
-	numalias dummy, 71
+  ;数値変数用エリアス
+  ;;汎用変数
+  numalias tmp, 50
+  numalias ret, 51
+  numalias arg0, 52
+  numalias arg1, 53
+  numalias arg2, 54
+  numalias arg3, 55
+  numalias tmp1, 56
+  numalias tmp2, 57
+  numalias tmp3, 58
+  ;;特殊変数
+  numalias sp, 59
+  numalias free_lst, 60
+  numalias i, 61
+  numalias gc_tmp ,62
+  numalias test_val, 63
+  numalias symbol_used, 64
+  numalias ssp, 65
+  ;;オブジェクト
+  numalias nil, 66
+  numalias quote, 67
+  numalias global_env, 68
+  numalias sharp_t, 69
+  numalias sharp_f, 70
+  numalias dummy, 71
 
-	numalias gc_count, 72 
-	numalias sfree_lst, 73
-	numalias sfree_lst_tail, 74
-	numalias gc_run, 75
-	numalias gc_limit, 76
-	numalias gc_silent, 77
+  numalias gc_count, 72 
+  numalias sfree_lst, 73
+  numalias sfree_lst_tail, 74
+  numalias gc_run, 75
+  numalias gc_limit, 76
+  numalias gc_silent, 77
 
-	;ゲーム用変数
-	numalias save_flag, 0
-	numalias adv_tmp, 1
-	numalias adv_tmp1, 2
-	numalias adv_tmp2, 3
-	numalias adv_tmp3, 4
-	numalias adv_clear, 5
-	numalias adv_additional, 6
-	numalias adv_bgm, 7
-	numalias adv_char, 8
-	numalias adv_noroi, 9
-	numalias adv_noroi_frame, 10
-	numalias adv_noroi_my, 11
-	numalias adv_noroi_mx, 12
-	numalias adv_talkmode, 13
-	numalias adv_noroi_kill, 14
-	numalias adv_noroi_off, 15
-	numalias adv_miss, 16
-	numalias adv_same_level, 17
-	numalias adv_hp, 18
-	numalias adv_ehp, 19
-	numalias adv_maxhp, 20
-	numalias adv_sx, 21
-	numalias adv_sy, 22
-	numalias adv_sr, 23
-	numalias adv_ix, 24
-	numalias adv_id, 25
-	numalias adv_ball_x, 26
-	numalias adv_ball_y, 27
-	numalias adv_ball_vx, 28
-	numalias adv_vol, 29
-	numalias adv_rmode, 30
+  ;ゲーム用変数
+  numalias save_flag, 0
+  numalias adv_tmp, 1
+  numalias adv_tmp1, 2
+  numalias adv_tmp2, 3
+  numalias adv_tmp3, 4
+  numalias adv_clear, 5
+  numalias adv_additional, 6
+  numalias adv_bgm, 7
+  numalias adv_char, 8
+  numalias adv_noroi, 9
+  numalias adv_noroi_frame, 10
+  numalias adv_noroi_my, 11
+  numalias adv_noroi_mx, 12
+  numalias adv_talkmode, 13
+  numalias adv_noroi_kill, 14
+  numalias adv_noroi_off, 15
+  numalias adv_miss, 16
+  numalias adv_same_level, 17
+  numalias adv_hp, 18
+  numalias adv_ehp, 19
+  numalias adv_maxhp, 20
+  numalias adv_sx, 21
+  numalias adv_sy, 22
+  numalias adv_sr, 23
+  numalias adv_ix, 24
+  numalias adv_id, 25
+  numalias adv_ball_x, 26
+  numalias adv_ball_y, 27
+  numalias adv_ball_vx, 28
+  numalias adv_vol, 29
+  numalias adv_rmode, 30
 
-	;文字列変数用エリアス
-	numalias sarg0, 10
-	numalias sarg1, 11
-	numalias sarg2, 12
-	numalias sarg3, 13
-	numalias stmp, 14
-	numalias stmp1, 15
-	numalias stmp2, 16
-	numalias stmp3, 17
-	numalias sret, 18
-	numalias sTAB, 20
-	numalias sCR, 21
-	numalias sLF, 22
+  ;文字列変数用エリアス
+  numalias sarg0, 10
+  numalias sarg1, 11
+  numalias sarg2, 12
+  numalias sarg3, 13
+  numalias stmp, 14
+  numalias stmp1, 15
+  numalias stmp2, 16
+  numalias stmp3, 17
+  numalias sret, 18
+  numalias sTAB, 20
+  numalias sCR, 21
+  numalias sLF, 22
 
-	numalias sadv_label, 50
-	numalias sadv_vol, 51
+  numalias sadv_label, 50
+  numalias sadv_vol, 51
 
-	stralias ari_n, ":l;img/arisa-01.bmp"
-	stralias ari_tun, ":l;img/arisa-02.bmp"
-	stralias ari_qes, ":l;img/arisa-03.bmp"
-	stralias ari_exc, ":l;img/arisa-04.bmp"
-	stralias ari_hrt, ":l;img/arisa-05.bmp"
-	stralias ari_dere, ":l;img/arisa-06.bmp"
-	stralias ari_die, ":l;img/arisa-07.bmp"
-	stralias ari_ase, ":l;img/arisa-08.bmp"
-	stralias ari_muka, ":l;img/arisa-09.bmp"
-	stralias ari_do, ":l;img/arisa-0404.bmp"
-	stralias suzu_n, ":l;img/suzuka-01.bmp"
-	stralias suzu_nc, ":l;img/suzuka-02.bmp"
-	stralias suzu_qes, ":l;img/suzuka-03.bmp"
-	stralias suzu_exc, ":l;img/suzuka-04.bmp"
-	stralias suzu_excc, ":l;img/suzuka-05.bmp"
-	stralias suzu_hrt, ":l;img/suzuka-06.bmp"
-	stralias suzu_dere, ":l;img/suzuka-07.bmp"
-	stralias suzu_ase, ":l;img/suzuka-08.bmp"
-	stralias suzu_T_T, ":l;img/suzuka-09.bmp"
-	stralias suzu_dotc, ":l;img/suzuka-10.bmp"
-	stralias suzu_dot, ":l;img/suzuka-11.bmp"
-	stralias suzur_n, ":l;img/suzuka-01r.bmp"
-	stralias suzur_nc, ":l;img/suzuka-02r.bmp"
-	stralias suzur_qes, ":l;img/suzuka-03r.bmp"
-	stralias suzur_exc, ":l;img/suzuka-04r.bmp"
-	stralias suzur_excc, ":l;img/suzuka-05r.bmp"
-	stralias suzur_hrt, ":l;img/suzuka-06r.bmp"
-	stralias suzur_dere, ":l;img/suzuka-07r.bmp"
-	stralias suzur_ase, ":l;img/suzuka-08r.bmp"
-	stralias suzur_T_T, ":l;img/suzuka-09r.bmp"
-	stralias suzur_dotc, ":l;img/suzuka-10r.bmp"
-	stralias suzur_dot, ":l;img/suzuka-11r.bmp"
+  stralias ari_n, ":l;img/arisa-01.bmp"
+  stralias ari_tun, ":l;img/arisa-02.bmp"
+  stralias ari_qes, ":l;img/arisa-03.bmp"
+  stralias ari_exc, ":l;img/arisa-04.bmp"
+  stralias ari_hrt, ":l;img/arisa-05.bmp"
+  stralias ari_dere, ":l;img/arisa-06.bmp"
+  stralias ari_die, ":l;img/arisa-07.bmp"
+  stralias ari_ase, ":l;img/arisa-08.bmp"
+  stralias ari_muka, ":l;img/arisa-09.bmp"
+  stralias ari_do, ":l;img/arisa-0404.bmp"
+  stralias suzu_n, ":l;img/suzuka-01.bmp"
+  stralias suzu_nc, ":l;img/suzuka-02.bmp"
+  stralias suzu_qes, ":l;img/suzuka-03.bmp"
+  stralias suzu_exc, ":l;img/suzuka-04.bmp"
+  stralias suzu_excc, ":l;img/suzuka-05.bmp"
+  stralias suzu_hrt, ":l;img/suzuka-06.bmp"
+  stralias suzu_dere, ":l;img/suzuka-07.bmp"
+  stralias suzu_ase, ":l;img/suzuka-08.bmp"
+  stralias suzu_T_T, ":l;img/suzuka-09.bmp"
+  stralias suzu_dotc, ":l;img/suzuka-10.bmp"
+  stralias suzu_dot, ":l;img/suzuka-11.bmp"
+  stralias suzur_n, ":l;img/suzuka-01r.bmp"
+  stralias suzur_nc, ":l;img/suzuka-02r.bmp"
+  stralias suzur_qes, ":l;img/suzuka-03r.bmp"
+  stralias suzur_exc, ":l;img/suzuka-04r.bmp"
+  stralias suzur_excc, ":l;img/suzuka-05r.bmp"
+  stralias suzur_hrt, ":l;img/suzuka-06r.bmp"
+  stralias suzur_dere, ":l;img/suzuka-07r.bmp"
+  stralias suzur_ase, ":l;img/suzuka-08r.bmp"
+  stralias suzur_T_T, ":l;img/suzuka-09r.bmp"
+  stralias suzur_dotc, ":l;img/suzuka-10r.bmp"
+  stralias suzur_dot, ":l;img/suzuka-11r.bmp"
 
-	stralias ms_ex, "bgm/ex.mp3"
-	stralias ms_narumi, "bgm/narumi.mp3"
-	stralias ms_kyoto, "bgm/kyoto.mp3"
-	stralias ms_setsume, "bgm/setsume.mp3"
-	stralias ms_after, "bgm/after.mp3"
-	stralias ms_jiku, "bgm/jiku.mp3"
-	stralias ms_battle, "bgm/battle.mp3"
-	stralias ms_battle2, "bgm/battle2.mp3"
-	stralias ms_battlen, "bgm/battlen.mp3"
-	stralias ms_nano, "bgm/nano.mp3"
-	stralias ms_epilogue1, "bgm/epilogue1.mp3"
-	stralias ms_epilogue2, "bgm/epilogue2.mp3"
-	stralias ms_ending, "bgm/ending.mp3"
-	stralias ms_ab2, "bgm/ab2.mp3"
-	stralias ms_yakyu, "bgm/yakyu.mp3"
-	stralias ms_omake, "bgm/omake.mp3"
-	stralias ms_title, "bgm/title.mp3"
+  stralias ms_ex, "bgm/ex.mp3"
+  stralias ms_narumi, "bgm/narumi.mp3"
+  stralias ms_kyoto, "bgm/kyoto.mp3"
+  stralias ms_setsume, "bgm/setsume.mp3"
+  stralias ms_after, "bgm/after.mp3"
+  stralias ms_jiku, "bgm/jiku.mp3"
+  stralias ms_battle, "bgm/battle.mp3"
+  stralias ms_battle2, "bgm/battle2.mp3"
+  stralias ms_battlen, "bgm/battlen.mp3"
+  stralias ms_nano, "bgm/nano.mp3"
+  stralias ms_epilogue1, "bgm/epilogue1.mp3"
+  stralias ms_epilogue2, "bgm/epilogue2.mp3"
+  stralias ms_ending, "bgm/ending.mp3"
+  stralias ms_ab2, "bgm/ab2.mp3"
+  stralias ms_yakyu, "bgm/yakyu.mp3"
+  stralias ms_omake, "bgm/omake.mp3"
+  stralias ms_title, "bgm/title.mp3"
 
-	;SUBR
-	numalias lf_car, 0
-	numalias lf_cdr, 1
-	numalias lf_cons, 2
-	numalias lf_eq, 3
-	numalias lf_atom, 4
-	numalias lf_add, 5
-	numalias lf_sub, 6
-	numalias lf_mul, 7
-	numalias lf_div, 8
-	numalias lf_mod, 9
-	numalias lf_gt, 10
-	numalias lf_ge, 11
-	numalias lf_ls, 12
-	numalias lf_le, 13
-	numalias lf_set_car, 14
-	numalias lf_set_cdr, 15
-	numalias lf_eval, 16
-	numalias lf_apply_primitive, 17
-	numalias lf_booleanp, 18
-	numalias lf_pairp, 19
-	numalias lf_symbolp, 20
-	numalias lf_numberp, 21
-	numalias lf_procedurep, 22
-	numalias lf_null, 23
-	numalias lf_read, 24
-	numalias lf_write, 25
+  ;SUBR
+  numalias lf_car, 0
+  numalias lf_cdr, 1
+  numalias lf_cons, 2
+  numalias lf_eq, 3
+  numalias lf_atom, 4
+  numalias lf_add, 5
+  numalias lf_sub, 6
+  numalias lf_mul, 7
+  numalias lf_div, 8
+  numalias lf_mod, 9
+  numalias lf_gt, 10
+  numalias lf_ge, 11
+  numalias lf_ls, 12
+  numalias lf_le, 13
+  numalias lf_set_car, 14
+  numalias lf_set_cdr, 15
+  numalias lf_eval, 16
+  numalias lf_apply_primitive, 17
+  numalias lf_booleanp, 18
+  numalias lf_pairp, 19
+  numalias lf_symbolp, 20
+  numalias lf_numberp, 21
+  numalias lf_procedurep, 22
+  numalias lf_null, 23
+  numalias lf_read, 24
+  numalias lf_write, 25
 
-	;FSUBR
-	numalias lf_quote, 0
-	numalias lf_begin, 1
-	numalias lf_cond, 2
-	numalias lf_lambda, 3
-	numalias lf_nlambda, 4
-	numalias lf_define, 5
-	numalias lf_let, 6
-	numalias lf_if, 7
-	numalias lf_and, 8
-	numalias lf_or, 9
-	numalias lf_set, 10
-	numalias lf_letrec, 11
-	numalias lf_letstar, 12
+  ;FSUBR
+  numalias lf_quote, 0
+  numalias lf_begin, 1
+  numalias lf_cond, 2
+  numalias lf_lambda, 3
+  numalias lf_nlambda, 4
+  numalias lf_define, 5
+  numalias lf_let, 6
+  numalias lf_if, 7
+  numalias lf_and, 8
+  numalias lf_or, 9
+  numalias lf_set, 10
+  numalias lf_letrec, 11
+  numalias lf_letstar, 12
 
-	defaultspeed 50,15,5
-	caption "Magical Language Lyrical Lisp"
-	versionstr "Magical Language Lyrical Lisp 20100822", "Open Source"
-	resetmenu
-	insertmenu "終了", END
-	insertmenu "バージョン情報", VERSION
-	insertmenu "選択肢まで進む", SKIP
-	insertmenu "文字速度", SUB
-	insertmenu "低速", TEXTSLOW, 1
-	insertmenu "普通", TEXTMIDDLE, 1
-	insertmenu "高速", TEXTFAST, 1
-	insertmenu "フォント", FONT
-	insertmenu "画面", SUB
-	insertmenu "フルスクリーン", FULL, 1
-	insertmenu "ウインドウ", WINDOW, 1
+  defaultspeed 50,15,5
+  caption "Magical Language Lyrical Lisp"
+  versionstr "Magical Language Lyrical Lisp 20100822", "Open Source"
+  resetmenu
+  insertmenu "終了", END
+  insertmenu "バージョン情報", VERSION
+  insertmenu "選択肢まで進む", SKIP
+  insertmenu "文字速度", SUB
+  insertmenu "低速", TEXTSLOW, 1
+  insertmenu "普通", TEXTMIDDLE, 1
+  insertmenu "高速", TEXTFAST, 1
+  insertmenu "フォント", FONT
+  insertmenu "画面", SUB
+  insertmenu "フルスクリーン", FULL, 1
+  insertmenu "ウインドウ", WINDOW, 1
 
-	defsub r_in
-	defsub r_out
-	defsub l_in
-	defsub l_out
-	defsub l_rout
-	defsub r_show
-	defsub l_show
-	defsub c_show
-	defsub r_load
-	defsub l_load
-	defsub c_load
-	defsub talk_mode
-	defsub speak_mode
-	defsub show_dgm
-	defsub load_dgm
-	defsub wait_dgm
+  defsub r_in
+  defsub r_out
+  defsub l_in
+  defsub l_out
+  defsub l_rout
+  defsub r_show
+  defsub l_show
+  defsub c_show
+  defsub r_load
+  defsub l_load
+  defsub c_load
+  defsub talk_mode
+  defsub speak_mode
+  defsub show_dgm
+  defsub load_dgm
+  defsub wait_dgm
 
-	game
+  game
 
 
 ;;;;;;;;;;
 ;;;*push(val)
 ;;;;;;;;;;
 *push
-	if %sp >= STACK_OVER mesbox "スタックオーバフロー", "Error" : end
-	mov %%sp, %arg0
-	inc %sp
-	return
+  if %sp >= STACK_OVER mesbox "スタックオーバフロー", "Error" : end
+  mov %%sp, %arg0
+  inc %sp
+  return
 
 
 ;;;;;;;;;;
 ;;;*pop()
 ;;;;;;;;;;
 *pop
-	if %sp <= STACK mesbox "Popできません", "Error" : end
-	dec %sp
-	mov %ret, %%sp
-	return
+  if %sp <= STACK mesbox "Popできません", "Error" : end
+  dec %sp
+  mov %ret, %%sp
+  return
 
 
 ;;;;;;;;;;
 ;;;*spush(val)
 ;;;;;;;;;;
 *spush
-	if %ssp >= STACK_OVER mesbox "スタックオーバフロー", "Error" : end
-	mov $%ssp, $sarg0
-	inc %ssp
-	return
+  if %ssp >= STACK_OVER mesbox "スタックオーバフロー", "Error" : end
+  mov $%ssp, $sarg0
+  inc %ssp
+  return
 
 
 ;;;;;;;;;;
 ;;;*spop()
 ;;;;;;;;;;
 *spop
-	if %ssp <= SSTACK mesbox "Popできません" "Error" : end
-	dec %ssp
-	mov $sret, $%ssp
-	return
+  if %ssp <= SSTACK mesbox "Popできません" "Error" : end
+  dec %ssp
+  mov $sret, $%ssp
+  return
 
 
 ;;;;;;;;;;
 ;;;*get_gc(*obj)
 ;;;;;;;;;;
 *get_gc
-	mov %ret, %%arg0 mod 2
-	return
+  mov %ret, %%arg0 mod 2
+  return
 
 
 ;;;;;;;;;;
 ;;;*set_gc(*obj, flag)
 ;;;;;;;;;;
 *set_gc
-	mov %tmp, %%arg0
-	div %tmp, 2
-	mul %tmp, 2
-	mov %%arg0, %tmp + %arg1
-	return
+  mov %tmp, %%arg0
+  div %tmp, 2
+  mul %tmp, 2
+  mov %%arg0, %tmp + %arg1
+  return
 
 
 ;;;;;;;;;;
 ;;;*get_tag(*obj)
 ;;;;;;;;;;
 *get_tag
-	mov %tmp, %%arg0
-	mod %tmp, 64
-	mov %ret, %tmp
-	div %ret, 2
-	return
+  mov %tmp, %%arg0
+  mod %tmp, 64
+  mov %ret, %tmp
+  div %ret, 2
+  return
 
 
 ;;;;;;;;;;
 ;;;*set_tag(*obj, tag)
 ;;;;;;;;;;
 *set_tag
-	mov %tmp, %%arg0
-	mov %tmp1, %tmp
-	div %tmp1, 64
-	mul %tmp1, 64  ;DATA
-	mov %tmp2, %tmp mod 2 ;GC
-	mov %tmp3, %arg1 * 2  ;TAG
-	mov %%arg0, %tmp1 + %tmp2 + %tmp3
-	return
+  mov %tmp, %%arg0
+  mov %tmp1, %tmp
+  div %tmp1, 64
+  mul %tmp1, 64  ;DATA
+  mov %tmp2, %tmp mod 2 ;GC
+  mov %tmp3, %arg1 * 2  ;TAG
+  mov %%arg0, %tmp1 + %tmp2 + %tmp3
+  return
 
 
 ;;;;;;;;;;
 ;;;*get_data(*obj)
 ;;;;;;;;;;
 *get_data
-	mov %ret, %%arg0
-	div %ret, 64
-	return
+  mov %ret, %%arg0
+  div %ret, 64
+  return
 
 
 ;;;;;;;;;;
 ;;;*set_data(*obj, data)
 ;;;;;;;;;;
 *set_data
-	mov %tmp, %%arg0
-	mov %tmp1, %tmp mod 64
-	mov %tmp2, %arg1 * 64
-	mov %%arg0, %tmp1 + %tmp2
-	return
+  mov %tmp, %%arg0
+  mov %tmp1, %tmp mod 64
+  mov %tmp2, %arg1 * 64
+  mov %%arg0, %tmp1 + %tmp2
+  return
 
 
 ;;;;;;;;;;
 ;;;*car(*obj)
 ;;;;;;;;;;
 *car
-	if %arg0 == %nil mov %ret, %nil : return
-	gosub *get_data
-	mov %ret, %ret mod 8192  ;2^13
-	return
+  if %arg0 == %nil mov %ret, %nil : return
+  gosub *get_data
+  mov %ret, %ret mod 8192  ;2^13
+  return
 
 
 ;;;;;;;;;;
 ;;;*cdr(*obj)
 ;;;;;;;;;;
 *cdr
-	if %arg0 == %nil mov %ret, %nil : return
-	gosub *get_data
-	div %ret, 8192  ;2^13
-	return
+  if %arg0 == %nil mov %ret, %nil : return
+  gosub *get_data
+  div %ret, 8192  ;2^13
+  return
 
 ;;;;;;;;;;
 ;;;*set_car(*obj0, *obj1)
 ;;;;;;;;;;
 *set_car
-	gosub *push             ;S(obj0)
-	mov %tmp, %arg0
-	mov %arg0, %arg1
-	gosub *push             ;S(obj1, obj0)
-	mov %arg0, %tmp
-	gosub *get_data
-	mov %tmp1, %ret
-	div %tmp1, 8192
-	mul %tmp1, 8192         ;tmp1 = cdr
-	gosub *pop              ;obj1<S(obj0)
-	add %tmp1, %ret         ;car+cdr(data)
-	gosub *pop              ;obj0<S()
-	mov %arg0, %ret
-	mov %arg1, %tmp1        ;car+cdr(data)
-	gosub *set_data
-	return
+  gosub *push             ;S(obj0)
+  mov %tmp, %arg0
+  mov %arg0, %arg1
+  gosub *push             ;S(obj1, obj0)
+  mov %arg0, %tmp
+  gosub *get_data
+  mov %tmp1, %ret
+  div %tmp1, 8192
+  mul %tmp1, 8192         ;tmp1 = cdr
+  gosub *pop              ;obj1<S(obj0)
+  add %tmp1, %ret         ;car+cdr(data)
+  gosub *pop              ;obj0<S()
+  mov %arg0, %ret
+  mov %arg1, %tmp1        ;car+cdr(data)
+  gosub *set_data
+  return
 
 ;;;;;;;;;;
 ;;;*set_cdr(*obj0, *obj1)
 ;;;;;;;;;;
 *set_cdr
-	gosub *push             ;S(obj0)
-	mov %tmp, %arg0
-	mov %arg0, %arg1
-	gosub *push             ;S(obj1, obj0)
-	mov %arg0, %tmp
-	gosub *get_data
-	mov %tmp1, %ret mod 8192;tmp1 = car
-	gosub *pop              ;obj1<S(obj0)
-	mul %ret, 8192          ;ret = cdr
-	mov %tmp1, %tmp1 + %ret ;tmp1 = car+cdr(data)
-	gosub *pop              ;obj0<S()
-	mov %arg0, %ret
-	mov %arg1, %tmp1        ;car+cdr(data)
-	gosub *set_data
-	return
+  gosub *push             ;S(obj0)
+  mov %tmp, %arg0
+  mov %arg0, %arg1
+  gosub *push             ;S(obj1, obj0)
+  mov %arg0, %tmp
+  gosub *get_data
+  mov %tmp1, %ret mod 8192;tmp1 = car
+  gosub *pop              ;obj1<S(obj0)
+  mul %ret, 8192          ;ret = cdr
+  mov %tmp1, %tmp1 + %ret ;tmp1 = car+cdr(data)
+  gosub *pop              ;obj0<S()
+  mov %arg0, %ret
+  mov %arg1, %tmp1        ;car+cdr(data)
+  gosub *set_data
+  return
 
 
 ;;;;;;;;;;
 ;;;*mem_init()
 ;;;;;;;;;;
 *mem_init
-	readfile $stmp, "same.jim"
-	mid $sTAB, $stmp, 0, 1
-	mid $sCR, $stmp, 1, 1
-	mid $sLF, $stmp, 2, 1
+  readfile $stmp, "same.jim"
+  mid $sTAB, $stmp, 0, 1
+  mid $sCR, $stmp, 1, 1
+  mid $sLF, $stmp, 2, 1
 
-	mov %gc_run, 0
-	mov %gc_limit, 0
-	mov %symbol_used, SYMBOL_SET
-	mov %sp, STACK
-	mov %ssp, SSTACK
-	mov %free_lst, MEM
-	for %i=MEM to MEM_END  ;フリーリストを作る
-		mov %arg0, %i
-		mov %arg1, TAG_FREE
-		gosub *set_tag
-		mov %arg0, %i
-		mov %arg1, %i + 1
-		gosub *set_data
-	next
-	mov %sfree_lst, SYMBOL_SET_OVER
-	mov %sfree_lst_tail, SYMBOL_SET_OVER
-	mov $sarg0, "nil"
-	gosub *create_symbol
-	mov %nil, %ret
-	mov $sarg0, "quote"
-	gosub *create_symbol
-	mov %quote, %ret
-	mov $sarg0, "＃t"
-	gosub *create_symbol
-	mov %sharp_t, %ret
-	mov $sarg0, "＃f"
-	gosub *create_symbol
-	mov %sharp_f, %ret
-	mov $sarg0, "dummy"
-	gosub *create_symbol
-	mov %dummy, %ret
-	gosub *set_global_env
-	return
+  mov %gc_run, 0
+  mov %gc_limit, 0
+  mov %symbol_used, SYMBOL_SET
+  mov %sp, STACK
+  mov %ssp, SSTACK
+  mov %free_lst, MEM
+  for %i=MEM to MEM_END  ;フリーリストを作る
+    mov %arg0, %i
+    mov %arg1, TAG_FREE
+    gosub *set_tag
+    mov %arg0, %i
+    mov %arg1, %i + 1
+    gosub *set_data
+  next
+  mov %sfree_lst, SYMBOL_SET_OVER
+  mov %sfree_lst_tail, SYMBOL_SET_OVER
+  mov $sarg0, "nil"
+  gosub *create_symbol
+  mov %nil, %ret
+  mov $sarg0, "quote"
+  gosub *create_symbol
+  mov %quote, %ret
+  mov $sarg0, "＃t"
+  gosub *create_symbol
+  mov %sharp_t, %ret
+  mov $sarg0, "＃f"
+  gosub *create_symbol
+  mov %sharp_f, %ret
+  mov $sarg0, "dummy"
+  gosub *create_symbol
+  mov %dummy, %ret
+  gosub *set_global_env
+  return
 
 
 
@@ -570,25 +570,25 @@ nsa
 ;;;*next_cell()
 ;;;;;;;;;;
 *next_cell
-	;;メモリ不足なら一度GCを行い、なお不足すれば終了
-	if %free_lst == MEM_OVER gosub *gc
-	if %free_lst == MEM_OVER mesbox "メモリ不足", "Error" : end
-	mov %arg0, %free_lst
-	gosub *get_data
-	mov %tmp, %free_lst
-	mov %free_lst, %ret
-	mov %ret, %tmp
-	return
+  ;;メモリ不足なら一度GCを行い、なお不足すれば終了
+  if %free_lst == MEM_OVER gosub *gc
+  if %free_lst == MEM_OVER mesbox "メモリ不足", "Error" : end
+  mov %arg0, %free_lst
+  gosub *get_data
+  mov %tmp, %free_lst
+  mov %free_lst, %ret
+  mov %ret, %tmp
+  return
 
 
 ;;;;;;;;;;
 ;;;*reuse_cell(*obj, i)
 ;;;;;;;;;;
 *reuse_cell
-	gosub *set_data
-	mov %arg1, TAG_FREE
-	gosub *set_tag
-	return
+  gosub *set_data
+  mov %arg1, TAG_FREE
+  gosub *set_tag
+  return
 
 
 
@@ -598,280 +598,280 @@ nsa
 ;;;  forの中でコンシングは起こらない => %i は保存しなくてよい
 ;;;;;;;;;;
 *gc
-	if %gc_limit == 0 goto *gc_l1
-	inc %gc_run
-	if %gc_run >= %gc_limit goto *gclimit
+  if %gc_limit == 0 goto *gc_l1
+  inc %gc_run
+  if %gc_run >= %gc_limit goto *gclimit
 *gc_l1
-	gosub *push       ;S(arg0)
-	mov %arg0, %arg1
-	gosub *push       ;S(arg1, arg0)
-	mov %arg0, %arg2
-	gosub *push       ;S(arg2, arg1, arg0)
-	mov %arg0, %arg3
-	gosub *push       ;S(arg3, arg2, arg1, arg0)
-	mov %arg0, %tmp
-	gosub *push       ;S(tmp, arg3, arg2, arg1, arg0)
-	mov %arg0, %tmp1
-	gosub *push       ;S(tmp1, tmp, arg3, arg2, arg1, arg0)
-	mov %arg0, %tmp2
-	gosub *push       ;S(tmp2, tmp1, tmp, arg3, arg2, arg1, arg0)
-	mov %arg0, %tmp3
-	gosub *push       ;S(tmp3, tmp2, tmp1, tmp, arg3, arg2, arg1, arg0)
+  gosub *push       ;S(arg0)
+  mov %arg0, %arg1
+  gosub *push       ;S(arg1, arg0)
+  mov %arg0, %arg2
+  gosub *push       ;S(arg2, arg1, arg0)
+  mov %arg0, %arg3
+  gosub *push       ;S(arg3, arg2, arg1, arg0)
+  mov %arg0, %tmp
+  gosub *push       ;S(tmp, arg3, arg2, arg1, arg0)
+  mov %arg0, %tmp1
+  gosub *push       ;S(tmp1, tmp, arg3, arg2, arg1, arg0)
+  mov %arg0, %tmp2
+  gosub *push       ;S(tmp2, tmp1, tmp, arg3, arg2, arg1, arg0)
+  mov %arg0, %tmp3
+  gosub *push       ;S(tmp3, tmp2, tmp1, tmp, arg3, arg2, arg1, arg0)
 
-	mov %gc_count, 0
-	textclear
+  mov %gc_count, 0
+  textclear
 if %gc_silent == 1 goto *gc_sl1
-	ＧＣｉｎｇ・・・
+  ＧＣｉｎｇ・・・
 *gc_sl1
-	gosub *gc_mark
-	gosub *gc_sweep
+  gosub *gc_mark
+  gosub *gc_sweep
 if %gc_silent == 1 goto *gc_sl2
-	Ｕｓｅｄ：%gc_count
-	mov %gc_count, MEM_OVER - %gc_count
-	mov %gc_count, %gc_count - MEM
-	Ａｖａｉｌａｂｌｅ：%gc_count
+  Ｕｓｅｄ：%gc_count
+  mov %gc_count, MEM_OVER - %gc_count
+  mov %gc_count, %gc_count - MEM
+  Ａｖａｉｌａｂｌｅ：%gc_count
 *gc_sl2
 
 
-	gosub *pop        ;tmp3<S(tmp2, tmp1, tmp, arg3, arg2, arg1, arg0)
-	mov %tmp3, %ret
-	gosub *pop        ;tmp2<S(tmp1, tmp, arg3, arg2, arg1, arg0)
-	mov %tmp2, %ret
-	gosub *pop        ;tmp1<S(tmp, arg3, arg2, arg1, arg0)
-	mov %tmp1, %ret
-	gosub *pop        ;tmp<S(arg3, arg2, arg1, arg0)
-	mov %tmp, %ret
-	gosub *pop        ;arg3<S(arg2, arg1, arg0)
-	mov %arg3, %ret
-	gosub *pop        ;arg2<S(arg1, arg0)
-	mov %arg2, %ret
-	gosub *pop        ;arg1<S(arg0)
-	mov %arg1, %ret
-	gosub *pop        ;arg0<S()
-	mov %arg0, %ret
-	return
+  gosub *pop        ;tmp3<S(tmp2, tmp1, tmp, arg3, arg2, arg1, arg0)
+  mov %tmp3, %ret
+  gosub *pop        ;tmp2<S(tmp1, tmp, arg3, arg2, arg1, arg0)
+  mov %tmp2, %ret
+  gosub *pop        ;tmp1<S(tmp, arg3, arg2, arg1, arg0)
+  mov %tmp1, %ret
+  gosub *pop        ;tmp<S(arg3, arg2, arg1, arg0)
+  mov %tmp, %ret
+  gosub *pop        ;arg3<S(arg2, arg1, arg0)
+  mov %arg3, %ret
+  gosub *pop        ;arg2<S(arg1, arg0)
+  mov %arg2, %ret
+  gosub *pop        ;arg1<S(arg0)
+  mov %arg1, %ret
+  gosub *pop        ;arg0<S()
+  mov %arg0, %ret
+  return
 
 
 ;;;;;;;;;;
 ;;;*gc_mark_lobject(*obj)
 ;;;;;;;;;;
 *gc_mark_lobject
-	gosub *get_gc
-	if %ret == 1 return  ;既にマーク済みなら戻る
-	mov %arg1, 1
-	gosub *set_gc        ;オブジェクト本体にマークを付ける
-	inc %gc_count
-	gosub *get_tag
-	if %ret == TAG_CONS goto *gc_mark_lobject_l1
-	if %ret == TAG_EXPR goto *gc_mark_lobject_l1
-	if %ret == TAG_FEXPR goto *gc_mark_lobject_l1
-	;;num, symbol, subr, fsubr, (free) は戻る
-	return
+  gosub *get_gc
+  if %ret == 1 return  ;既にマーク済みなら戻る
+  mov %arg1, 1
+  gosub *set_gc        ;オブジェクト本体にマークを付ける
+  inc %gc_count
+  gosub *get_tag
+  if %ret == TAG_CONS goto *gc_mark_lobject_l1
+  if %ret == TAG_EXPR goto *gc_mark_lobject_l1
+  if %ret == TAG_FEXPR goto *gc_mark_lobject_l1
+  ;;num, symbol, subr, fsubr, (free) は戻る
+  return
 *gc_mark_lobject_l1
-	gosub *push     ;S(obj)
-	gosub *car      ;CAR(obj)
-	mov %arg0, %ret
-	gosub *gc_mark_lobject
-	gosub *pop      ;obj<S()
-	mov %arg0, %ret
-	gosub *cdr      ;CDR(obj)
-	mov %arg0, %ret
-	gosub *gc_mark_lobject
-	return
+  gosub *push     ;S(obj)
+  gosub *car      ;CAR(obj)
+  mov %arg0, %ret
+  gosub *gc_mark_lobject
+  gosub *pop      ;obj<S()
+  mov %arg0, %ret
+  gosub *cdr      ;CDR(obj)
+  mov %arg0, %ret
+  gosub *gc_mark_lobject
+  return
 
 
 ;;;;;;;;;;
 ;;;*gc_mark()
 ;;;;;;;;;;
 *gc_mark
-	mov %arg0, %global_env
-	gosub *gc_mark_lobject
-	if %sp == STACK return  ;スタック未使用なら戻る
-	for %i = STACK to %sp-1
-		;;スタックにはポインタではなく即値が積まれる事もある
-		;;そのため保守的GCを行う
-		if %%i < MEM goto *gc_mark_l1
-		if %%i > MEM_END goto *gc_mark_l1
-		mov %arg0, %%i
-		gosub *gc_mark_lobject
-	*gc_mark_l1
-	next
-	return
+  mov %arg0, %global_env
+  gosub *gc_mark_lobject
+  if %sp == STACK return  ;スタック未使用なら戻る
+  for %i = STACK to %sp-1
+    ;;スタックにはポインタではなく即値が積まれる事もある
+    ;;そのため保守的GCを行う
+    if %%i < MEM goto *gc_mark_l1
+    if %%i > MEM_END goto *gc_mark_l1
+    mov %arg0, %%i
+    gosub *gc_mark_lobject
+  *gc_mark_l1
+  next
+  return
 
 
 ;;;;;;;;;;
 ;;;*gc_sweep()
 ;;;;;;;;;;
 *gc_sweep
-	mov %free_lst, MEM_OVER
-	for %i=MEM to MEM_END  ;一つ目の未使用セルを見つける
-		mov %arg0, %i
-		gosub *get_gc
-		if %ret == 0 mov %free_lst, %i : break
-		mov %arg1, 0
-		gosub *set_gc
-	next
-	if %free_lst == MEM_OVER return  ;未使用セルは無し
-	mov %gc_tmp, %free_lst ;一つ前の空きセルを保持
-	for %i=%i+1 to MEM_END
-		mov %arg0, %i
-		gosub *get_gc
-		;;一つ前の未使用セルに新しい未使用セルをつなぎ、マークを消す
-		if %ret == 0 mov %arg0, %gc_tmp : mov %arg1, %i : gosub *reuse_cell : mov %gc_tmp, %i
-		mov %arg0, %i
-		mov %arg1, 0
-		gosub *set_gc
-	next
-	mov %arg0, %gc_tmp
-	mov %arg1, MEM_OVER  ;フリーリストの終端はこの値
-	gosub *reuse_cell
-	return
+  mov %free_lst, MEM_OVER
+  for %i=MEM to MEM_END  ;一つ目の未使用セルを見つける
+    mov %arg0, %i
+    gosub *get_gc
+    if %ret == 0 mov %free_lst, %i : break
+    mov %arg1, 0
+    gosub *set_gc
+  next
+  if %free_lst == MEM_OVER return  ;未使用セルは無し
+  mov %gc_tmp, %free_lst ;一つ前の空きセルを保持
+  for %i=%i+1 to MEM_END
+    mov %arg0, %i
+    gosub *get_gc
+    ;;一つ前の未使用セルに新しい未使用セルをつなぎ、マークを消す
+    if %ret == 0 mov %arg0, %gc_tmp : mov %arg1, %i : gosub *reuse_cell : mov %gc_tmp, %i
+    mov %arg0, %i
+    mov %arg1, 0
+    gosub *set_gc
+  next
+  mov %arg0, %gc_tmp
+  mov %arg1, MEM_OVER  ;フリーリストの終端はこの値
+  gosub *reuse_cell
+  return
 
 
 ;;;;;;;;;;
 ;;;*create_cons()
 ;;;;;;;;;;
 *create_cons
-	gosub *next_cell
-	mov %arg0, %ret
-	mov %arg1, TAG_CONS
-	gosub *set_tag
-	mov %ret, %arg0
-	return
+  gosub *next_cell
+  mov %arg0, %ret
+  mov %arg1, TAG_CONS
+  gosub *set_tag
+  mov %ret, %arg0
+  return
 
 
 ;;;;;;;;;;
 ;;;*create_num(n)
 ;;;;;;;;;;
 *create_num
-	gosub *push       ;S(n)
-	gosub *next_cell
-	mov %arg0, %ret   ;new cell
-	mov %arg1, TAG_NUM
-	gosub *set_tag
-	gosub *pop        ;n<S()
-	mov %arg1, %ret
-	gosub *set_data
-	mov %ret, %arg0
-	return
+  gosub *push       ;S(n)
+  gosub *next_cell
+  mov %arg0, %ret   ;new cell
+  mov %arg1, TAG_NUM
+  gosub *set_tag
+  gosub *pop        ;n<S()
+  mov %arg1, %ret
+  gosub *set_data
+  mov %ret, %arg0
+  return
 
 
 ;;;;;;;;;;
 ;;;*create_symbol(str)
 ;;;;;;;;;;
 *create_symbol
-	for %i=MEM to MEM_END
-		mov %arg0, %i
-		gosub *get_tag
-		if %ret != TAG_SYMBOL goto *create_symbol_l1
-		gosub *get_data
-		if $sarg0 == $%ret mov %ret, %i : mov $sarg0, ")(" : break
-	*create_symbol_l1
-	next
-	if $sarg0 == ")(" return  ;シンボルの名前として")("はありえないので目印代わりに使用
-	mov $%symbol_used, $sarg0
-	gosub *next_cell
-	mov %arg0, %ret          ;new cell
-	mov %arg1, %symbol_used
-	gosub *set_data
-	mov %arg1, TAG_SYMBOL
-	gosub *set_tag
-	mov %ret, %arg0
-	inc %symbol_used
-	return
+  for %i=MEM to MEM_END
+    mov %arg0, %i
+    gosub *get_tag
+    if %ret != TAG_SYMBOL goto *create_symbol_l1
+    gosub *get_data
+    if $sarg0 == $%ret mov %ret, %i : mov $sarg0, ")(" : break
+  *create_symbol_l1
+  next
+  if $sarg0 == ")(" return  ;シンボルの名前として")("はありえないので目印代わりに使用
+  mov $%symbol_used, $sarg0
+  gosub *next_cell
+  mov %arg0, %ret          ;new cell
+  mov %arg1, %symbol_used
+  gosub *set_data
+  mov %arg1, TAG_SYMBOL
+  gosub *set_tag
+  mov %ret, %arg0
+  inc %symbol_used
+  return
 
 
 ;;;;;;;;;;
 ;;;*create_subr(n)
 ;;;;;;;;;;
 *create_subr
-	gosub *push       ;S(n)
-	gosub *next_cell
-	mov %arg0, %ret   ;new cell
-	mov %arg1, TAG_SUBR
-	gosub *set_tag
-	gosub *pop        ;n<S()
-	mov %arg1, %ret
-	gosub *set_data
-	mov %ret, %arg0
-	return
+  gosub *push       ;S(n)
+  gosub *next_cell
+  mov %arg0, %ret   ;new cell
+  mov %arg1, TAG_SUBR
+  gosub *set_tag
+  gosub *pop        ;n<S()
+  mov %arg1, %ret
+  gosub *set_data
+  mov %ret, %arg0
+  return
 
 ;;;;;;;;;;
 ;;;*create_fsubr(n)
 ;;;;;;;;;;
 *create_fsubr
-	gosub *push       ;S(n)
-	gosub *next_cell
-	mov %arg0, %ret   ;new cell
-	mov %arg1, TAG_FSUBR
-	gosub *set_tag
-	gosub *pop        ;n<S()
-	mov %arg1, %ret
-	gosub *set_data
-	mov %ret, %arg0
-	return
+  gosub *push       ;S(n)
+  gosub *next_cell
+  mov %arg0, %ret   ;new cell
+  mov %arg1, TAG_FSUBR
+  gosub *set_tag
+  gosub *pop        ;n<S()
+  mov %arg1, %ret
+  gosub *set_data
+  mov %ret, %arg0
+  return
 
 
 ;;;;;;;;;;
 ;;;*create_expr(form, arg, env)
 ;;;;;;;;;;
 *create_expr
-	gosub *push        ;S(form)
-	mov %arg0, %arg1
-	gosub *push        ;S(arg, form)
-	mov %arg0, %arg2
-	gosub *push        ;S(env, arg, form)
-	gosub *create_cons
-	mov %arg0, %ret    ;arg0 = new cons
-	mov %arg1, TAG_EXPR
-	gosub *set_tag
-	gosub *pop         ;env<S(arg, form)
-	mov %arg1, %ret    ;arg1 = env
-	gosub *push        ;S(new cons, arg, form)
-	gosub *set_car     ;new cons = (env ...)
-	gosub *create_cons
-	mov %arg0, %ret    ;new cons2
-	gosub *pop         ;new cons<S(arg, form)
-	mov %tmp, %ret
-	gosub *push        ;S(new cons2, arg, form)
-	mov %arg1, %arg0
-	mov %arg0, %tmp
-	gosub *push        ;S(new cons, new cons2, arg, form)
-	gosub *set_cdr     ;new cons = (env . new cons2)
-	gosub *pop         ;new cons<S(new cons2, arg, form)
-	mov %arg0, %ret    ;arg0 = new cons
-	gosub *pop         ;new cons2<S(arg, form)
-	mov %tmp1, %ret
-	gosub *pop         ;arg<S(form)
-	mov %tmp2, %ret
-	gosub *pop         ;form<S()
-	mov %tmp3, %ret
-	gosub *push        ;S(new cons)
-	mov %arg0, %tmp3
-	gosub *push        ;S(form, new cons)
-	mov %arg0, %tmp1   ;arg0 = new cons2
-	gosub *push        ;S(new cons2, form, new cons)
-	mov %arg1, %tmp2   ;arg1 = arg
-	gosub *set_car     ;new cons = (env arg . ...)
-	gosub *pop         ;new cons2<S(form, new cons)
-	mov %arg0, %ret
-	gosub *pop         ;form<S(new cons)
-	mov %arg1, %ret
-	gosub *set_cdr     ;new cons = (env arg . form)
-	gosub *pop         ;new cons<S()
-	return             ;%ret = new cons
+  gosub *push        ;S(form)
+  mov %arg0, %arg1
+  gosub *push        ;S(arg, form)
+  mov %arg0, %arg2
+  gosub *push        ;S(env, arg, form)
+  gosub *create_cons
+  mov %arg0, %ret    ;arg0 = new cons
+  mov %arg1, TAG_EXPR
+  gosub *set_tag
+  gosub *pop         ;env<S(arg, form)
+  mov %arg1, %ret    ;arg1 = env
+  gosub *push        ;S(new cons, arg, form)
+  gosub *set_car     ;new cons = (env ...)
+  gosub *create_cons
+  mov %arg0, %ret    ;new cons2
+  gosub *pop         ;new cons<S(arg, form)
+  mov %tmp, %ret
+  gosub *push        ;S(new cons2, arg, form)
+  mov %arg1, %arg0
+  mov %arg0, %tmp
+  gosub *push        ;S(new cons, new cons2, arg, form)
+  gosub *set_cdr     ;new cons = (env . new cons2)
+  gosub *pop         ;new cons<S(new cons2, arg, form)
+  mov %arg0, %ret    ;arg0 = new cons
+  gosub *pop         ;new cons2<S(arg, form)
+  mov %tmp1, %ret
+  gosub *pop         ;arg<S(form)
+  mov %tmp2, %ret
+  gosub *pop         ;form<S()
+  mov %tmp3, %ret
+  gosub *push        ;S(new cons)
+  mov %arg0, %tmp3
+  gosub *push        ;S(form, new cons)
+  mov %arg0, %tmp1   ;arg0 = new cons2
+  gosub *push        ;S(new cons2, form, new cons)
+  mov %arg1, %tmp2   ;arg1 = arg
+  gosub *set_car     ;new cons = (env arg . ...)
+  gosub *pop         ;new cons2<S(form, new cons)
+  mov %arg0, %ret
+  gosub *pop         ;form<S(new cons)
+  mov %arg1, %ret
+  gosub *set_cdr     ;new cons = (env arg . form)
+  gosub *pop         ;new cons<S()
+  return             ;%ret = new cons
 
 
 ;;;;;;;;;;
 ;;;*create_fexpr(form, arg, env)
 ;;;;;;;;;;
 *create_fexpr
-	gosub *create_expr
-	mov %arg0, %ret
-	mov %arg1, TAG_FEXPR
-	gosub *set_tag
-	mov %ret, %arg0
-	return
+  gosub *create_expr
+  mov %arg0, %ret
+  mov %arg1, TAG_FEXPR
+  gosub *set_tag
+  mov %ret, %arg0
+  return
 
 
 ;;;;;;;;;;
@@ -880,42 +880,42 @@ if %gc_silent == 1 goto *gc_sl2
 ;;ret  : 進めた文字数
 ;;;;;;;;;;
 *next_token
-	mov %ret, 0
-	mov $sret, ""
-	mov %tmp1, 0
-	len %tmp, $sarg0
-	for %i=0 to %tmp-1
-		mid $stmp, $sarg0, %i, 1
-		if $stmp != " " && $stmp != "　" && $stmp != $sTAB && $stmp != $sCR && $stmp != $sLF mov %tmp1, 1 : break;
-		mov %ret, %ret + 1
-	next
-	if $stmp == "("  mov $sret, "（" : mov %ret, %ret+1 : return
-	if $stmp == ")"  mov $sret, "）" : mov %ret, %ret+1 : return
-	if $stmp == "."  mov $sret, "．" : mov %ret, %ret+1 : return
-	if $stmp == "'"  mov $sret, "’" : mov %ret, %ret+1 : return
-	if %tmp1 == 0 return ;エラー
-	for %i=%i to %tmp-1
-		mid $stmp, $sarg0, %i, 1
-		if $stmp == "(" break
-		if $stmp == ")" break
-		;;if $stmp == "." break
-		if $stmp == "'" break
-		if $stmp == " " break
-		if $stmp == "　" break
-		if $stmp == $sTAB break
-		if $stmp == $sCR break
-		if $stmp == $sLF break
-		if $stmp == "#" mov $stmp, "＃"
-		if $stmp == "/" mov $stmp, "／"
-		if $stmp == ">" mov $stmp, "＞"
-		if $stmp == "<" mov $stmp, "＜"
-		if $stmp == "=" mov $stmp, "＝"
-		if $stmp == "!" mov $stmp, "！"
-		if $stmp == "_" mov $stmp, "＿"
-		mov $sret, $sret + $stmp
-		mov %ret, %ret + 1
-	next
-	return
+  mov %ret, 0
+  mov $sret, ""
+  mov %tmp1, 0
+  len %tmp, $sarg0
+  for %i=0 to %tmp-1
+    mid $stmp, $sarg0, %i, 1
+    if $stmp != " " && $stmp != "　" && $stmp != $sTAB && $stmp != $sCR && $stmp != $sLF mov %tmp1, 1 : break;
+    mov %ret, %ret + 1
+  next
+  if $stmp == "("  mov $sret, "（" : mov %ret, %ret+1 : return
+  if $stmp == ")"  mov $sret, "）" : mov %ret, %ret+1 : return
+  if $stmp == "."  mov $sret, "．" : mov %ret, %ret+1 : return
+  if $stmp == "'"  mov $sret, "’" : mov %ret, %ret+1 : return
+  if %tmp1 == 0 return ;エラー
+  for %i=%i to %tmp-1
+    mid $stmp, $sarg0, %i, 1
+    if $stmp == "(" break
+    if $stmp == ")" break
+    ;;if $stmp == "." break
+    if $stmp == "'" break
+    if $stmp == " " break
+    if $stmp == "　" break
+    if $stmp == $sTAB break
+    if $stmp == $sCR break
+    if $stmp == $sLF break
+    if $stmp == "#" mov $stmp, "＃"
+    if $stmp == "/" mov $stmp, "／"
+    if $stmp == ">" mov $stmp, "＞"
+    if $stmp == "<" mov $stmp, "＜"
+    if $stmp == "=" mov $stmp, "＝"
+    if $stmp == "!" mov $stmp, "！"
+    if $stmp == "_" mov $stmp, "＿"
+    mov $sret, $sret + $stmp
+    mov %ret, %ret + 1
+  next
+  return
 
 
 ;;;;;;;;;;
@@ -923,21 +923,21 @@ if %gc_silent == 1 goto *gc_sl2
 ;;sarg0 : 部分文字列
 ;;;;;;;;;;
 *skip_sarg0
-	gosub *push        ;%arg0
-	mov %arg0, %tmp
-	gosub *push        ;%tmp
-	mov %arg0, %tmp1
-	gosub *push        ;%tmp1
-	gosub *next_token
-	len %arg0, $sarg0
-	mid $sarg0, $sarg0, %ret, %arg0-%ret
-	gosub *pop         ;%tmp1
-	mov %tmp1, %ret
-	gosub *pop         ;%tmp
-	mov %tmp, %ret
-	gosub *pop         ;%arg0
-	mov %arg0, %ret
-	return
+  gosub *push        ;%arg0
+  mov %arg0, %tmp
+  gosub *push        ;%tmp
+  mov %arg0, %tmp1
+  gosub *push        ;%tmp1
+  gosub *next_token
+  len %arg0, $sarg0
+  mid $sarg0, $sarg0, %ret, %arg0-%ret
+  gosub *pop         ;%tmp1
+  mov %tmp1, %ret
+  gosub *pop         ;%tmp
+  mov %tmp, %ret
+  gosub *pop         ;%arg0
+  mov %arg0, %ret
+  return
 
 
 ;;;;;;;;;;
@@ -945,36 +945,36 @@ if %gc_silent == 1 goto *gc_sl2
 ;;ret  : 数字=0, それ以外=1
 ;;;;;;;;;;
 *is_number
-	gosub *push
-	len %arg0, $sarg0
-	mov %ret, 0
-	;;if %arg0 > 8 gosub *pop : mov %arg0, %ret : mov $sarg0, "0" : mov %ret, 0 : return
-	for %i=0 to %arg0-1
-		mid $stmp, $sarg0, %i, 1
-		if $stmp == "0" goto *is_number_l1
-		if $stmp == "1" goto *is_number_l1
-		if $stmp == "2" goto *is_number_l1
-		if $stmp == "3" goto *is_number_l1
-		if $stmp == "4" goto *is_number_l1
-		if $stmp == "5" goto *is_number_l1
-		if $stmp == "6" goto *is_number_l1
-		if $stmp == "7" goto *is_number_l1
-		if $stmp == "8" goto *is_number_l1
-		if $stmp == "9" goto *is_number_l1
-		gosub *pop : mov %arg0, %ret : mov %ret, 1 : break
+  gosub *push
+  len %arg0, $sarg0
+  mov %ret, 0
+  ;;if %arg0 > 8 gosub *pop : mov %arg0, %ret : mov $sarg0, "0" : mov %ret, 0 : return
+  for %i=0 to %arg0-1
+    mid $stmp, $sarg0, %i, 1
+    if $stmp == "0" goto *is_number_l1
+    if $stmp == "1" goto *is_number_l1
+    if $stmp == "2" goto *is_number_l1
+    if $stmp == "3" goto *is_number_l1
+    if $stmp == "4" goto *is_number_l1
+    if $stmp == "5" goto *is_number_l1
+    if $stmp == "6" goto *is_number_l1
+    if $stmp == "7" goto *is_number_l1
+    if $stmp == "8" goto *is_number_l1
+    if $stmp == "9" goto *is_number_l1
+    gosub *pop : mov %arg0, %ret : mov %ret, 1 : break
 *is_number_l1
-	next
-	if %ret == 0 goto *is_number_l2
-	return  ;数字以外ならここで戻る
+  next
+  if %ret == 0 goto *is_number_l2
+  return  ;数字以外ならここで戻る
 *is_number_l2  ;全て数字
-	;;8桁を超えるか確認
-	if %arg0 > 8 gosub *pop : mov %arg0, %ret : mov $sarg0, "0" : mov %ret, 0 : return
-	atoi %arg0, $sarg0
-	if %arg0 > 67108863 gosub *pop : mov %arg0, %ret : mov $sarg0, "0" : mov %ret, 0 : return
-	gosub *pop
-	mov %arg0, %ret
-	mov %ret, 0
-	return
+  ;;8桁を超えるか確認
+  if %arg0 > 8 gosub *pop : mov %arg0, %ret : mov $sarg0, "0" : mov %ret, 0 : return
+  atoi %arg0, $sarg0
+  if %arg0 > 67108863 gosub *pop : mov %arg0, %ret : mov $sarg0, "0" : mov %ret, 0 : return
+  gosub *pop
+  mov %arg0, %ret
+  mov %ret, 0
+  return
 
 
 
@@ -983,34 +983,34 @@ if %gc_silent == 1 goto *gc_sl2
 ;;ret  : 変換したオブジェクト
 ;;;;;;;;;;
 *translate_quote
-	gosub *create_cons
-	mov %arg0, %ret
-	gosub *push        ;S(new cons1)
-	mov %arg1, %quote
-	gosub *set_car     ;new cons1 = (quote ...)
-	gosub *create_cons
-	mov %tmp, %ret     ;tmp = new cons2
-	gosub *pop         ;new cons1<S()
-	mov %arg0, %ret
-	gosub *push        ;S(new cons1)
-	mov %tmp1, %arg0   ;tmp1 = new cons1
-	mov %arg0, %tmp
-	gosub *push        ;S(new cons2, new cons1)
-	mov %arg1, %arg0
-	mov %arg0, %tmp1
-	gosub *set_cdr     ;new cons1 = (quote . new cons2)
-	gosub *input_to_lobject
-	mov %arg1, %ret    ;new object
-	gosub *pop         ;new cons2<S(new cons1)
-	mov %arg0, %ret
-	gosub *push        ;S(new cons2, new cons1)
-	gosub *set_car     ;new cons2 = (new object ...)
-	gosub *pop         ;new cons2<S(new cons1)
-	mov %arg0, %ret
-	mov %arg1, %nil
-	gosub *set_cdr     ;new cons2 = (new objec . nil)
-	gosub *pop
-	return             ;%ret = new cons1
+  gosub *create_cons
+  mov %arg0, %ret
+  gosub *push        ;S(new cons1)
+  mov %arg1, %quote
+  gosub *set_car     ;new cons1 = (quote ...)
+  gosub *create_cons
+  mov %tmp, %ret     ;tmp = new cons2
+  gosub *pop         ;new cons1<S()
+  mov %arg0, %ret
+  gosub *push        ;S(new cons1)
+  mov %tmp1, %arg0   ;tmp1 = new cons1
+  mov %arg0, %tmp
+  gosub *push        ;S(new cons2, new cons1)
+  mov %arg1, %arg0
+  mov %arg0, %tmp1
+  gosub *set_cdr     ;new cons1 = (quote . new cons2)
+  gosub *input_to_lobject
+  mov %arg1, %ret    ;new object
+  gosub *pop         ;new cons2<S(new cons1)
+  mov %arg0, %ret
+  gosub *push        ;S(new cons2, new cons1)
+  gosub *set_car     ;new cons2 = (new object ...)
+  gosub *pop         ;new cons2<S(new cons1)
+  mov %arg0, %ret
+  mov %arg1, %nil
+  gosub *set_cdr     ;new cons2 = (new objec . nil)
+  gosub *pop
+  return             ;%ret = new cons1
 
 ;;;;;;;;;;
 ;;;*check_lr_parenthesis(str)
@@ -1018,36 +1018,36 @@ if %gc_silent == 1 goto *gc_sl2
 ;;next_tokenに頼らなければ半角のまま入っている
 ;;;;;;;;;;
 *check_lr_parenthesis
-	len %tmp, $sarg0
-	mov %ret, 0
-	for %i=0 to %tmp-1
-		mid $stmp, $sarg0, %i, 1
-		if $stmp == "(" mov %ret, %ret+1
-		if $stmp == ")" mov %ret, %ret-1
-	next
-	if %ret > 0 mov %ret, 1
-	if %ret < 0 mov %ret, 2
-	return
+  len %tmp, $sarg0
+  mov %ret, 0
+  for %i=0 to %tmp-1
+    mid $stmp, $sarg0, %i, 1
+    if $stmp == "(" mov %ret, %ret+1
+    if $stmp == ")" mov %ret, %ret-1
+  next
+  if %ret > 0 mov %ret, 1
+  if %ret < 0 mov %ret, 2
+  return
 
 ;;;;;;;;;;
 ;;;*input_to_lobject(str)
 ;;ret  : 変換したオブジェクト
 ;;;;;;;;;;
 *input_to_lobject
-	gosub *next_token
-	len %tmp1, $sarg0
-	mid $sarg0, $sarg0, %ret, %tmp1-%ret
-	if $sret == "（" gosub *input_to_list : return
-	if $sret == "’" gosub *translate_quote : return
-	if $sret == "）" mov %ret, %nil : return
-	gosub *spush      ;str
-	mov $sarg0, $sret
-	gosub *is_number
-	if %ret == 0 atoi %arg0, $sarg0 : gosub *create_num : gosub *spop : mov $sarg0, $sret : return
-	gosub *create_symbol
-	gosub *spop       ;str
-	mov $sarg0, $sret
-	return
+  gosub *next_token
+  len %tmp1, $sarg0
+  mid $sarg0, $sarg0, %ret, %tmp1-%ret
+  if $sret == "（" gosub *input_to_list : return
+  if $sret == "’" gosub *translate_quote : return
+  if $sret == "）" mov %ret, %nil : return
+  gosub *spush      ;str
+  mov $sarg0, $sret
+  gosub *is_number
+  if %ret == 0 atoi %arg0, $sarg0 : gosub *create_num : gosub *spop : mov $sarg0, $sret : return
+  gosub *create_symbol
+  gosub *spop       ;str
+  mov $sarg0, $sret
+  return
 
 
 ;;;;;;;;;;
@@ -1056,74 +1056,74 @@ if %gc_silent == 1 goto *gc_sl2
 ;;$sarg0の値が常に変化することに注意
 ;;;;;;;;;;
 *input_to_list
-	gosub *create_cons
-	mov %arg0, %ret
-	mov %tmp, %ret
-	gosub *push          ;root(最初の地点を記憶)
+  gosub *create_cons
+  mov %arg0, %ret
+  mov %tmp, %ret
+  gosub *push          ;root(最初の地点を記憶)
 *input_to_list_l1
-	mov %arg0, %tmp
-	gosub *push          ;current
-	gosub *next_token    ;この%retは破棄する
-	gosub *pop           ;current
-	mov %tmp, %ret
-	if $sret == "）" goto *input_to_list_l2
-	if $sret == "．" goto *input_to_list_l3
-	goto *input_to_list_l4
+  mov %arg0, %tmp
+  gosub *push          ;current
+  gosub *next_token    ;この%retは破棄する
+  gosub *pop           ;current
+  mov %tmp, %ret
+  if $sret == "）" goto *input_to_list_l2
+  if $sret == "．" goto *input_to_list_l3
+  goto *input_to_list_l4
 
 *input_to_list_l2   ; ')'における処理
-	gosub *skip_sarg0    ;')'の分を読み飛ばす
-	mov %arg0, %tmp
-	mov %arg1, %nil
-	gosub *set_cdr       ;current = (..., nil)
-	gosub *pop           ;root
-	mov %arg0, %ret
-	gosub *cdr
-	return               ;%ret = CDR(root)
+  gosub *skip_sarg0    ;')'の分を読み飛ばす
+  mov %arg0, %tmp
+  mov %arg1, %nil
+  gosub *set_cdr       ;current = (..., nil)
+  gosub *pop           ;root
+  mov %arg0, %ret
+  gosub *cdr
+  return               ;%ret = CDR(root)
 
 *input_to_list_l3   ; '.'における処理
-	gosub *skip_sarg0    ;'.'の分を読み飛ばす
-	mov %arg0, %tmp
-	gosub *push          ;current
-	gosub *input_to_lobject
-	mov %arg1, %ret      ;new object
-	gosub *pop           ;current
-	mov %arg0, %ret
-	gosub *set_cdr       ;current = (..., new object)
-	gosub *skip_sarg0    ;')'の分を読み飛ばす
-	gosub *pop           ;root
-	mov %arg0, %ret
-	gosub *cdr
-	return               ;%ret = CDR(root)
+  gosub *skip_sarg0    ;'.'の分を読み飛ばす
+  mov %arg0, %tmp
+  gosub *push          ;current
+  gosub *input_to_lobject
+  mov %arg1, %ret      ;new object
+  gosub *pop           ;current
+  mov %arg0, %ret
+  gosub *set_cdr       ;current = (..., new object)
+  gosub *skip_sarg0    ;')'の分を読み飛ばす
+  gosub *pop           ;root
+  mov %arg0, %ret
+  gosub *cdr
+  return               ;%ret = CDR(root)
 
 *input_to_list_l4   ;通常の処理
-	;;表記の上では省略しているが、スタックには常にrootがある
-	;;new object, new consの違いに注意
-	mov %arg0, %tmp
-	gosub *push        ;S(current)
-	gosub *input_to_lobject
+  ;;表記の上では省略しているが、スタックには常にrootがある
+  ;;new object, new consの違いに注意
+  mov %arg0, %tmp
+  gosub *push        ;S(current)
+  gosub *input_to_lobject
 mov $sarg0, $sarg0
-	mov %arg0, %ret
-	gosub *push        ;S(new object, current)
-	gosub *create_cons
-	mov %arg0, %ret    ;%arg0 = new cons
-	gosub *pop         ;new object<S(current)
-	gosub *push        ;S(new cons, current)
-	mov %arg1, %ret    ;%arg1 = new object
-	gosub *set_car     ;new cons = (new object, ...)
-	gosub *pop         ;new cons<S(current)
-	mov %arg1, %ret    ;%arg1 = new cons
-	gosub *pop         ;current<s()
-	mov %arg0, %ret    ;%arg0 = current
-	mov %tmp1, %arg0   ;tmp1にarg0(current)を退避
-	mov %arg0, %arg1
-	gosub *push        ;S(new cons)
-	mov %arg0, %tmp1   ;退避したarg0を戻す
-	gosub *set_cdr     ;current = (..., new cons)
-	gosub *pop         ;new cons<S()
-	mov %tmp, %ret     ;古いtmpの値は破棄する
+  mov %arg0, %ret
+  gosub *push        ;S(new object, current)
+  gosub *create_cons
+  mov %arg0, %ret    ;%arg0 = new cons
+  gosub *pop         ;new object<S(current)
+  gosub *push        ;S(new cons, current)
+  mov %arg1, %ret    ;%arg1 = new object
+  gosub *set_car     ;new cons = (new object, ...)
+  gosub *pop         ;new cons<S(current)
+  mov %arg1, %ret    ;%arg1 = new cons
+  gosub *pop         ;current<s()
+  mov %arg0, %ret    ;%arg0 = current
+  mov %tmp1, %arg0   ;tmp1にarg0(current)を退避
+  mov %arg0, %arg1
+  gosub *push        ;S(new cons)
+  mov %arg0, %tmp1   ;退避したarg0を戻す
+  gosub *set_cdr     ;current = (..., new cons)
+  gosub *pop         ;new cons<S()
+  mov %tmp, %ret     ;古いtmpの値は破棄する
 
-	goto *input_to_list_l1
-	return
+  goto *input_to_list_l1
+  return
 
 
 ;;;;;;;;;;
@@ -1131,33 +1131,33 @@ mov $sarg0, $sarg0
 ;;sret : 変換後の文字列
 ;;;;;;;;;;
 *cons_to_string
-	mov $stmp3, "（"
+  mov $stmp3, "（"
 *cons_to_string_l1
-	gosub *push                  ;obj
-	gosub *car
-	mov %arg0, %ret
-	mov $sarg0, $stmp3
-	gosub *spush
-	gosub *lobject_to_string
-	mov $stmp2, $sret            ;car
-	gosub *spop
-	mov $stmp3, $sret
-	mov $stmp3, $stmp3 + $stmp2
-	gosub *pop                   ;obj
-	mov %arg0, %ret
-	gosub *cdr
-	mov %arg0, %ret
-	gosub *get_tag
-	if %arg0 == %nil goto *cons_to_string_l2
-	if %ret != TAG_CONS mov $sarg0, $stmp3 : gosub *spush : gosub *lobject_to_string : mov $stmp2, $sret : gosub *spop : mov $stmp3, $sret : mov $stmp3, $stmp3 + "　．" + $stmp2 : goto *cons_to_string_l2
-	mov $stmp3, $stmp3 + "　"   ;半角にしたら上手くいかない(奇数文字になるため？)
-	;;mov %arg0, %arg0 %arg0にはcdrが入っている
-	goto *cons_to_string_l1
+  gosub *push                  ;obj
+  gosub *car
+  mov %arg0, %ret
+  mov $sarg0, $stmp3
+  gosub *spush
+  gosub *lobject_to_string
+  mov $stmp2, $sret            ;car
+  gosub *spop
+  mov $stmp3, $sret
+  mov $stmp3, $stmp3 + $stmp2
+  gosub *pop                   ;obj
+  mov %arg0, %ret
+  gosub *cdr
+  mov %arg0, %ret
+  gosub *get_tag
+  if %arg0 == %nil goto *cons_to_string_l2
+  if %ret != TAG_CONS mov $sarg0, $stmp3 : gosub *spush : gosub *lobject_to_string : mov $stmp2, $sret : gosub *spop : mov $stmp3, $sret : mov $stmp3, $stmp3 + "　．" + $stmp2 : goto *cons_to_string_l2
+  mov $stmp3, $stmp3 + "　"   ;半角にしたら上手くいかない(奇数文字になるため？)
+  ;;mov %arg0, %arg0 %arg0にはcdrが入っている
+  goto *cons_to_string_l1
 *cons_to_string_l2
-	mov $stmp3, $stmp3 + "）"
-	mov $sarg0, $stmp3
-	gosub *print_string
-	return
+  mov $stmp3, $stmp3 + "）"
+  mov $sarg0, $stmp3
+  gosub *print_string
+  return
 
 
 ;;;;;;;;;;
@@ -1165,15 +1165,15 @@ mov $sarg0, $sarg0
 ;;sret : 変換後の文字列
 ;;;;;;;;;;
 *lobject_to_string
-	gosub *get_tag
-	if %ret == TAG_SUBR mov $sarg0, "＃＜ｐｒｏｃｅｄｕｒｅ＞" : gosub *print_string : return
-	if %ret == TAG_FSUBR mov $sarg0, "＃＜ｐｒｏｃｅｄｕｒｅ＞" : gosub *print_string : return
-	if %ret == TAG_EXPR mov $sarg0, "＃＜ｐｒｏｃｅｄｕｒｅ＞" : gosub *print_string : return
-	if %ret == TAG_FEXPR mov $sarg0, "＃＜ｐｒｏｃｅｄｕｒｅ＞" : gosub *print_string : return
-	if %ret == TAG_NUM gosub *get_data : itoa $sarg0, %ret : gosub *print_string : return
-	if %ret == TAG_SYMBOL gosub *get_data : mov $sarg0, $%ret : gosub *print_string : return
-	if %ret == TAG_CONS gosub *cons_to_string : return
-	return
+  gosub *get_tag
+  if %ret == TAG_SUBR mov $sarg0, "＃＜ｐｒｏｃｅｄｕｒｅ＞" : gosub *print_string : return
+  if %ret == TAG_FSUBR mov $sarg0, "＃＜ｐｒｏｃｅｄｕｒｅ＞" : gosub *print_string : return
+  if %ret == TAG_EXPR mov $sarg0, "＃＜ｐｒｏｃｅｄｕｒｅ＞" : gosub *print_string : return
+  if %ret == TAG_FEXPR mov $sarg0, "＃＜ｐｒｏｃｅｄｕｒｅ＞" : gosub *print_string : return
+  if %ret == TAG_NUM gosub *get_data : itoa $sarg0, %ret : gosub *print_string : return
+  if %ret == TAG_SYMBOL gosub *get_data : mov $sarg0, $%ret : gosub *print_string : return
+  if %ret == TAG_CONS gosub *cons_to_string : return
+  return
 
 
 ;;;;;;;;;;
@@ -1181,406 +1181,406 @@ mov $sarg0, $sarg0
 ;;sret : 表示する文字列
 ;;;;;;;;;;
 *print_string
-	mov $sret, $sarg0
-	len %tmp, $sret
-	if %tmp mod 2 == 1 mov $sret, $sret + " "
-	return
+  mov $sret, $sarg0
+  len %tmp, $sret
+  if %tmp mod 2 == 1 mov $sret, $sret + " "
+  return
 
 
 ;;;;;;;;;;
 ;;;*assoc(*key, *lst)
 ;;;;;;;;;;
 *assoc
-	if %arg1 == %nil : mov %ret, %nil : return
-	gosub *push      ;key
-	mov %arg0, %arg1
-	gosub *push      ;lst
-	gosub *car
-	mov %arg0, %ret
-	gosub *car
-	mov %tmp, %ret   ;CAR(CAR(lst))
-	gosub *pop       ;lst
-	mov %arg1, %ret
-	gosub *pop       ;key
-	mov %arg0, %ret
-	if %arg0 == %tmp mov %arg0, %arg1 : gosub *car : return
-	gosub *push      ;key
-	mov %arg0, %arg1
-	gosub *cdr
-	mov %arg1, %ret  ;CDR(lst)
-	gosub *pop       ;key
-	mov %arg0, %ret
-	goto *assoc      ;tail recursion
-	return
+  if %arg1 == %nil : mov %ret, %nil : return
+  gosub *push      ;key
+  mov %arg0, %arg1
+  gosub *push      ;lst
+  gosub *car
+  mov %arg0, %ret
+  gosub *car
+  mov %tmp, %ret   ;CAR(CAR(lst))
+  gosub *pop       ;lst
+  mov %arg1, %ret
+  gosub *pop       ;key
+  mov %arg0, %ret
+  if %arg0 == %tmp mov %arg0, %arg1 : gosub *car : return
+  gosub *push      ;key
+  mov %arg0, %arg1
+  gosub *cdr
+  mov %arg1, %ret  ;CDR(lst)
+  gosub *pop       ;key
+  mov %arg0, %ret
+  goto *assoc      ;tail recursion
+  return
 
 
 ;;;;;;;;;;
 ;;;*nconc(*lst, *obj)
 ;;;;;;;;;;
 *nconc
-	gosub *push      ;S(lst) = root
+  gosub *push      ;S(lst) = root
 *nconc_l1
-	mov %tmp, %arg0
-	mov %arg0, %arg1
-	gosub *push      ;S(obj)
-	mov %arg0, %tmp
-	gosub *push      ;S(lst, obj)
-	gosub *cdr       ;CDR(lst)
-	if %ret == %nil goto *nconc_l2
-	mov %arg0, %ret  ;lst = CDR(lst)
-	gosub *pop       ;lst<S(obj)
-	gosub *pop       ;obj<S()
-	mov %arg1, %ret
-	goto *nconc_l1
+  mov %tmp, %arg0
+  mov %arg0, %arg1
+  gosub *push      ;S(obj)
+  mov %arg0, %tmp
+  gosub *push      ;S(lst, obj)
+  gosub *cdr       ;CDR(lst)
+  if %ret == %nil goto *nconc_l2
+  mov %arg0, %ret  ;lst = CDR(lst)
+  gosub *pop       ;lst<S(obj)
+  gosub *pop       ;obj<S()
+  mov %arg1, %ret
+  goto *nconc_l1
 *nconc_l2
-	gosub *pop       ;lst<S(obj)
-	mov %arg0, %ret
-	gosub *pop       ;obj<S()
-	mov %arg1, %ret
-	gosub *set_cdr
-	gosub *pop       ;root
-	return
+  gosub *pop       ;lst<S(obj)
+  mov %arg0, %ret
+  gosub *pop       ;obj<S()
+  mov %arg1, %ret
+  gosub *set_cdr
+  gosub *pop       ;root
+  return
 
 
 ;;;;;;;;;;
 ;;;*eval(*obj, *env)
 ;;;;;;;;;;
 *eval
-	gosub *get_tag
-	if %ret == TAG_NUM mov %ret, %arg0 : return
-	if %ret == TAG_SYMBOL gosub *assoc : mov %arg0, %ret : gosub *cdr : return
+  gosub *get_tag
+  if %ret == TAG_NUM mov %ret, %arg0 : return
+  if %ret == TAG_SYMBOL gosub *assoc : mov %arg0, %ret : gosub *cdr : return
 
-	;;勝手にTAG_CONSと考える
-	gosub *push       ;S(obj)
-	mov %tmp, %arg0
-	mov %arg0, %arg1
-	gosub *push       ;S(env, obj)
-	mov %arg0, %tmp
-	gosub *car
-	mov %tmp, %ret    ;tmp = CAR(obj)
-	gosub *pop        ;env<S(obj)
-	mov %arg0, %ret
-	gosub *push       ;S(env, obj)
-	mov %arg1, %arg0
-	mov %arg0, %tmp
-	gosub *eval       ;Eval(CAR(obj), env)
-	mov %arg0, %ret   ;fn
-	gosub *pop        ;env<S(obj)
-	mov %tmp, %ret
-	gosub *pop        ;obj<S()
-	mov %arg1, %ret
-	gosub *push       ;S(fn)
-	mov %arg0, %tmp
-	gosub *push       ;S(env, fn)
-	mov %arg0, %arg1
-	gosub *cdr        ;CDR(obj)
-	mov %arg1, %ret
-	gosub *pop        ;env<S(fn)
-	mov %arg2, %ret
-	gosub *pop        ;fn<S()
-	mov %arg0, %ret
-	goto *apply       ;Apply(fn, CDR(obj), env) tail call
-	return
+  ;;勝手にTAG_CONSと考える
+  gosub *push       ;S(obj)
+  mov %tmp, %arg0
+  mov %arg0, %arg1
+  gosub *push       ;S(env, obj)
+  mov %arg0, %tmp
+  gosub *car
+  mov %tmp, %ret    ;tmp = CAR(obj)
+  gosub *pop        ;env<S(obj)
+  mov %arg0, %ret
+  gosub *push       ;S(env, obj)
+  mov %arg1, %arg0
+  mov %arg0, %tmp
+  gosub *eval       ;Eval(CAR(obj), env)
+  mov %arg0, %ret   ;fn
+  gosub *pop        ;env<S(obj)
+  mov %tmp, %ret
+  gosub *pop        ;obj<S()
+  mov %arg1, %ret
+  gosub *push       ;S(fn)
+  mov %arg0, %tmp
+  gosub *push       ;S(env, fn)
+  mov %arg0, %arg1
+  gosub *cdr        ;CDR(obj)
+  mov %arg1, %ret
+  gosub *pop        ;env<S(fn)
+  mov %arg2, %ret
+  gosub *pop        ;fn<S()
+  mov %arg0, %ret
+  goto *apply       ;Apply(fn, CDR(obj), env) tail call
+  return
 
 
 ;;;;;;;;;;
 ;;;*apply(*fn, *arg, *env)
 ;;;;;;;;;;
 *apply
-	gosub *get_tag
-	if %ret == TAG_SUBR goto *apply_l1
-	if %ret == TAG_EXPR goto *apply_l1
-	goto *apply_l2
+  gosub *get_tag
+  if %ret == TAG_SUBR goto *apply_l1
+  if %ret == TAG_EXPR goto *apply_l1
+  goto *apply_l2
 *apply_l1  ;引数の評価
-	gosub *push        ;S(fn)
-	mov %arg0, %arg2
-	gosub *push        ;S(env, fn)
-	mov %arg0, %arg1
-	mov %arg1, %arg2
-	gosub *evlis       ;Evlis(arg, env)
-	mov %arg1, %ret
-	gosub *pop         ;env<S(fn)
-	mov %arg2, %ret
-	gosub *pop         ;fn<S()
-	mov %arg0, %ret
+  gosub *push        ;S(fn)
+  mov %arg0, %arg2
+  gosub *push        ;S(env, fn)
+  mov %arg0, %arg1
+  mov %arg1, %arg2
+  gosub *evlis       ;Evlis(arg, env)
+  mov %arg1, %ret
+  gosub *pop         ;env<S(fn)
+  mov %arg2, %ret
+  gosub *pop         ;fn<S()
+  mov %arg0, %ret
 *apply_l2
-	gosub *get_tag
-	if %ret == TAG_SUBR goto *subr_func
-	if %ret == TAG_FSUBR goto *fsubr_func
-	if %ret == TAG_EXPR goto *expr_call
-	if %ret == TAG_FEXPR goto *fexpr_call
-	mov %ret, %nil     ;Error
-	return
+  gosub *get_tag
+  if %ret == TAG_SUBR goto *subr_func
+  if %ret == TAG_FSUBR goto *fsubr_func
+  if %ret == TAG_EXPR goto *expr_call
+  if %ret == TAG_FEXPR goto *fexpr_call
+  mov %ret, %nil     ;Error
+  return
 
 
 ;;;;;;;;;;
 ;;;*expr_call(*fn, *arg, *env)
 ;;;;;;;;;;
 *expr_call
-	gosub *push          ;S(fn)
-	mov %tmp, %arg0
-	mov %arg0, %arg1
-	mov %arg1, %tmp
-	gosub *create_expr_env  ;(arg, fn)
-	mov %arg0, %ret
-	gosub *pop           ;fn<S(ret)
-	mov %tmp, %ret
-	gosub *push          ;S(new env)
-	mov %arg0, %tmp
-	gosub *cdr           ;CDR(fn)
-	mov %arg0, %ret
-	gosub *cdr           ;CDDR(fn) => form
-	mov %arg1, %ret
-	gosub *pop           ;new env<S()
-	mov %arg2, %ret
-	goto *fsubr_func_begin  ;tail call
-	return
+  gosub *push          ;S(fn)
+  mov %tmp, %arg0
+  mov %arg0, %arg1
+  mov %arg1, %tmp
+  gosub *create_expr_env  ;(arg, fn)
+  mov %arg0, %ret
+  gosub *pop           ;fn<S(ret)
+  mov %tmp, %ret
+  gosub *push          ;S(new env)
+  mov %arg0, %tmp
+  gosub *cdr           ;CDR(fn)
+  mov %arg0, %ret
+  gosub *cdr           ;CDDR(fn) => form
+  mov %arg1, %ret
+  gosub *pop           ;new env<S()
+  mov %arg2, %ret
+  goto *fsubr_func_begin  ;tail call
+  return
 
 
 ;;;;;;;;;;
 ;;;*fexpr_call(*fn, *arg, *env)
 ;;;;;;;;;;
 *fexpr_call
-	gosub *push          ;S(fn)
-	mov %tmp, %arg0
-	mov %arg0, %arg1
-	mov %arg1, %tmp
-	gosub *create_fexpr_env  ;(arg, fn, env)
-	mov %arg0, %ret
-	gosub *pop           ;fn<S(ret)
-	mov %tmp, %ret
-	gosub *push          ;S(new env)
-	mov %arg0, %tmp
-	gosub *cdr           ;CDR(fn)
-	mov %arg0, %ret
-	gosub *cdr           ;CDDR(fn) => form
-	mov %arg1, %ret
-	gosub *pop           ;new env<S()
-	mov %arg2, %ret
-	goto *fsubr_func_begin  ;tail call
-	return
+  gosub *push          ;S(fn)
+  mov %tmp, %arg0
+  mov %arg0, %arg1
+  mov %arg1, %tmp
+  gosub *create_fexpr_env  ;(arg, fn, env)
+  mov %arg0, %ret
+  gosub *pop           ;fn<S(ret)
+  mov %tmp, %ret
+  gosub *push          ;S(new env)
+  mov %arg0, %tmp
+  gosub *cdr           ;CDR(fn)
+  mov %arg0, %ret
+  gosub *cdr           ;CDDR(fn) => form
+  mov %arg1, %ret
+  gosub *pop           ;new env<S()
+  mov %arg2, %ret
+  goto *fsubr_func_begin  ;tail call
+  return
 
 
 ;;;;;;;;;;
 ;;;*evlis(*arg, *env)
 ;;;;;;;;;;
 *evlis
-	gosub *push       ;S(arg)
-	mov %arg0, %arg1  ;env
-	gosub *push       ;S(env, arg)
-	gosub *create_cons
-	mov %tmp, %ret    ;root
-	gosub *pop        ;env<S(arg)
-	mov %arg1, %ret   ;arg1 = env
-	gosub *pop        ;arg<S()
-	mov %tmp1, %ret
-	mov %arg0, %tmp
-	gosub *push       ;S(root)
-	mov %arg0, %tmp1  ;arg0 = arg
+  gosub *push       ;S(arg)
+  mov %arg0, %arg1  ;env
+  gosub *push       ;S(env, arg)
+  gosub *create_cons
+  mov %tmp, %ret    ;root
+  gosub *pop        ;env<S(arg)
+  mov %arg1, %ret   ;arg1 = env
+  gosub *pop        ;arg<S()
+  mov %tmp1, %ret
+  mov %arg0, %tmp
+  gosub *push       ;S(root)
+  mov %arg0, %tmp1  ;arg0 = arg
 *evlis_l1 ;(arg0=arg, arg1=env, tmp=current)
-	;;以下スタック内のrootは省略
-	if %arg0 == %nil goto *evlis_l2
-	mov %tmp1, %arg0
-	mov %arg0, %tmp
-	gosub *push      ;S(current)
-	mov %arg0, %tmp1
-	gosub *push      ;S(arg, current)
-	mov %tmp1, %arg0
-	mov %arg0, %arg1
-	gosub *push      ;S(env, arg, current)
-	mov %arg0, %tmp1
-	gosub *car       ;CAR(arg)
-	mov %tmp1, %ret
-	gosub *pop       ;env<S(arg, current)
-	mov %arg0, %ret
-	gosub *push      ;S(env, arg, current)
-	mov %arg1, %arg0 ;arg1 = env
-	mov %arg0, %tmp1 ;arg0 = CAR(arg)
-	gosub *eval      ;Eval(CAR(arg), env) => new object
-	mov %arg0, %ret
-	gosub *push      ;S(new object, env, arg, current)
-	gosub *create_cons
-	mov %arg0, %ret  ;new cons
-	gosub *pop       ;new object<S(env, arg, current)
-	mov %arg1, %ret
-	gosub *push      ;S(new cons, env, arg, current)
-	gosub *set_car   ;new cons = (new object ...)
-	gosub *pop       ;new cons<S(env, arg, current)
-	mov %arg1, %ret  ;arg1 = new cons
-	gosub *pop       ;env<S(arg, current)
-	mov %tmp1, %ret
-	gosub *pop       ;arg<S(current)
-	mov %tmp2, %ret
-	gosub *pop       ;current<S()
-	mov %tmp3, %ret
-	mov %arg0, %tmp2
-	gosub *push      ;S(arg)
-	mov %arg0, %tmp1
-	gosub *push      ;S(env, arg)
-	mov %arg0, %arg1
-	gosub *push      ;S(new cons, env, arg)
-	mov %arg0, %tmp3 ;arg0 = current
-	gosub *set_cdr   ;current = (... . new cons)
-	gosub *pop       ;new cons<S(env, arg)
-	mov %tmp, %ret   ;current = new cons
-	gosub *pop       ;env<S(arg)
-	mov %arg0, %ret
-	gosub *pop       ;arg<S()
-	mov %tmp1, %ret
-	gosub *push      ;S(env)
-	mov %arg0, %tmp
-	gosub *push      ;S(current, env)
-	mov %arg0, %tmp1
-	gosub *cdr       ;CDR(arg)
-	mov %arg0, %ret  ;arg0 = CDR(arg0)
-	gosub *pop       ;current<S(env)
-	mov %tmp, %ret
-	gosub *pop       ;env<S()
-	mov %arg1, %ret
-	goto *evlis_l1
+  ;;以下スタック内のrootは省略
+  if %arg0 == %nil goto *evlis_l2
+  mov %tmp1, %arg0
+  mov %arg0, %tmp
+  gosub *push      ;S(current)
+  mov %arg0, %tmp1
+  gosub *push      ;S(arg, current)
+  mov %tmp1, %arg0
+  mov %arg0, %arg1
+  gosub *push      ;S(env, arg, current)
+  mov %arg0, %tmp1
+  gosub *car       ;CAR(arg)
+  mov %tmp1, %ret
+  gosub *pop       ;env<S(arg, current)
+  mov %arg0, %ret
+  gosub *push      ;S(env, arg, current)
+  mov %arg1, %arg0 ;arg1 = env
+  mov %arg0, %tmp1 ;arg0 = CAR(arg)
+  gosub *eval      ;Eval(CAR(arg), env) => new object
+  mov %arg0, %ret
+  gosub *push      ;S(new object, env, arg, current)
+  gosub *create_cons
+  mov %arg0, %ret  ;new cons
+  gosub *pop       ;new object<S(env, arg, current)
+  mov %arg1, %ret
+  gosub *push      ;S(new cons, env, arg, current)
+  gosub *set_car   ;new cons = (new object ...)
+  gosub *pop       ;new cons<S(env, arg, current)
+  mov %arg1, %ret  ;arg1 = new cons
+  gosub *pop       ;env<S(arg, current)
+  mov %tmp1, %ret
+  gosub *pop       ;arg<S(current)
+  mov %tmp2, %ret
+  gosub *pop       ;current<S()
+  mov %tmp3, %ret
+  mov %arg0, %tmp2
+  gosub *push      ;S(arg)
+  mov %arg0, %tmp1
+  gosub *push      ;S(env, arg)
+  mov %arg0, %arg1
+  gosub *push      ;S(new cons, env, arg)
+  mov %arg0, %tmp3 ;arg0 = current
+  gosub *set_cdr   ;current = (... . new cons)
+  gosub *pop       ;new cons<S(env, arg)
+  mov %tmp, %ret   ;current = new cons
+  gosub *pop       ;env<S(arg)
+  mov %arg0, %ret
+  gosub *pop       ;arg<S()
+  mov %tmp1, %ret
+  gosub *push      ;S(env)
+  mov %arg0, %tmp
+  gosub *push      ;S(current, env)
+  mov %arg0, %tmp1
+  gosub *cdr       ;CDR(arg)
+  mov %arg0, %ret  ;arg0 = CDR(arg0)
+  gosub *pop       ;current<S(env)
+  mov %tmp, %ret
+  gosub *pop       ;env<S()
+  mov %arg1, %ret
+  goto *evlis_l1
 *evlis_l2
-	mov %arg0, %tmp
-	mov %arg1, %nil
-	gosub *set_cdr   ;current = (...)
-	gosub *pop       ;root<S()
-	mov %arg0, %ret
-	gosub *cdr       ;CDR(root)
-	return           ;%ret = CDR(root)
+  mov %arg0, %tmp
+  mov %arg1, %nil
+  gosub *set_cdr   ;current = (...)
+  gosub *pop       ;root<S()
+  mov %arg0, %ret
+  gosub *cdr       ;CDR(root)
+  return           ;%ret = CDR(root)
 
 
 ;;;;;;;;;;
 ;;;*create_new_env()
 ;;;;;;;;;;
 *create_new_env
-	gosub *create_cons
-	mov %arg0, %ret
-	gosub *push     ;S(new cons)
-	mov %arg1, %dummy
-	gosub *set_car  ;new cons = (dummy ...)
-	gosub *pop      ;new cons<S()
-	mov %arg0, %ret
-	gosub *push     ;S(new cons)
-	mov %arg1, %dummy
-	gosub *set_cdr  ;new cons = (dummy . dummy)
-	gosub *create_cons
-	mov %arg0, %ret
-	gosub *pop      ;new cons<S()
-	mov %arg1, %ret
-	gosub *push     ;S(new cons2)
-	gosub *set_car  ;new cons2 = ((dummy . dummy) ...)
-	gosub *pop      ;new cons2<S()
-	mov %arg0, %ret
-	gosub *push     ;S(new cons2)
-	mov %arg1, %nil
-	gosub *set_cdr  ;new cons2 = ((dummy . dummy))
-	gosub *pop      ;new cons2<S()
-	return          ;ret = new cons2
+  gosub *create_cons
+  mov %arg0, %ret
+  gosub *push     ;S(new cons)
+  mov %arg1, %dummy
+  gosub *set_car  ;new cons = (dummy ...)
+  gosub *pop      ;new cons<S()
+  mov %arg0, %ret
+  gosub *push     ;S(new cons)
+  mov %arg1, %dummy
+  gosub *set_cdr  ;new cons = (dummy . dummy)
+  gosub *create_cons
+  mov %arg0, %ret
+  gosub *pop      ;new cons<S()
+  mov %arg1, %ret
+  gosub *push     ;S(new cons2)
+  gosub *set_car  ;new cons2 = ((dummy . dummy) ...)
+  gosub *pop      ;new cons2<S()
+  mov %arg0, %ret
+  gosub *push     ;S(new cons2)
+  mov %arg1, %nil
+  gosub *set_cdr  ;new cons2 = ((dummy . dummy))
+  gosub *pop      ;new cons2<S()
+  return          ;ret = new cons2
 
 
 ;;;;;;;;;;
 ;;;*create_expr_env(arg, fn)
 ;;;;;;;;;;
 *create_expr_env
-	mov %tmp, %arg0
-	mov %arg0, %arg1
-	gosub *push            ;S(fn)
-	mov %arg0, %tmp
-	gosub *push            ;S(arg, fn)
-	mov %arg0, %arg1
-	gosub *cdr             ;CDR(fn)
-	mov %arg0, %ret
-	gosub *car             ;CADR(fn) => farg
-	mov %arg0, %ret
-	gosub *push            ;S(farg, arg, fn)
-	gosub *create_new_env
-	mov %arg0, %ret        ;arg0 = env
-	gosub *pop             ;farg<S(arg, fn)
-	mov %tmp1, %ret        ;tmp1 = farg
-	gosub *pop             ;arg<S(fn)
-	mov %tmp2, %ret
-	gosub *push            ;S(env, fn)
-	mov %arg0, %tmp2
-	gosub *push            ;S(arg, env, fn)
+  mov %tmp, %arg0
+  mov %arg0, %arg1
+  gosub *push            ;S(fn)
+  mov %arg0, %tmp
+  gosub *push            ;S(arg, fn)
+  mov %arg0, %arg1
+  gosub *cdr             ;CDR(fn)
+  mov %arg0, %ret
+  gosub *car             ;CADR(fn) => farg
+  mov %arg0, %ret
+  gosub *push            ;S(farg, arg, fn)
+  gosub *create_new_env
+  mov %arg0, %ret        ;arg0 = env
+  gosub *pop             ;farg<S(arg, fn)
+  mov %tmp1, %ret        ;tmp1 = farg
+  gosub *pop             ;arg<S(fn)
+  mov %tmp2, %ret
+  gosub *push            ;S(env, fn)
+  mov %arg0, %tmp2
+  gosub *push            ;S(arg, env, fn)
 *create_expr_env_l1  ;(tmp1 = farg, S(arg, env, fn))
-	if %tmp1 == %nil goto *create_expr_env_l2
-	mov %arg0, %tmp1
-	gosub *push            ;S(farg, arg, env, fn)
-	gosub *get_tag
-	if %ret == TAG_SYMBOL goto *create_expr_env_l3  ;余引数
-	gosub *car             ;CAR(farg)
-	mov %tmp, %ret
-	gosub *pop             ;farg<S(arg, env, fn)
-	mov %tmp1, %ret
-	gosub *pop             ;arg<S(env, fn)
-	mov %tmp2, %ret
-	mov %arg0, %tmp1
-	gosub *push            ;S(farg, env, fn)
-	mov %arg0, %tmp
-	gosub *push            ;S(CAR(farg), farg, env, fn)
-	mov %arg0, %tmp2
-	gosub *push            ;S(arg, CAR(farg), farg, env, fn)
-	gosub *car             ;CAR(arg)
-	mov %arg2, %ret        ;arg2 = CAR(arg)
-	gosub *pop             ;arg<S(CAR(farg), farg, env, fn)
-	mov %tmp1, %ret
-	gosub *pop             ;CAR(farg)<S(farg, env, fn)
-	mov %arg1, %ret        ;arg1 = CAR(farg)
-	gosub *pop             ;farg<S(env, fn)
-	mov %tmp2, %ret
-	gosub *pop             ;env<S(fn)
-	mov %arg0, %ret
-	gosub *push            ;S(env, fn)
-	mov %tmp3, %arg0
-	mov %arg0, %tmp1
-	gosub *push            ;S(arg, env, fn)
-	mov %arg0, %tmp2
-	gosub *push            ;S(farg, arg, env, fn)
-	mov %arg0, %tmp3       ;arg0 = env
-	gosub *add_bind_to_env ;(env, CAR(farg), CAR(arg))
-	gosub *pop             ;farg<S(arg, env, fn)
-	mov %arg0, %ret
-	gosub *cdr             ;CDR(farg)
-	mov %arg0, %ret        ;farg = CDR(farg)
-	gosub *pop             ;arg<S(env, fn)
-	mov %tmp1, %ret
-	gosub *push            ;S(farg, env, fn)
-	mov %arg0, %tmp1
-	gosub *cdr             ;CDR(arg)
-	mov %arg0, %ret        ;arg = CDR(arg)
-	gosub *pop             ;farg<S(env, fn)
-	mov %tmp1, %ret        ;tmp1 = farg
-	gosub *push            ;S(arg, env, fn)
-	goto *create_expr_env_l1
+  if %tmp1 == %nil goto *create_expr_env_l2
+  mov %arg0, %tmp1
+  gosub *push            ;S(farg, arg, env, fn)
+  gosub *get_tag
+  if %ret == TAG_SYMBOL goto *create_expr_env_l3  ;余引数
+  gosub *car             ;CAR(farg)
+  mov %tmp, %ret
+  gosub *pop             ;farg<S(arg, env, fn)
+  mov %tmp1, %ret
+  gosub *pop             ;arg<S(env, fn)
+  mov %tmp2, %ret
+  mov %arg0, %tmp1
+  gosub *push            ;S(farg, env, fn)
+  mov %arg0, %tmp
+  gosub *push            ;S(CAR(farg), farg, env, fn)
+  mov %arg0, %tmp2
+  gosub *push            ;S(arg, CAR(farg), farg, env, fn)
+  gosub *car             ;CAR(arg)
+  mov %arg2, %ret        ;arg2 = CAR(arg)
+  gosub *pop             ;arg<S(CAR(farg), farg, env, fn)
+  mov %tmp1, %ret
+  gosub *pop             ;CAR(farg)<S(farg, env, fn)
+  mov %arg1, %ret        ;arg1 = CAR(farg)
+  gosub *pop             ;farg<S(env, fn)
+  mov %tmp2, %ret
+  gosub *pop             ;env<S(fn)
+  mov %arg0, %ret
+  gosub *push            ;S(env, fn)
+  mov %tmp3, %arg0
+  mov %arg0, %tmp1
+  gosub *push            ;S(arg, env, fn)
+  mov %arg0, %tmp2
+  gosub *push            ;S(farg, arg, env, fn)
+  mov %arg0, %tmp3       ;arg0 = env
+  gosub *add_bind_to_env ;(env, CAR(farg), CAR(arg))
+  gosub *pop             ;farg<S(arg, env, fn)
+  mov %arg0, %ret
+  gosub *cdr             ;CDR(farg)
+  mov %arg0, %ret        ;farg = CDR(farg)
+  gosub *pop             ;arg<S(env, fn)
+  mov %tmp1, %ret
+  gosub *push            ;S(farg, env, fn)
+  mov %arg0, %tmp1
+  gosub *cdr             ;CDR(arg)
+  mov %arg0, %ret        ;arg = CDR(arg)
+  gosub *pop             ;farg<S(env, fn)
+  mov %tmp1, %ret        ;tmp1 = farg
+  gosub *push            ;S(arg, env, fn)
+  goto *create_expr_env_l1
 *create_expr_env_l2  ;(tmp1 = farg, S(arg, env, fn))
-	gosub *pop             ;arg<S(env, fn)
-	gosub *pop             ;env<S(fn)
-	mov %arg0, %ret
-	gosub *pop             ;fn<S()
-	mov %tmp, %ret
-	gosub *push            ;S(env)
-	mov %arg0, %tmp
-	gosub *car             ;CAR(fn) => cls_env
-	mov %arg1, %ret
-	gosub *pop             ;env<S()
-	mov %arg0, %ret
-	gosub *push            ;S(env)
-	gosub *nconc           ;(env, cls_env)
-	gosub *pop             ;env<S()
-	return                 ;ret = env
+  gosub *pop             ;arg<S(env, fn)
+  gosub *pop             ;env<S(fn)
+  mov %arg0, %ret
+  gosub *pop             ;fn<S()
+  mov %tmp, %ret
+  gosub *push            ;S(env)
+  mov %arg0, %tmp
+  gosub *car             ;CAR(fn) => cls_env
+  mov %arg1, %ret
+  gosub *pop             ;env<S()
+  mov %arg0, %ret
+  gosub *push            ;S(env)
+  gosub *nconc           ;(env, cls_env)
+  gosub *pop             ;env<S()
+  return                 ;ret = env
 *create_expr_env_l3  ;S(farg, arg, env, fn)
-	gosub *create_cons
-	mov %arg0, %ret
-	gosub *pop             ;farg<S(arg, env, fn)
-	mov %arg1, %ret
-	gosub *pop             ;arg<S(env, fn)
-	mov %arg2, %ret
-	gosub *pop             ;env<S(fn)
-	mov %arg0, %ret
-	gosub *push            ;S(env, fn)
-	gosub *add_bind_to_env
-	mov %arg0, 0           ;l2にてargは使わないのでダミーを入れておく
-	gosub *push            ;S(0(arg), env, fn)
-	goto *create_expr_env_l2
+  gosub *create_cons
+  mov %arg0, %ret
+  gosub *pop             ;farg<S(arg, env, fn)
+  mov %arg1, %ret
+  gosub *pop             ;arg<S(env, fn)
+  mov %arg2, %ret
+  gosub *pop             ;env<S(fn)
+  mov %arg0, %ret
+  gosub *push            ;S(env, fn)
+  gosub *add_bind_to_env
+  mov %arg0, 0           ;l2にてargは使わないのでダミーを入れておく
+  gosub *push            ;S(0(arg), env, fn)
+  goto *create_expr_env_l2
 
 
 
@@ -1588,46 +1588,46 @@ mov $sarg0, $sarg0
 ;;;*create_fexpr_env(arg, fn, env)
 ;;;;;;;;;;
 *create_fexpr_env
-	mov %tmp, %arg0
-	mov %arg0, %arg1
-	gosub *push           ;S(fn)
-	mov %arg0, %arg2
-	gosub *push           ;S(env, fn)
-	mov %arg0, %tmp
-	gosub *push           ;S(arg, env, fn)
-	gosub *create_cons
-	mov %arg0, %ret
-	gosub *pop            ;arg<S(env, fn)
-	mov %arg1, %ret
-	gosub *push           ;S(new cons, env, fn)
-	gosub *set_car        ;new cons = (arg ...)
-	gosub *create_cons
-	mov %tmp, %ret
-	gosub *pop            ;new cons<S(env, fn)
-	mov %arg0, %ret
-	gosub *pop            ;env<S(fn)
-	mov %arg1, %ret
-	gosub *push           ;S(new cons, fn)
-	mov %arg0, %tmp
-	gosub *push           ;S(new cons2, new cons, fn)
-	gosub *set_car        ;new cons2 = (env ...)
-	gosub *pop            ;new cons2<S(new cons, fn)
-	mov %arg0, %ret
-	mov %arg1, %nil
-	gosub *push           ;S(new cons2, new cons, fn)
-	gosub *set_cdr        ;new cons2 = (env)
-	gosub *pop            ;new cons2<S(new cons, fn)
-	mov %arg1, %ret
-	gosub *pop            ;new cons<S(fn)
-	mov %arg0, %ret
-	gosub *push           ;S(new cons ,fn)
-	gosub *set_cdr        ;new cons = (arg env)
-	gosub *pop            ;new cons<S(fn)
-	mov %arg0, %ret
-	gosub *pop            ;fn<S()
-	mov %arg1, %ret
-	goto *create_expr_env  ;tail call
-	return
+  mov %tmp, %arg0
+  mov %arg0, %arg1
+  gosub *push           ;S(fn)
+  mov %arg0, %arg2
+  gosub *push           ;S(env, fn)
+  mov %arg0, %tmp
+  gosub *push           ;S(arg, env, fn)
+  gosub *create_cons
+  mov %arg0, %ret
+  gosub *pop            ;arg<S(env, fn)
+  mov %arg1, %ret
+  gosub *push           ;S(new cons, env, fn)
+  gosub *set_car        ;new cons = (arg ...)
+  gosub *create_cons
+  mov %tmp, %ret
+  gosub *pop            ;new cons<S(env, fn)
+  mov %arg0, %ret
+  gosub *pop            ;env<S(fn)
+  mov %arg1, %ret
+  gosub *push           ;S(new cons, fn)
+  mov %arg0, %tmp
+  gosub *push           ;S(new cons2, new cons, fn)
+  gosub *set_car        ;new cons2 = (env ...)
+  gosub *pop            ;new cons2<S(new cons, fn)
+  mov %arg0, %ret
+  mov %arg1, %nil
+  gosub *push           ;S(new cons2, new cons, fn)
+  gosub *set_cdr        ;new cons2 = (env)
+  gosub *pop            ;new cons2<S(new cons, fn)
+  mov %arg1, %ret
+  gosub *pop            ;new cons<S(fn)
+  mov %arg0, %ret
+  gosub *push           ;S(new cons ,fn)
+  gosub *set_cdr        ;new cons = (arg env)
+  gosub *pop            ;new cons<S(fn)
+  mov %arg0, %ret
+  gosub *pop            ;fn<S()
+  mov %arg1, %ret
+  goto *create_expr_env  ;tail call
+  return
 
 
 
@@ -1635,1032 +1635,1032 @@ mov $sarg0, $sarg0
 ;;;*subr_func(fn, arg, env)
 ;;;;;;;;;;
 *subr_func
-	gosub *get_data
-	if %ret == lf_car goto *subr_func_car
-	if %ret == lf_cdr goto *subr_func_cdr
-	if %ret == lf_cons goto *subr_func_cons
-	if %ret == lf_eq goto *subr_func_eq
-	if %ret == lf_atom goto *subr_func_atom
-	if %ret == lf_add goto *subr_func_add
-	if %ret == lf_sub goto *subr_func_sub
-	if %ret == lf_mul goto *subr_func_mul
-	if %ret == lf_div goto *subr_func_div
-	if %ret == lf_mod goto *subr_func_mod
-	if %ret == lf_gt goto *subr_func_gt
-	if %ret == lf_ge goto *subr_func_ge
-	if %ret == lf_ls goto *subr_func_ls
-	if %ret == lf_le goto *subr_func_le
-	if %ret == lf_set_car goto *subr_func_set_car
-	if %ret == lf_set_cdr goto *subr_func_set_cdr
-	if %ret == lf_eval goto *subr_func_eval
-	if %ret == lf_apply_primitive goto *subr_func_apply_primitive
-	if %ret == lf_booleanp goto *subr_func_booleanp
-	if %ret == lf_pairp goto *subr_func_pairp
-	if %ret == lf_symbolp goto *subr_func_symbolp
-	if %ret == lf_numberp goto *subr_func_numberp
-	if %ret == lf_procedurep goto *subr_func_procedurep
-	if %ret == lf_null goto *subr_func_null
-	if %ret == lf_read goto *subr_func_read
-	if %ret == lf_write goto *subr_func_write
-	goto *subr_func_error
+  gosub *get_data
+  if %ret == lf_car goto *subr_func_car
+  if %ret == lf_cdr goto *subr_func_cdr
+  if %ret == lf_cons goto *subr_func_cons
+  if %ret == lf_eq goto *subr_func_eq
+  if %ret == lf_atom goto *subr_func_atom
+  if %ret == lf_add goto *subr_func_add
+  if %ret == lf_sub goto *subr_func_sub
+  if %ret == lf_mul goto *subr_func_mul
+  if %ret == lf_div goto *subr_func_div
+  if %ret == lf_mod goto *subr_func_mod
+  if %ret == lf_gt goto *subr_func_gt
+  if %ret == lf_ge goto *subr_func_ge
+  if %ret == lf_ls goto *subr_func_ls
+  if %ret == lf_le goto *subr_func_le
+  if %ret == lf_set_car goto *subr_func_set_car
+  if %ret == lf_set_cdr goto *subr_func_set_cdr
+  if %ret == lf_eval goto *subr_func_eval
+  if %ret == lf_apply_primitive goto *subr_func_apply_primitive
+  if %ret == lf_booleanp goto *subr_func_booleanp
+  if %ret == lf_pairp goto *subr_func_pairp
+  if %ret == lf_symbolp goto *subr_func_symbolp
+  if %ret == lf_numberp goto *subr_func_numberp
+  if %ret == lf_procedurep goto *subr_func_procedurep
+  if %ret == lf_null goto *subr_func_null
+  if %ret == lf_read goto *subr_func_read
+  if %ret == lf_write goto *subr_func_write
+  goto *subr_func_error
 *subr_func_err
-	mov %ret, %nil
-	return
+  mov %ret, %nil
+  return
 
 *subr_func_car
-	mov %arg0, %arg1
-	gosub *car        ;CAR(arg)
-	mov %arg0, %ret
-	gosub *get_tag
-	if %ret != TAG_CONS mov %ret, %nil : return
-	gosub *car        ;CAR(CAR(arg))
-	return
+  mov %arg0, %arg1
+  gosub *car        ;CAR(arg)
+  mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_CONS mov %ret, %nil : return
+  gosub *car        ;CAR(CAR(arg))
+  return
 
 *subr_func_cdr
-	mov %arg0, %arg1
-	gosub *car        ;CAR(arg)
-	mov %arg0, %ret
-	gosub *get_tag
-	if %ret != TAG_CONS mov %ret, %nil : return
-	gosub *cdr        ;CDR(CAR(arg))
-	return
+  mov %arg0, %arg1
+  gosub *car        ;CAR(arg)
+  mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_CONS mov %ret, %nil : return
+  gosub *cdr        ;CDR(CAR(arg))
+  return
 
 *subr_func_cons
-	mov %arg0, %arg1
-	gosub *push        ;S(arg)
-	gosub *car
-	mov %tmp, %ret     ;tmp = CAR(arg)
-	gosub *pop         ;arg<S()
-	mov %tmp1, %ret    ;tmp1 = arg
-	mov %arg0, %tmp
-	gosub *push        ;S(CAR(arg))
-	mov %arg0, %tmp1
-	gosub *cdr         ;CDR(arg)
-	mov %arg0, %ret
-	gosub *car         ;CAR(CDR(arg))
-	mov %arg0, %ret
-	gosub *push        ;S(CADR(arg), CAR(arg))
-	gosub *create_cons
-	mov %arg0, %ret    ;arg0 = new cons
-	gosub *pop         ;CADR(arg)<S(CAR(arg))
-	mov %arg1, %ret
-	gosub *push        ;S(new cons, CAR(arg))
-	gosub *set_cdr     ;new cons = (... . CADR(arg))
-	gosub *pop         ;new cons<S(CAR(arg))
-	mov %arg0, %ret
-	gosub *pop         ;CAR(arg)<S()
-	mov %arg1, %ret
-	gosub *push        ;S(new cons)
-	gosub *set_car     ;new cons = (CAR(arg) . CADR(arg))
-	gosub *pop         ;new cons<S()
-	return             ;ret = new cons
+  mov %arg0, %arg1
+  gosub *push        ;S(arg)
+  gosub *car
+  mov %tmp, %ret     ;tmp = CAR(arg)
+  gosub *pop         ;arg<S()
+  mov %tmp1, %ret    ;tmp1 = arg
+  mov %arg0, %tmp
+  gosub *push        ;S(CAR(arg))
+  mov %arg0, %tmp1
+  gosub *cdr         ;CDR(arg)
+  mov %arg0, %ret
+  gosub *car         ;CAR(CDR(arg))
+  mov %arg0, %ret
+  gosub *push        ;S(CADR(arg), CAR(arg))
+  gosub *create_cons
+  mov %arg0, %ret    ;arg0 = new cons
+  gosub *pop         ;CADR(arg)<S(CAR(arg))
+  mov %arg1, %ret
+  gosub *push        ;S(new cons, CAR(arg))
+  gosub *set_cdr     ;new cons = (... . CADR(arg))
+  gosub *pop         ;new cons<S(CAR(arg))
+  mov %arg0, %ret
+  gosub *pop         ;CAR(arg)<S()
+  mov %arg1, %ret
+  gosub *push        ;S(new cons)
+  gosub *set_car     ;new cons = (CAR(arg) . CADR(arg))
+  gosub *pop         ;new cons<S()
+  return             ;ret = new cons
 
 *subr_func_eq
-	mov %arg0, %arg1
-	gosub *push       ;S(arg)
-	gosub *car
-	mov %tmp, %ret    ;tmp = CAR(arg)
-	gosub *pop        ;arg<S()
-	mov %tmp1, %ret   ;tmp1 = arg
-	mov %arg0, %tmp
-	gosub *push       ;S(CAR(arg))
-	mov %arg0, %tmp1
-	gosub *cdr
-	mov %arg0, %ret
-	gosub *car
-	mov %arg0, %ret   ;arg0 = CADR(arg)
-	gosub *pop        ;CAR(arg)<S()
-	mov %arg1, %ret   ;arg1 = CAR(arg)
-	if %arg0 == %arg1 mov %ret, %sharp_t : return
-	gosub *get_tag
-	mov %arg3, %ret   ;arg3 = TAG(CADR(arg))
-	gosub *get_data
-	mov %arg2, %ret   ;arg2 = DATA(CADR(arg))
-	mov %arg0, %arg1
-	gosub *get_tag
-	mov %arg1, %ret   ;%arg1 = TAG(CAR(arg))
-	gosub *get_data
-	mov %arg0, %ret   ;%arg0 = DATA(CAR(arg))
-	if %arg3 == TAG_NUM && %arg1 == TAG_NUM && %arg2 == %arg0 mov %ret, %sharp_t : return
-	mov %ret, %sharp_f
-	return
+  mov %arg0, %arg1
+  gosub *push       ;S(arg)
+  gosub *car
+  mov %tmp, %ret    ;tmp = CAR(arg)
+  gosub *pop        ;arg<S()
+  mov %tmp1, %ret   ;tmp1 = arg
+  mov %arg0, %tmp
+  gosub *push       ;S(CAR(arg))
+  mov %arg0, %tmp1
+  gosub *cdr
+  mov %arg0, %ret
+  gosub *car
+  mov %arg0, %ret   ;arg0 = CADR(arg)
+  gosub *pop        ;CAR(arg)<S()
+  mov %arg1, %ret   ;arg1 = CAR(arg)
+  if %arg0 == %arg1 mov %ret, %sharp_t : return
+  gosub *get_tag
+  mov %arg3, %ret   ;arg3 = TAG(CADR(arg))
+  gosub *get_data
+  mov %arg2, %ret   ;arg2 = DATA(CADR(arg))
+  mov %arg0, %arg1
+  gosub *get_tag
+  mov %arg1, %ret   ;%arg1 = TAG(CAR(arg))
+  gosub *get_data
+  mov %arg0, %ret   ;%arg0 = DATA(CAR(arg))
+  if %arg3 == TAG_NUM && %arg1 == TAG_NUM && %arg2 == %arg0 mov %ret, %sharp_t : return
+  mov %ret, %sharp_f
+  return
 
 *subr_func_atom
-	mov %arg0, %arg1
-	gosub *car
-	mov %arg0, %ret
-	gosub *get_tag
-	if %ret != TAG_CONS mov %ret, %sharp_t : return
-	mov %ret, %sharp_f
-	return
+  mov %arg0, %arg1
+  gosub *car
+  mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_CONS mov %ret, %sharp_t : return
+  mov %ret, %sharp_f
+  return
 
 *subr_func_add
-	mov %arg0, 0    ;result
-	gosub *push     ;S(result)
-	mov %arg0, %arg1
+  mov %arg0, 0    ;result
+  gosub *push     ;S(result)
+  mov %arg0, %arg1
 *subr_func_add_l1  ;(arg0 = arg, S(result)
-	if %arg0 == %nil goto *subr_func_add_l2
-	gosub *push     ;S(arg, result)
-	gosub *car      ;CAR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %tmp, %ret
-	gosub *pop      ;arg<S(result)
-	mov %tmp1, %ret
-	gosub *pop      ;result<S()
-	mov %arg0, %ret
-	mov %arg0, %arg0 + %tmp
-	gosub *push     ;S(result)
-	mov %arg0, %tmp1
-	gosub *cdr      ;CDR(arg)
-	mov %arg0, %ret
-	goto *subr_func_add_l1
+  if %arg0 == %nil goto *subr_func_add_l2
+  gosub *push     ;S(arg, result)
+  gosub *car      ;CAR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %tmp, %ret
+  gosub *pop      ;arg<S(result)
+  mov %tmp1, %ret
+  gosub *pop      ;result<S()
+  mov %arg0, %ret
+  mov %arg0, %arg0 + %tmp
+  gosub *push     ;S(result)
+  mov %arg0, %tmp1
+  gosub *cdr      ;CDR(arg)
+  mov %arg0, %ret
+  goto *subr_func_add_l1
 *subr_func_add_l2
-	gosub *pop     ;result<S()
-	mov %arg0, %ret
-	goto *create_num  ;tail call
-	return
+  gosub *pop     ;result<S()
+  mov %arg0, %ret
+  goto *create_num  ;tail call
+  return
 
 *subr_func_sub
-	mov %arg0, %arg1
-	gosub *push     ;S(arg)
-	gosub *car      ;CAR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %arg0, %ret
-	gosub *pop      ;arg<S()
-	mov %tmp, %ret
-	gosub *push     ;S(result)
-	mov %arg0, %tmp
-	gosub *cdr      ;CDR(arg)
-	mov %arg0, %ret
-	gosub *car      ;CADR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %tmp, %ret
-	gosub *pop      ;result<S()
-	mov %arg0, %ret
-	mov %arg0, %arg0 - %tmp
-	if %arg0 >= 0 goto *subr_func_sub_l1
-	mov %arg0, 0
+  mov %arg0, %arg1
+  gosub *push     ;S(arg)
+  gosub *car      ;CAR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %arg0, %ret
+  gosub *pop      ;arg<S()
+  mov %tmp, %ret
+  gosub *push     ;S(result)
+  mov %arg0, %tmp
+  gosub *cdr      ;CDR(arg)
+  mov %arg0, %ret
+  gosub *car      ;CADR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %tmp, %ret
+  gosub *pop      ;result<S()
+  mov %arg0, %ret
+  mov %arg0, %arg0 - %tmp
+  if %arg0 >= 0 goto *subr_func_sub_l1
+  mov %arg0, 0
 *subr_func_sub_l1
-	goto *create_num  ;tail call
-	return
+  goto *create_num  ;tail call
+  return
 
 *subr_func_mul
-	mov %arg0, 1    ;result
-	gosub *push     ;S(result)
-	mov %arg0, %arg1
+  mov %arg0, 1    ;result
+  gosub *push     ;S(result)
+  mov %arg0, %arg1
 *subr_func_mul_l1  ;(arg0 = arg, S(result)
-	if %arg0 == %nil goto *subr_func_mul_l2
-	gosub *push     ;S(arg, result)
-	gosub *car      ;CAR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %tmp, %ret
-	gosub *pop      ;arg<S(result)
-	mov %tmp1, %ret
-	gosub *pop      ;result<S()
-	mov %arg0, %ret
-	mov %arg0, %arg0 * %tmp
-	gosub *push     ;S(result)
-	mov %arg0, %tmp1
-	gosub *cdr      ;CDR(arg)
-	mov %arg0, %ret
-	goto *subr_func_mul_l1
+  if %arg0 == %nil goto *subr_func_mul_l2
+  gosub *push     ;S(arg, result)
+  gosub *car      ;CAR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %tmp, %ret
+  gosub *pop      ;arg<S(result)
+  mov %tmp1, %ret
+  gosub *pop      ;result<S()
+  mov %arg0, %ret
+  mov %arg0, %arg0 * %tmp
+  gosub *push     ;S(result)
+  mov %arg0, %tmp1
+  gosub *cdr      ;CDR(arg)
+  mov %arg0, %ret
+  goto *subr_func_mul_l1
 *subr_func_mul_l2
-	gosub *pop     ;result<S()
-	mov %arg0, %ret
-	goto *create_num  ;tail call
-	return
+  gosub *pop     ;result<S()
+  mov %arg0, %ret
+  goto *create_num  ;tail call
+  return
 
 *subr_func_div
-	mov %arg0, %arg1
-	gosub *push     ;S(arg)
-	gosub *car      ;CAR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %arg0, %ret
-	gosub *pop      ;arg<S()
-	mov %tmp, %ret
-	gosub *push     ;S(result)
-	mov %arg0, %tmp
-	gosub *cdr      ;CDR(arg)
-	mov %arg0, %ret
-	gosub *car      ;CADR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %tmp, %ret
-	gosub *pop      ;result<S()
-	mov %arg0, %ret
-	div %arg0, %tmp
-	goto *create_num  ;tail call
-	return
+  mov %arg0, %arg1
+  gosub *push     ;S(arg)
+  gosub *car      ;CAR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %arg0, %ret
+  gosub *pop      ;arg<S()
+  mov %tmp, %ret
+  gosub *push     ;S(result)
+  mov %arg0, %tmp
+  gosub *cdr      ;CDR(arg)
+  mov %arg0, %ret
+  gosub *car      ;CADR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %tmp, %ret
+  gosub *pop      ;result<S()
+  mov %arg0, %ret
+  div %arg0, %tmp
+  goto *create_num  ;tail call
+  return
 
 *subr_func_mod
-	mov %arg0, %arg1
-	gosub *push     ;S(arg)
-	gosub *car      ;CAR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %arg0, %ret
-	gosub *pop      ;arg<S()
-	mov %tmp, %ret
-	gosub *push     ;S(result)
-	mov %arg0, %tmp
-	gosub *cdr      ;CDR(arg)
-	mov %arg0, %ret
-	gosub *car      ;CADR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %tmp, %ret
-	gosub *pop      ;result<S()
-	mov %arg0, %ret
-	mov %arg0, %arg0 mod %tmp
-	goto *create_num  ;tail call
-	return
+  mov %arg0, %arg1
+  gosub *push     ;S(arg)
+  gosub *car      ;CAR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %arg0, %ret
+  gosub *pop      ;arg<S()
+  mov %tmp, %ret
+  gosub *push     ;S(result)
+  mov %arg0, %tmp
+  gosub *cdr      ;CDR(arg)
+  mov %arg0, %ret
+  gosub *car      ;CADR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %tmp, %ret
+  gosub *pop      ;result<S()
+  mov %arg0, %ret
+  mov %arg0, %arg0 mod %tmp
+  goto *create_num  ;tail call
+  return
 
 *subr_func_gt
-	mov %arg0, %arg1
-	gosub *push     ;S(arg)
-	gosub *car      ;CAR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %arg0, %ret
-	gosub *pop      ;arg<S()
-	mov %tmp, %ret
-	gosub *push     ;S(x)
-	mov %arg0, %tmp
-	gosub *cdr      ;CDR(arg)
-	mov %arg0, %ret
-	gosub *car      ;CADR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %tmp, %ret  ;y = tmp
-	gosub *pop      ;x<S()
-	mov %arg0, %ret
-	mov %ret, %sharp_f
-	if %arg0 > %tmp mov %ret, %sharp_t
-	return
+  mov %arg0, %arg1
+  gosub *push     ;S(arg)
+  gosub *car      ;CAR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %arg0, %ret
+  gosub *pop      ;arg<S()
+  mov %tmp, %ret
+  gosub *push     ;S(x)
+  mov %arg0, %tmp
+  gosub *cdr      ;CDR(arg)
+  mov %arg0, %ret
+  gosub *car      ;CADR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %tmp, %ret  ;y = tmp
+  gosub *pop      ;x<S()
+  mov %arg0, %ret
+  mov %ret, %sharp_f
+  if %arg0 > %tmp mov %ret, %sharp_t
+  return
 
 *subr_func_ge
-	mov %arg0, %arg1
-	gosub *push     ;S(arg)
-	gosub *car      ;CAR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %arg0, %ret
-	gosub *pop      ;arg<S()
-	mov %tmp, %ret
-	gosub *push     ;S(x)
-	mov %arg0, %tmp
-	gosub *cdr      ;CDR(arg)
-	mov %arg0, %ret
-	gosub *car      ;CADR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %tmp, %ret  ;y = tmp
-	gosub *pop      ;x<S()
-	mov %arg0, %ret
-	mov %ret, %sharp_f
-	if %arg0 >= %tmp mov %ret, %sharp_t
-	return
+  mov %arg0, %arg1
+  gosub *push     ;S(arg)
+  gosub *car      ;CAR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %arg0, %ret
+  gosub *pop      ;arg<S()
+  mov %tmp, %ret
+  gosub *push     ;S(x)
+  mov %arg0, %tmp
+  gosub *cdr      ;CDR(arg)
+  mov %arg0, %ret
+  gosub *car      ;CADR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %tmp, %ret  ;y = tmp
+  gosub *pop      ;x<S()
+  mov %arg0, %ret
+  mov %ret, %sharp_f
+  if %arg0 >= %tmp mov %ret, %sharp_t
+  return
 
 *subr_func_ls
-	mov %arg0, %arg1
-	gosub *push     ;S(arg)
-	gosub *car      ;CAR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %arg0, %ret
-	gosub *pop      ;arg<S()
-	mov %tmp, %ret
-	gosub *push     ;S(x)
-	mov %arg0, %tmp
-	gosub *cdr      ;CDR(arg)
-	mov %arg0, %ret
-	gosub *car      ;CADR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %tmp, %ret  ;y = tmp
-	gosub *pop      ;x<S()
-	mov %arg0, %ret
-	mov %ret, %sharp_f
-	if %arg0 < %tmp mov %ret, %sharp_t
-	return
+  mov %arg0, %arg1
+  gosub *push     ;S(arg)
+  gosub *car      ;CAR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %arg0, %ret
+  gosub *pop      ;arg<S()
+  mov %tmp, %ret
+  gosub *push     ;S(x)
+  mov %arg0, %tmp
+  gosub *cdr      ;CDR(arg)
+  mov %arg0, %ret
+  gosub *car      ;CADR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %tmp, %ret  ;y = tmp
+  gosub *pop      ;x<S()
+  mov %arg0, %ret
+  mov %ret, %sharp_f
+  if %arg0 < %tmp mov %ret, %sharp_t
+  return
 
 *subr_func_le
-	mov %arg0, %arg1
-	gosub *push     ;S(arg)
-	gosub *car      ;CAR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %arg0, %ret
-	gosub *pop      ;arg<S()
-	mov %tmp, %ret
-	gosub *push     ;S(x)
-	mov %arg0, %tmp
-	gosub *cdr      ;CDR(arg)
-	mov %arg0, %ret
-	gosub *car      ;CADR(arg)
-	mov %arg0, %ret
-	gosub *get_data
-	mov %tmp, %ret  ;y = tmp
-	gosub *pop      ;x<S()
-	mov %arg0, %ret
-	mov %ret, %sharp_f
-	if %arg0 <= %tmp mov %ret, %sharp_t
-	return
+  mov %arg0, %arg1
+  gosub *push     ;S(arg)
+  gosub *car      ;CAR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %arg0, %ret
+  gosub *pop      ;arg<S()
+  mov %tmp, %ret
+  gosub *push     ;S(x)
+  mov %arg0, %tmp
+  gosub *cdr      ;CDR(arg)
+  mov %arg0, %ret
+  gosub *car      ;CADR(arg)
+  mov %arg0, %ret
+  gosub *get_data
+  mov %tmp, %ret  ;y = tmp
+  gosub *pop      ;x<S()
+  mov %arg0, %ret
+  mov %ret, %sharp_f
+  if %arg0 <= %tmp mov %ret, %sharp_t
+  return
 
 *subr_func_set_car
-	mov %arg0, %arg1
-	gosub *push     ;S(arg)
-	gosub *car      ;CAR(arg)
-	mov %arg0, %ret
-	mov %arg0, %ret
-	gosub *pop      ;arg<S()
-	mov %tmp, %ret
-	gosub *push     ;S(CAR(arg))
-	mov %arg0, %tmp
-	gosub *cdr      ;CDR(arg)
-	mov %arg0, %ret
-	gosub *car      ;CADR(arg)
-	mov %arg1, %ret
-	gosub *pop      ;CAR(arg)<S()
-	mov %arg0, %ret
-	gosub *push     ;S(CAR(arg))
-	gosub *set_car
-	gosub *pop      ;CAR(arg)<S()
-	return
+  mov %arg0, %arg1
+  gosub *push     ;S(arg)
+  gosub *car      ;CAR(arg)
+  mov %arg0, %ret
+  mov %arg0, %ret
+  gosub *pop      ;arg<S()
+  mov %tmp, %ret
+  gosub *push     ;S(CAR(arg))
+  mov %arg0, %tmp
+  gosub *cdr      ;CDR(arg)
+  mov %arg0, %ret
+  gosub *car      ;CADR(arg)
+  mov %arg1, %ret
+  gosub *pop      ;CAR(arg)<S()
+  mov %arg0, %ret
+  gosub *push     ;S(CAR(arg))
+  gosub *set_car
+  gosub *pop      ;CAR(arg)<S()
+  return
 
 *subr_func_set_cdr
-	mov %arg0, %arg1
-	gosub *push     ;S(arg)
-	gosub *car      ;CAR(arg)
-	mov %arg0, %ret
-	mov %arg0, %ret
-	gosub *pop      ;arg<S()
-	mov %tmp, %ret
-	gosub *push     ;S(CAR(arg))
-	mov %arg0, %tmp
-	gosub *cdr      ;CDR(arg)
-	mov %arg0, %ret
-	gosub *car      ;CADR(arg)
-	mov %arg1, %ret
-	gosub *pop      ;CAR(arg)<S()
-	mov %arg0, %ret
-	gosub *push     ;S(CAR(arg))
-	gosub *set_cdr
-	gosub *pop      ;CAR(arg)<S()
-	return
+  mov %arg0, %arg1
+  gosub *push     ;S(arg)
+  gosub *car      ;CAR(arg)
+  mov %arg0, %ret
+  mov %arg0, %ret
+  gosub *pop      ;arg<S()
+  mov %tmp, %ret
+  gosub *push     ;S(CAR(arg))
+  mov %arg0, %tmp
+  gosub *cdr      ;CDR(arg)
+  mov %arg0, %ret
+  gosub *car      ;CADR(arg)
+  mov %arg1, %ret
+  gosub *pop      ;CAR(arg)<S()
+  mov %arg0, %ret
+  gosub *push     ;S(CAR(arg))
+  gosub *set_cdr
+  gosub *pop      ;CAR(arg)<S()
+  return
 
 *subr_func_eval
-	mov %arg0, %arg1
-	gosub *car          ;CAR(arg) => expr
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	goto *eval  ;tail call
+  mov %arg0, %arg1
+  gosub *car          ;CAR(arg) => expr
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  goto *eval  ;tail call
 
 *subr_func_apply_primitive
-	mov %arg0, %arg2
-	gosub *push         ;S(env)
-	mov %arg0, %arg1
-	gosub *push         ;S(arg, env)
-	gosub *car          ;CAR(arg) => fn
-	mov %arg0, %ret
-	gosub *pop          ;arg<S(env)
-	mov %tmp, %ret
-	gosub *push         ;S(fn, env)
-	mov %arg0, %tmp
-	gosub *cdr
-	mov %arg0, %ret
-	gosub *car          ;CADR(arg) => argument
-	mov %arg1, %ret
-	gosub *pop          ;fn<S(env)
-	mov %arg0, %ret
-	gosub *pop          ;env<S()
-	mov %arg2, %ret
-	goto *apply  ;tail call
+  mov %arg0, %arg2
+  gosub *push         ;S(env)
+  mov %arg0, %arg1
+  gosub *push         ;S(arg, env)
+  gosub *car          ;CAR(arg) => fn
+  mov %arg0, %ret
+  gosub *pop          ;arg<S(env)
+  mov %tmp, %ret
+  gosub *push         ;S(fn, env)
+  mov %arg0, %tmp
+  gosub *cdr
+  mov %arg0, %ret
+  gosub *car          ;CADR(arg) => argument
+  mov %arg1, %ret
+  gosub *pop          ;fn<S(env)
+  mov %arg0, %ret
+  gosub *pop          ;env<S()
+  mov %arg2, %ret
+  goto *apply  ;tail call
 
 *subr_func_booleanp
-	mov %arg0, %arg1
-	gosub *car
-	if %ret != %sharp_t && %ret != %sharp_f : mov %ret, %sharp_f : return
-	mov %ret, %sharp_t
-	return
+  mov %arg0, %arg1
+  gosub *car
+  if %ret != %sharp_t && %ret != %sharp_f : mov %ret, %sharp_f : return
+  mov %ret, %sharp_t
+  return
 
 *subr_func_pairp
-	mov %arg0, %arg1
-	gosub *car
-	mov %arg0, %ret
-	gosub *get_tag
-	if %ret == TAG_CONS mov %ret, %sharp_t : return
-	mov %ret, %sharp_f
-	return
+  mov %arg0, %arg1
+  gosub *car
+  mov %arg0, %ret
+  gosub *get_tag
+  if %ret == TAG_CONS mov %ret, %sharp_t : return
+  mov %ret, %sharp_f
+  return
 
 *subr_func_symbolp
-	mov %arg0, %arg1
-	gosub *car
-	mov %arg0, %ret
-	gosub *get_tag
-	if %ret == TAG_SYMBOL mov %ret, %sharp_t : return
-	mov %ret, %sharp_f
-	return
+  mov %arg0, %arg1
+  gosub *car
+  mov %arg0, %ret
+  gosub *get_tag
+  if %ret == TAG_SYMBOL mov %ret, %sharp_t : return
+  mov %ret, %sharp_f
+  return
 
 *subr_func_numberp
-	mov %arg0, %arg1
-	gosub *car
-	mov %arg0, %ret
-	gosub *get_tag
-	if %ret == TAG_NUM mov %ret, %sharp_t : return
-	mov %ret, %sharp_f
-	return
+  mov %arg0, %arg1
+  gosub *car
+  mov %arg0, %ret
+  gosub *get_tag
+  if %ret == TAG_NUM mov %ret, %sharp_t : return
+  mov %ret, %sharp_f
+  return
 
 *subr_func_procedurep
-	mov %arg0, %arg1
-	gosub *car
-	mov %arg0, %ret
-	gosub *get_tag
-	if %ret != TAG_EXPR && %ret != TAG_FEXPR && %ret != TAG_SUBR && %ret != TAG_FEXPR mov %ret, %sharp_f : return
-	mov %ret, %sharp_t
-	return
+  mov %arg0, %arg1
+  gosub *car
+  mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_EXPR && %ret != TAG_FEXPR && %ret != TAG_SUBR && %ret != TAG_FEXPR mov %ret, %sharp_f : return
+  mov %ret, %sharp_t
+  return
 
 *subr_func_null
-	mov %arg0, %arg1
-	gosub *car
-	mov %arg0, %ret
-	mov %ret, %sharp_f
-	if %arg0 == %nil mov %ret, %sharp_t
-	return
+  mov %arg0, %arg1
+  gosub *car
+  mov %arg0, %ret
+  mov %ret, %sharp_f
+  if %arg0 == %nil mov %ret, %sharp_t
+  return
 
 *subr_func_read
-	gosub *read_from_console
-	mov $sarg0, $sret
-	gosub *input_to_lobject
-	return
+  gosub *read_from_console
+  mov $sarg0, $sret
+  gosub *input_to_lobject
+  return
 
 *subr_func_write
-	mov %arg0, %arg1
-	gosub *car
-	mov %arg0, %ret
-	gosub *push
-	gosub *lobject_to_string
-	$sret　\
-	gosub *pop
-	return
+  mov %arg0, %arg1
+  gosub *car
+  mov %arg0, %ret
+  gosub *push
+  gosub *lobject_to_string
+  $sret　\
+  gosub *pop
+  return
 
 
 ;;;;;;;;;;
 ;;;*fsubr_func(fn, arg, env)
 ;;;;;;;;;;
 *fsubr_func
-	gosub *get_data
-	if %ret == lf_quote goto *fsubr_func_quote
-	if %ret == lf_begin goto *fsubr_func_begin
-	if %ret == lf_cond goto *fsubr_func_cond
-	if %ret == lf_lambda goto *fsubr_func_lambda
-	if %ret == lf_nlambda goto *fsubr_func_nlambda
-	if %ret == lf_define goto *fsubr_func_define
-	if %ret == lf_let goto *fsubr_func_let
-	if %ret == lf_if goto *fsubr_func_if
-	if %ret == lf_and goto *fsubr_func_and
-	if %ret == lf_or goto *fsubr_func_or
-	if %ret == lf_set goto *fsubr_func_set
-	if %ret == lf_letrec goto *fsubr_func_letrec
-	if %ret == lf_letstar goto *fsubr_func_letstar
-	goto *fsubr_func_error
+  gosub *get_data
+  if %ret == lf_quote goto *fsubr_func_quote
+  if %ret == lf_begin goto *fsubr_func_begin
+  if %ret == lf_cond goto *fsubr_func_cond
+  if %ret == lf_lambda goto *fsubr_func_lambda
+  if %ret == lf_nlambda goto *fsubr_func_nlambda
+  if %ret == lf_define goto *fsubr_func_define
+  if %ret == lf_let goto *fsubr_func_let
+  if %ret == lf_if goto *fsubr_func_if
+  if %ret == lf_and goto *fsubr_func_and
+  if %ret == lf_or goto *fsubr_func_or
+  if %ret == lf_set goto *fsubr_func_set
+  if %ret == lf_letrec goto *fsubr_func_letrec
+  if %ret == lf_letstar goto *fsubr_func_letstar
+  goto *fsubr_func_error
 *fsubr_func_error
-	mov %ret, %nil
-	return
+  mov %ret, %nil
+  return
 
 *fsubr_func_quote
-	mov %arg0, %arg1
-	gosub *car       ;CAR(arg)
-	return
+  mov %arg0, %arg1
+  gosub *car       ;CAR(arg)
+  return
 
 *fsubr_func_begin
-	mov %arg0, %arg1     ;arg0 = arg
-	mov %arg1, %arg2     ;arg1 = env
-	mov %ret, %nil
+  mov %arg0, %arg1     ;arg0 = arg
+  mov %arg1, %arg2     ;arg1 = env
+  mov %ret, %nil
 *fsubr_func_begin_l1  ;(arg0 = arg, arg1 = env)
-	if %arg0 == %nil return
-	gosub *push          ;S(arg)
-	mov %tmp, %arg0
-	mov %arg0, %arg1
-	gosub *push          ;S(env, arg)
-	mov %arg0, %tmp
-	gosub *push          ;S(arg, env, arg)
-	gosub *cdr           ;CDR(arg)
-	if %ret == %nil goto *fsubr_func_begin_tail
-	gosub *pop           ;arg<S(env, arg)
-	mov %arg0, %ret
-	gosub *car           ;CAR(arg)
-	mov %tmp, %ret
+  if %arg0 == %nil return
+  gosub *push          ;S(arg)
+  mov %tmp, %arg0
+  mov %arg0, %arg1
+  gosub *push          ;S(env, arg)
+  mov %arg0, %tmp
+  gosub *push          ;S(arg, env, arg)
+  gosub *cdr           ;CDR(arg)
+  if %ret == %nil goto *fsubr_func_begin_tail
+  gosub *pop           ;arg<S(env, arg)
+  mov %arg0, %ret
+  gosub *car           ;CAR(arg)
+  mov %tmp, %ret
 *fsubr_func_begin_l2
-	gosub *pop           ;env<S(arg)
-	mov %arg0, %ret
-	gosub *push          ;S(env, arg)
-	mov %arg1, %arg0
-	mov %arg0, %tmp
-	gosub *eval          ;Eval(CAR(arg), env) => new object
-	mov %arg0, %ret
-	gosub *pop           ;env<S(arg)
-	mov %tmp, %ret
-	gosub *pop           ;arg<S()
-	mov %tmp1, %ret
-	gosub *push          ;S(new object)
-	mov %arg0, %tmp
-	gosub *push          ;S(env, new object)
-	mov %arg0, %tmp1
-	gosub *cdr           ;CDR(arg)
-	mov %arg0, %ret      ;arg = CDR(arg)
-	gosub *pop           ;env<S(new object)
-	mov %arg1, %ret
-	gosub *pop           ;new object<S()
-	;mov %ret, %ret
-	goto *fsubr_func_begin_l1
-	return
+  gosub *pop           ;env<S(arg)
+  mov %arg0, %ret
+  gosub *push          ;S(env, arg)
+  mov %arg1, %arg0
+  mov %arg0, %tmp
+  gosub *eval          ;Eval(CAR(arg), env) => new object
+  mov %arg0, %ret
+  gosub *pop           ;env<S(arg)
+  mov %tmp, %ret
+  gosub *pop           ;arg<S()
+  mov %tmp1, %ret
+  gosub *push          ;S(new object)
+  mov %arg0, %tmp
+  gosub *push          ;S(env, new object)
+  mov %arg0, %tmp1
+  gosub *cdr           ;CDR(arg)
+  mov %arg0, %ret      ;arg = CDR(arg)
+  gosub *pop           ;env<S(new object)
+  mov %arg1, %ret
+  gosub *pop           ;new object<S()
+  ;mov %ret, %ret
+  goto *fsubr_func_begin_l1
+  return
 *fsubr_func_begin_tail  ;S(arg, env, arg)
-	gosub *pop           ;arg<S(env, arg)
-	mov %arg0, %ret
-	gosub *car           ;CAR(arg)
-	mov %arg0, %ret
-	gosub *get_tag
-	if %ret != TAG_CONS mov %tmp, %arg0 : goto *fsubr_func_begin_l2
-	gosub *pop          ;env<S(arg)
-	mov %arg1, %ret
-	gosub *pop          ;arg<S()
-	goto *eval  ;tail call
-	
+  gosub *pop           ;arg<S(env, arg)
+  mov %arg0, %ret
+  gosub *car           ;CAR(arg)
+  mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_CONS mov %tmp, %arg0 : goto *fsubr_func_begin_l2
+  gosub *pop          ;env<S(arg)
+  mov %arg1, %ret
+  gosub *pop          ;arg<S()
+  goto *eval  ;tail call
+  
 *fsubr_func_cond
-	mov %arg0, %arg1
+  mov %arg0, %arg1
 *fsubr_func_cond_l1  ;(arg0 = arg, arg2 = env)
-	if %arg0 == %nil mov %ret, %nil : return
-	gosub *push         ;S(arg)
-	mov %tmp, %arg0
-	mov %arg0, %arg2
-	gosub *push         ;S(env, arg)
-	mov %arg0, %tmp
-	gosub *car          ;CAR(arg)
-	mov %arg0, %ret
-	gosub *car          ;CAR(CAR(arg))
-	mov %tmp, %ret
-	gosub *pop          ;env<S(arg)
-	mov %arg0, %ret
-	gosub *push         ;S(env, arg)
-	mov %arg1, %arg0
-	mov %arg0, %tmp
-	gosub *eval         ;Eval(CAR(CAR(arg)), env)
-	if %ret != %sharp_f goto *fsubr_func_cond_l2
-	gosub *pop          ;env<S(arg)
-	mov %arg0, %ret
-	gosub *pop          ;arg<S()
-	mov %tmp, %ret
-	gosub *push         ;S(env)
-	mov %arg0, %tmp
-	gosub *cdr          ;CDR(arg)
-	mov %arg0, %ret     ;arg = CDR(arg)
-	gosub *pop          ;env<S()
-	mov %arg2, %ret
-	goto *fsubr_func_cond_l1
+  if %arg0 == %nil mov %ret, %nil : return
+  gosub *push         ;S(arg)
+  mov %tmp, %arg0
+  mov %arg0, %arg2
+  gosub *push         ;S(env, arg)
+  mov %arg0, %tmp
+  gosub *car          ;CAR(arg)
+  mov %arg0, %ret
+  gosub *car          ;CAR(CAR(arg))
+  mov %tmp, %ret
+  gosub *pop          ;env<S(arg)
+  mov %arg0, %ret
+  gosub *push         ;S(env, arg)
+  mov %arg1, %arg0
+  mov %arg0, %tmp
+  gosub *eval         ;Eval(CAR(CAR(arg)), env)
+  if %ret != %sharp_f goto *fsubr_func_cond_l2
+  gosub *pop          ;env<S(arg)
+  mov %arg0, %ret
+  gosub *pop          ;arg<S()
+  mov %tmp, %ret
+  gosub *push         ;S(env)
+  mov %arg0, %tmp
+  gosub *cdr          ;CDR(arg)
+  mov %arg0, %ret     ;arg = CDR(arg)
+  gosub *pop          ;env<S()
+  mov %arg2, %ret
+  goto *fsubr_func_cond_l1
 *fsubr_func_cond_l2  ;S(env, arg)
-	gosub *pop          ;env<S(arg)
-	mov %arg0, %ret
-	gosub *pop          ;arg<S()
-	mov %tmp, %ret
-	gosub *push         ;S(env)
-	mov %arg0, %tmp
-	gosub *car          ;CAR(arg)
-	mov %arg0, %ret
-	gosub *cdr          ;CDR(CAR(arg))
-	mov %arg1, %ret     ;arg1 = CDAR(arg)
-	gosub *pop          ;env<S()
-	mov %arg2, %ret     ;arg2 = env
-	goto *fsubr_func_begin  ;tail call
-	return
+  gosub *pop          ;env<S(arg)
+  mov %arg0, %ret
+  gosub *pop          ;arg<S()
+  mov %tmp, %ret
+  gosub *push         ;S(env)
+  mov %arg0, %tmp
+  gosub *car          ;CAR(arg)
+  mov %arg0, %ret
+  gosub *cdr          ;CDR(CAR(arg))
+  mov %arg1, %ret     ;arg1 = CDAR(arg)
+  gosub *pop          ;env<S()
+  mov %arg2, %ret     ;arg2 = env
+  goto *fsubr_func_begin  ;tail call
+  return
 
 *fsubr_func_lambda
-	mov %arg0, %arg2
-	gosub *push        ;S(env)
-	mov %arg0, %arg1
-	gosub *push        ;S(arg, env)
-	gosub *car         ;CAR(arg) => argument
-	mov %arg0, %ret
-	gosub *pop         ;arg<S(env)
-	mov %tmp, %ret
-	gosub *push        ;S(argument, env)
-	mov %arg0, %tmp
-	gosub *cdr         ;CDR(arg) =>form
-	mov %arg0, %ret    ;arg0 = form
-	gosub *pop         ;argument<S(env)
-	mov %arg1, %ret    ;arg1 = argument
-	gosub *pop         ;env<S()
-	mov %arg2, %ret    ;arg2 = env
-	goto *create_expr  ;tail call (form, arg, env)
-	return
+  mov %arg0, %arg2
+  gosub *push        ;S(env)
+  mov %arg0, %arg1
+  gosub *push        ;S(arg, env)
+  gosub *car         ;CAR(arg) => argument
+  mov %arg0, %ret
+  gosub *pop         ;arg<S(env)
+  mov %tmp, %ret
+  gosub *push        ;S(argument, env)
+  mov %arg0, %tmp
+  gosub *cdr         ;CDR(arg) =>form
+  mov %arg0, %ret    ;arg0 = form
+  gosub *pop         ;argument<S(env)
+  mov %arg1, %ret    ;arg1 = argument
+  gosub *pop         ;env<S()
+  mov %arg2, %ret    ;arg2 = env
+  goto *create_expr  ;tail call (form, arg, env)
+  return
 
 *fsubr_func_nlambda
-	gosub *fsubr_func_lambda
-	mov %arg0, %ret
-	mov %arg1, TAG_FEXPR
-	gosub *set_tag
-	mov %ret, %arg0
-	return
+  gosub *fsubr_func_lambda
+  mov %arg0, %ret
+  mov %arg1, TAG_FEXPR
+  gosub *set_tag
+  mov %ret, %arg0
+  return
 
 *fsubr_func_define
-	mov %arg0, %arg2
-	gosub *push         ;S(env)
-	mov %arg0, %arg1
-	gosub *push         ;S(arg, env)
-	gosub *car          ;CAR(arg) => sym
-	mov %arg0, %ret
-	gosub *get_tag
-	if %ret == TAG_CONS goto *define_syntax_sugar  ;(arg0 = sym, S(arg, env))
-	gosub *pop          ;arg<S(env)
-	mov %tmp1, %ret
-	gosub *push         ;S(sym, env)
-	mov %arg0, %tmp1
-	gosub *cdr          ;CDR(arg)
-	mov %arg0, %ret
-	gosub *car          ;CADR(arg) => val
-	mov %tmp, %ret
-	gosub *pop          ;sym<S(env)
-	mov %tmp1, %ret
-	gosub *pop          ;env<S()
-	mov %arg0, %ret
-	gosub *push         ;S(env)
-	mov %arg1, %arg0
-	mov %arg0, %tmp1
-	gosub *push         ;S(sym, env)
-	mov %arg0, %tmp
-	gosub *eval         ;(val, env)
-	mov %arg2, %ret
+  mov %arg0, %arg2
+  gosub *push         ;S(env)
+  mov %arg0, %arg1
+  gosub *push         ;S(arg, env)
+  gosub *car          ;CAR(arg) => sym
+  mov %arg0, %ret
+  gosub *get_tag
+  if %ret == TAG_CONS goto *define_syntax_sugar  ;(arg0 = sym, S(arg, env))
+  gosub *pop          ;arg<S(env)
+  mov %tmp1, %ret
+  gosub *push         ;S(sym, env)
+  mov %arg0, %tmp1
+  gosub *cdr          ;CDR(arg)
+  mov %arg0, %ret
+  gosub *car          ;CADR(arg) => val
+  mov %tmp, %ret
+  gosub *pop          ;sym<S(env)
+  mov %tmp1, %ret
+  gosub *pop          ;env<S()
+  mov %arg0, %ret
+  gosub *push         ;S(env)
+  mov %arg1, %arg0
+  mov %arg0, %tmp1
+  gosub *push         ;S(sym, env)
+  mov %arg0, %tmp
+  gosub *eval         ;(val, env)
+  mov %arg2, %ret
 *fsubr_func_define_l1
-	gosub *pop          ;sym<S(env)
-	mov %arg0, %ret
-	gosub *pop          ;env<S()
-	mov %tmp, %ret
-	gosub *push         ;S(sym)
-	mov %arg1, %arg0
-	mov %arg0, %tmp
-	;;;組み込み関数/変数の上書きを防ぐ細工が必要……
-	if %arg1 == %quote gosub *pop : mov %ret, %nil : return
-	gosub *add_bind_to_env
-	gosub *pop
-	return
+  gosub *pop          ;sym<S(env)
+  mov %arg0, %ret
+  gosub *pop          ;env<S()
+  mov %tmp, %ret
+  gosub *push         ;S(sym)
+  mov %arg1, %arg0
+  mov %arg0, %tmp
+  ;;;組み込み関数/変数の上書きを防ぐ細工が必要……
+  if %arg1 == %quote gosub *pop : mov %ret, %nil : return
+  gosub *add_bind_to_env
+  gosub *pop
+  return
 
 *define_syntax_sugar  ;(arg0 = sym, S(arg, env))
-	gosub *push        ;S(sym, arg, env)
-	gosub *cdr         ;CDR(sym) => argument
-	mov %tmp, %ret
-	gosub *pop         ;sym<S(arg, env)
-	mov %arg0, %ret
-	gosub *pop         ;arg<S(env)
-	mov %tmp1, %ret
-	gosub *push        ;S(sym, env)
-	mov %arg0, %tmp
-	gosub *push        ;S(argument, sym, env)
-	mov %arg0, %tmp1
-	gosub *cdr         ;CDR(arg) => body
-	mov %arg0, %ret
-	gosub *push        ;S(body, argument, sym, env)
-	gosub *create_cons
-	mov %arg0, %ret
-	gosub *pop         ;body<S(argument, sym, env)
-	mov %arg1, %ret
-	gosub *push        ;S(new cons, argument, sym, env)
-	gosub *set_cdr     ;new cons = (... . body)
-	gosub *pop         ;new cons<S(argument, sym, env)
-	mov %arg0, %ret
-	gosub *pop         ;argument<S(sym, env)
-	mov %arg1, %ret
-	gosub *push        ;S(new cons, sym, env)
-	gosub *set_car     ;new cons = (argument . body)
-	gosub *pop         ;new cons<S(sym, env)
-	mov %arg1, %ret
-	gosub *pop         ;sym<S(env)
-	mov %tmp, %ret
-	gosub *pop         ;env<S()
-	mov %arg0, %ret
-	gosub *push        ;S(env)
-	mov %arg2, %arg0
-	mov %arg0, %tmp
-	gosub *push        ;S(sym, env)
-	gosub *fsubr_func_lambda
-	mov %arg0, %ret
-	gosub *pop         ;sym<S(env)
-	mov %tmp, %ret
-	gosub *push        ;S(val, env)
-	mov %arg0, %tmp
-	gosub *car         ;CAR(sym) => name
-	mov %arg0, %ret
-	gosub *pop         ;val<S(env)
-	mov %arg2, %ret    ;arg2 = val
-	gosub *push        ;S(name, env)
-	goto *fsubr_func_define_l1
+  gosub *push        ;S(sym, arg, env)
+  gosub *cdr         ;CDR(sym) => argument
+  mov %tmp, %ret
+  gosub *pop         ;sym<S(arg, env)
+  mov %arg0, %ret
+  gosub *pop         ;arg<S(env)
+  mov %tmp1, %ret
+  gosub *push        ;S(sym, env)
+  mov %arg0, %tmp
+  gosub *push        ;S(argument, sym, env)
+  mov %arg0, %tmp1
+  gosub *cdr         ;CDR(arg) => body
+  mov %arg0, %ret
+  gosub *push        ;S(body, argument, sym, env)
+  gosub *create_cons
+  mov %arg0, %ret
+  gosub *pop         ;body<S(argument, sym, env)
+  mov %arg1, %ret
+  gosub *push        ;S(new cons, argument, sym, env)
+  gosub *set_cdr     ;new cons = (... . body)
+  gosub *pop         ;new cons<S(argument, sym, env)
+  mov %arg0, %ret
+  gosub *pop         ;argument<S(sym, env)
+  mov %arg1, %ret
+  gosub *push        ;S(new cons, sym, env)
+  gosub *set_car     ;new cons = (argument . body)
+  gosub *pop         ;new cons<S(sym, env)
+  mov %arg1, %ret
+  gosub *pop         ;sym<S(env)
+  mov %tmp, %ret
+  gosub *pop         ;env<S()
+  mov %arg0, %ret
+  gosub *push        ;S(env)
+  mov %arg2, %arg0
+  mov %arg0, %tmp
+  gosub *push        ;S(sym, env)
+  gosub *fsubr_func_lambda
+  mov %arg0, %ret
+  gosub *pop         ;sym<S(env)
+  mov %tmp, %ret
+  gosub *push        ;S(val, env)
+  mov %arg0, %tmp
+  gosub *car         ;CAR(sym) => name
+  mov %arg0, %ret
+  gosub *pop         ;val<S(env)
+  mov %arg2, %ret    ;arg2 = val
+  gosub *push        ;S(name, env)
+  goto *fsubr_func_define_l1
 
 
 *fsubr_func_set
-	mov %arg0, %arg2
-	gosub *push         ;S(env)
-	mov %arg0, %arg1
-	gosub *push         ;S(arg, env)
-	gosub *car          ;CAR(arg) => sym
-	mov %arg0, %ret
-	gosub *pop          ;arg<S(env)
-	mov %tmp1, %ret
-	gosub *push         ;S(sym, env)
-	mov %arg0, %tmp1
-	gosub *cdr          ;CDR(arg)
-	mov %arg0, %ret
-	gosub *car          ;CADR(arg) => val
-	mov %tmp, %ret
-	gosub *pop          ;sym<S(env)
-	mov %tmp1, %ret
-	gosub *pop          ;env<S()
-	mov %arg0, %ret
-	gosub *push         ;S(env)
-	mov %arg1, %arg0
-	mov %arg0, %tmp1
-	gosub *push         ;S(sym, env)
-	mov %arg0, %tmp
-	gosub *eval         ;(val, env) => object
-	mov %tmp, %ret
-	gosub *pop          ;sym<S(env)
-	mov %tmp1, %ret
-	gosub *pop          ;env<S()
-	mov %arg1, %ret
-	mov %arg0, %tmp
-	gosub *push         ;S(object)
-	mov %arg0, %tmp1
-	gosub *assoc        ;Assoc(sym, env)
-	if %ret == %nil goto *fsubr_func_set_l1
-	mov %arg0, %ret
-	gosub *pop          ;object<S()
-	mov %arg1, %ret
-	gosub *set_cdr      ;SetCdr(pair, object)
-	mov %ret, %sharp_t
-	return
+  mov %arg0, %arg2
+  gosub *push         ;S(env)
+  mov %arg0, %arg1
+  gosub *push         ;S(arg, env)
+  gosub *car          ;CAR(arg) => sym
+  mov %arg0, %ret
+  gosub *pop          ;arg<S(env)
+  mov %tmp1, %ret
+  gosub *push         ;S(sym, env)
+  mov %arg0, %tmp1
+  gosub *cdr          ;CDR(arg)
+  mov %arg0, %ret
+  gosub *car          ;CADR(arg) => val
+  mov %tmp, %ret
+  gosub *pop          ;sym<S(env)
+  mov %tmp1, %ret
+  gosub *pop          ;env<S()
+  mov %arg0, %ret
+  gosub *push         ;S(env)
+  mov %arg1, %arg0
+  mov %arg0, %tmp1
+  gosub *push         ;S(sym, env)
+  mov %arg0, %tmp
+  gosub *eval         ;(val, env) => object
+  mov %tmp, %ret
+  gosub *pop          ;sym<S(env)
+  mov %tmp1, %ret
+  gosub *pop          ;env<S()
+  mov %arg1, %ret
+  mov %arg0, %tmp
+  gosub *push         ;S(object)
+  mov %arg0, %tmp1
+  gosub *assoc        ;Assoc(sym, env)
+  if %ret == %nil goto *fsubr_func_set_l1
+  mov %arg0, %ret
+  gosub *pop          ;object<S()
+  mov %arg1, %ret
+  gosub *set_cdr      ;SetCdr(pair, object)
+  mov %ret, %sharp_t
+  return
 *fsubr_func_set_l1  ;S(object)
-	gosub *pop          ;object<S()
-	mov %ret, %sharp_f
-	return
+  gosub *pop          ;object<S()
+  mov %ret, %sharp_f
+  return
 
 *fsubr_func_let
-	mov %arg0, %arg1
-	gosub *push         ;S(arg)
-	mov %arg0, %arg2
-	gosub *push         ;S(env, arg)
-	mov %arg0, %arg1
-	gosub *car          ;CAR(arg) => argument
-	mov %arg0, %ret
-	gosub *push         ;S(argument, env, arg)
-	gosub *let_arg_split1  ;namelist
-	mov %tmp, %ret
-	gosub *pop          ;argument<S(env, arg)
-	mov %tmp1, %ret
-	mov %arg0, %tmp
-	gosub *push         ;S(namelist, env, arg)
-	mov %arg0, %tmp1
-	gosub *let_arg_split2  ;vallist
-	mov %tmp, %ret
-	gosub *pop          ;namelist<S(env, arg)
-	mov %tmp1, %ret
-	gosub *pop          ;env<S(arg)
-	mov %arg0, %ret
-	gosub *push         ;S(env, arg)
-	mov %arg1, %arg0    ;arg1 = env
-	mov %arg0, %tmp1
-	gosub *push         ;S(namelist, env, arg)
-	mov %arg0, %tmp     ;arg0 = vallist
-	gosub *evlis
-	mov %arg1, %ret
-	gosub *pop          ;namelist<S(env, arg)
-	mov %arg0, %ret
-	gosub *pop          ;env<S(arg)
-	mov %arg2, %ret
-	gosub *let_create_env
-	mov %arg0, %ret
-	gosub *pop          ;arg<S()
-	mov %tmp, %ret
-	gosub *push         ;S(new env)
-	mov %arg0, %tmp
-	gosub *cdr          ;CDR(arg) => body
-	mov %arg1, %ret
-	gosub *pop          ;new env<S()
-	mov %arg2, %ret
-	goto *fsubr_func_begin  ;tail call
-	return
+  mov %arg0, %arg1
+  gosub *push         ;S(arg)
+  mov %arg0, %arg2
+  gosub *push         ;S(env, arg)
+  mov %arg0, %arg1
+  gosub *car          ;CAR(arg) => argument
+  mov %arg0, %ret
+  gosub *push         ;S(argument, env, arg)
+  gosub *let_arg_split1  ;namelist
+  mov %tmp, %ret
+  gosub *pop          ;argument<S(env, arg)
+  mov %tmp1, %ret
+  mov %arg0, %tmp
+  gosub *push         ;S(namelist, env, arg)
+  mov %arg0, %tmp1
+  gosub *let_arg_split2  ;vallist
+  mov %tmp, %ret
+  gosub *pop          ;namelist<S(env, arg)
+  mov %tmp1, %ret
+  gosub *pop          ;env<S(arg)
+  mov %arg0, %ret
+  gosub *push         ;S(env, arg)
+  mov %arg1, %arg0    ;arg1 = env
+  mov %arg0, %tmp1
+  gosub *push         ;S(namelist, env, arg)
+  mov %arg0, %tmp     ;arg0 = vallist
+  gosub *evlis
+  mov %arg1, %ret
+  gosub *pop          ;namelist<S(env, arg)
+  mov %arg0, %ret
+  gosub *pop          ;env<S(arg)
+  mov %arg2, %ret
+  gosub *let_create_env
+  mov %arg0, %ret
+  gosub *pop          ;arg<S()
+  mov %tmp, %ret
+  gosub *push         ;S(new env)
+  mov %arg0, %tmp
+  gosub *cdr          ;CDR(arg) => body
+  mov %arg1, %ret
+  gosub *pop          ;new env<S()
+  mov %arg2, %ret
+  goto *fsubr_func_begin  ;tail call
+  return
 
 *fsubr_func_letrec
-	mov %arg0, %arg1
-	gosub *push         ;S(arg)
-	mov %arg0, %arg2
-	gosub *push         ;S(env, arg)
-	mov %tmp, %sp - 2   ;=arg
-	mov %arg0, %%tmp
-	gosub *car          ;CAR(arg) => argument
-	mov %arg0, %ret
-	gosub *push         ;S(argument, env, arg)
-	gosub *let_arg_split1  ;namelist
-	mov %arg0, %ret
-	gosub *push         ;S(namelist, argument, env, arg)
-	mov %tmp ,%sp - 2   ;=argument
-	mov %arg0, %%tmp
-	gosub *let_arg_split2  ;vallist
-	mov %arg0, %ret
-	gosub *push         ;S(vallist, namelist, argument, env, arg)
-	gosub *create_new_env
-	mov %arg0, %ret
-	gosub *push         ;S(new env, vallist, namelist, argument, env, arg)
-	mov %tmp, %sp - 5   ;=env
-	mov %arg1, %%tmp
-	gosub *nconc
-	gosub *pop          ;new env<S(vallist, namelist, argument, env, arg)
-	mov %arg0, %ret
-	gosub *pop          ;vallist<S(namelist, argument, env, arg)
-	mov %arg2, %ret
-	gosub *pop          ;namelist<S(argument, env, arg)
-	mov %arg1, %ret
-	sub %sp, 2          ;<S(arg)
-	gosub *letrec_bind
-	mov %arg0, %ret
-	gosub *push         ;S(new env, arg)
-	mov %tmp, %sp - 2   ;=arg
-	mov %arg0, %%tmp
-	gosub *cdr          ;CAR(arg) => body
-	mov %arg1, %ret
-	gosub *pop          ;new env<S(arg)
-	mov %arg2, %ret
-	sub %sp, 1         ;<S()
-	goto *fsubr_func_begin  ;tail call
-	return
+  mov %arg0, %arg1
+  gosub *push         ;S(arg)
+  mov %arg0, %arg2
+  gosub *push         ;S(env, arg)
+  mov %tmp, %sp - 2   ;=arg
+  mov %arg0, %%tmp
+  gosub *car          ;CAR(arg) => argument
+  mov %arg0, %ret
+  gosub *push         ;S(argument, env, arg)
+  gosub *let_arg_split1  ;namelist
+  mov %arg0, %ret
+  gosub *push         ;S(namelist, argument, env, arg)
+  mov %tmp ,%sp - 2   ;=argument
+  mov %arg0, %%tmp
+  gosub *let_arg_split2  ;vallist
+  mov %arg0, %ret
+  gosub *push         ;S(vallist, namelist, argument, env, arg)
+  gosub *create_new_env
+  mov %arg0, %ret
+  gosub *push         ;S(new env, vallist, namelist, argument, env, arg)
+  mov %tmp, %sp - 5   ;=env
+  mov %arg1, %%tmp
+  gosub *nconc
+  gosub *pop          ;new env<S(vallist, namelist, argument, env, arg)
+  mov %arg0, %ret
+  gosub *pop          ;vallist<S(namelist, argument, env, arg)
+  mov %arg2, %ret
+  gosub *pop          ;namelist<S(argument, env, arg)
+  mov %arg1, %ret
+  sub %sp, 2          ;<S(arg)
+  gosub *letrec_bind
+  mov %arg0, %ret
+  gosub *push         ;S(new env, arg)
+  mov %tmp, %sp - 2   ;=arg
+  mov %arg0, %%tmp
+  gosub *cdr          ;CAR(arg) => body
+  mov %arg1, %ret
+  gosub *pop          ;new env<S(arg)
+  mov %arg2, %ret
+  sub %sp, 1         ;<S()
+  goto *fsubr_func_begin  ;tail call
+  return
 
 *fsubr_func_letstar
-	mov %arg0, %arg1
-	gosub *push         ;S(arg)
-	mov %arg0, %arg2
-	gosub *push         ;S(env, arg)
-	mov %tmp, %sp - 2   ;=arg
-	mov %arg0, %%tmp
-	gosub *car          ;CAR(arg) => argument
-	mov %arg0, %ret
-	gosub *push         ;S(argument, env, arg)
-	gosub *let_arg_split1  ;namelist
-	mov %arg0, %ret
-	gosub *push         ;S(namelist, argument, env, arg)
-	mov %tmp ,%sp - 2   ;=argument
-	mov %arg0, %%tmp
-	gosub *let_arg_split2  ;vallist
-	mov %arg2, %ret
-	gosub *pop          ;namelist<S(argument, env, arg)
-	mov %arg1, %ret
-	gosub *pop          ;argument<S(env, arg)
-	gosub *pop          ;env<S(arg)
-	mov %arg0, %ret
-	gosub *letstar_bind
-	mov %arg0, %ret
-	gosub *push         ;S(new env, arg)
-	mov %tmp, %sp - 2   ;=arg
-	mov %arg0, %%tmp
-	gosub *cdr          ;CAR(arg) => body
-	mov %arg1, %ret
-	gosub *pop          ;new env<S(arg)
-	mov %arg2, %ret
-	sub %sp, 1         ;<S()
-	goto *fsubr_func_begin  ;tail call
-	return
+  mov %arg0, %arg1
+  gosub *push         ;S(arg)
+  mov %arg0, %arg2
+  gosub *push         ;S(env, arg)
+  mov %tmp, %sp - 2   ;=arg
+  mov %arg0, %%tmp
+  gosub *car          ;CAR(arg) => argument
+  mov %arg0, %ret
+  gosub *push         ;S(argument, env, arg)
+  gosub *let_arg_split1  ;namelist
+  mov %arg0, %ret
+  gosub *push         ;S(namelist, argument, env, arg)
+  mov %tmp ,%sp - 2   ;=argument
+  mov %arg0, %%tmp
+  gosub *let_arg_split2  ;vallist
+  mov %arg2, %ret
+  gosub *pop          ;namelist<S(argument, env, arg)
+  mov %arg1, %ret
+  gosub *pop          ;argument<S(env, arg)
+  gosub *pop          ;env<S(arg)
+  mov %arg0, %ret
+  gosub *letstar_bind
+  mov %arg0, %ret
+  gosub *push         ;S(new env, arg)
+  mov %tmp, %sp - 2   ;=arg
+  mov %arg0, %%tmp
+  gosub *cdr          ;CAR(arg) => body
+  mov %arg1, %ret
+  gosub *pop          ;new env<S(arg)
+  mov %arg2, %ret
+  sub %sp, 1         ;<S()
+  goto *fsubr_func_begin  ;tail call
+  return
 
 *fsubr_func_if
-	mov %arg0, %arg1
-	mov %arg1, %arg2
-	gosub *push         ;S(arg)
-	mov %tmp, %arg0
-	mov %arg0, %arg1
-	gosub *push         ;S(env, arg)
-	mov %arg0, %tmp
-	gosub *car          ;CAR(arg) => cnd
-	mov %tmp, %ret
-	gosub *pop          ;env<S(arg)
-	mov %arg0, %ret
-	gosub *push         ;S(env, arg)
-	mov %arg1, %arg0
-	mov %arg0, %tmp
-	gosub *eval
-	if %ret != %sharp_f goto *fsubr_func_if_l1
-	gosub *pop          ;env<S(arg)
-	mov %arg0, %ret
-	gosub *pop          ;arg<S()
-	mov %tmp, %ret
-	gosub *push         ;S(env)
-	mov %arg0, %tmp
-	gosub *cdr          ;CDR(arg)
-	mov %arg0, %ret
-	gosub *cdr          ;CDDR(arg)
-	mov %arg0, %ret
-	gosub *car          ;CADDR(arg)
-	mov %arg0, %ret
-	gosub *pop          ;env<S()
-	mov %arg1, %ret
-	goto *eval  ;tail call
+  mov %arg0, %arg1
+  mov %arg1, %arg2
+  gosub *push         ;S(arg)
+  mov %tmp, %arg0
+  mov %arg0, %arg1
+  gosub *push         ;S(env, arg)
+  mov %arg0, %tmp
+  gosub *car          ;CAR(arg) => cnd
+  mov %tmp, %ret
+  gosub *pop          ;env<S(arg)
+  mov %arg0, %ret
+  gosub *push         ;S(env, arg)
+  mov %arg1, %arg0
+  mov %arg0, %tmp
+  gosub *eval
+  if %ret != %sharp_f goto *fsubr_func_if_l1
+  gosub *pop          ;env<S(arg)
+  mov %arg0, %ret
+  gosub *pop          ;arg<S()
+  mov %tmp, %ret
+  gosub *push         ;S(env)
+  mov %arg0, %tmp
+  gosub *cdr          ;CDR(arg)
+  mov %arg0, %ret
+  gosub *cdr          ;CDDR(arg)
+  mov %arg0, %ret
+  gosub *car          ;CADDR(arg)
+  mov %arg0, %ret
+  gosub *pop          ;env<S()
+  mov %arg1, %ret
+  goto *eval  ;tail call
 *fsubr_func_if_l1
-	gosub *pop          ;env<S(arg)
-	mov %arg0, %ret
-	gosub *pop          ;arg<S()
-	mov %tmp, %ret
-	gosub *push         ;S(env)
-	mov %arg0, %tmp
-	gosub *cdr          ;CDR(arg)
-	mov %arg0, %ret
-	gosub *car          ;CADR(arg)
-	mov %arg0, %ret
-	gosub *pop          ;env<S()
-	mov %arg1, %ret
-	goto *eval  ;tail call
+  gosub *pop          ;env<S(arg)
+  mov %arg0, %ret
+  gosub *pop          ;arg<S()
+  mov %tmp, %ret
+  gosub *push         ;S(env)
+  mov %arg0, %tmp
+  gosub *cdr          ;CDR(arg)
+  mov %arg0, %ret
+  gosub *car          ;CADR(arg)
+  mov %arg0, %ret
+  gosub *pop          ;env<S()
+  mov %arg1, %ret
+  goto *eval  ;tail call
 
 *fsubr_func_and
-	mov %ret, %nil
+  mov %ret, %nil
 *fsubr_func_and_l1  ;(arg1 = arg, arg2 = env, ret = result)
-	if %arg1 == %nil goto *fsubr_func_and_l3
-	mov %arg0, %arg1
-	gosub *push         ;S(arg)
-	mov %arg0, %arg2
-	gosub *push         ;S(env, arg)
-	mov %arg0, %arg1
-	gosub *car          ;CAR(arg) => expr
-	mov %tmp, %ret
-	gosub *pop          ;env<S(arg)
-	mov %arg0, %ret
-	gosub *push         ;S(env, arg)
-	mov %arg1, %arg0
-	mov %arg0, %tmp
-	gosub *eval         ;Eval(expr, env) => object
-	if %ret == %sharp_f goto *fsubr_func_and_l2
-	mov %arg0, %ret
-	gosub *pop          ;env<S(arg)
-	mov %tmp, %ret
-	gosub *pop          ;arg<S()
-	mov %tmp1, %ret
-	gosub *push         ;S(object)
-	mov %arg0, %tmp
-	gosub *push         ;S(env, object)
-	mov %arg0, %tmp1
-	gosub *cdr          ;arg = CDR(arg)
-	mov %arg1, %ret
-	gosub *pop          ;env<S(object)
-	mov %arg2, %ret
-	gosub *pop          ;object<S()
-	goto *fsubr_func_and_l1
+  if %arg1 == %nil goto *fsubr_func_and_l3
+  mov %arg0, %arg1
+  gosub *push         ;S(arg)
+  mov %arg0, %arg2
+  gosub *push         ;S(env, arg)
+  mov %arg0, %arg1
+  gosub *car          ;CAR(arg) => expr
+  mov %tmp, %ret
+  gosub *pop          ;env<S(arg)
+  mov %arg0, %ret
+  gosub *push         ;S(env, arg)
+  mov %arg1, %arg0
+  mov %arg0, %tmp
+  gosub *eval         ;Eval(expr, env) => object
+  if %ret == %sharp_f goto *fsubr_func_and_l2
+  mov %arg0, %ret
+  gosub *pop          ;env<S(arg)
+  mov %tmp, %ret
+  gosub *pop          ;arg<S()
+  mov %tmp1, %ret
+  gosub *push         ;S(object)
+  mov %arg0, %tmp
+  gosub *push         ;S(env, object)
+  mov %arg0, %tmp1
+  gosub *cdr          ;arg = CDR(arg)
+  mov %arg1, %ret
+  gosub *pop          ;env<S(object)
+  mov %arg2, %ret
+  gosub *pop          ;object<S()
+  goto *fsubr_func_and_l1
 *fsubr_func_and_l2
-	gosub *pop         ;env<S(arg)
-	gosub *pop         ;arg<S()
-	mov %ret, %sharp_f
-	return
+  gosub *pop         ;env<S(arg)
+  gosub *pop         ;arg<S()
+  mov %ret, %sharp_f
+  return
 *fsubr_func_and_l3
-	return
+  return
 
 *fsubr_func_or
-	mov %ret, %nil
+  mov %ret, %nil
 *fsubr_func_or_l1  ;(arg1 = arg, arg2 = env, ret = result)
-	if %arg1 == %nil goto *fsubr_func_or_l3
-	mov %arg0, %arg1
-	gosub *push         ;S(arg)
-	mov %arg0, %arg2
-	gosub *push         ;S(env, arg)
-	mov %arg0, %arg1
-	gosub *car          ;CAR(arg) => expr
-	mov %tmp, %ret
-	gosub *pop          ;env<S(arg)
-	mov %arg0, %ret
-	gosub *push         ;S(env, arg)
-	mov %arg1, %arg0
-	mov %arg0, %tmp
-	gosub *eval         ;Eval(expr, env) => object
-	if %ret != %sharp_f goto *fsubr_func_or_l2
-	mov %arg0, %ret
-	gosub *pop          ;env<S(arg)
-	mov %tmp, %ret
-	gosub *pop          ;arg<S()
-	mov %tmp1, %ret
-	gosub *push         ;S(object)
-	mov %arg0, %tmp
-	gosub *push         ;S(env, object)
-	mov %arg0, %tmp1
-	gosub *cdr          ;arg = CDR(arg)
-	mov %arg1, %ret
-	gosub *pop          ;env<S(object)
-	mov %arg2, %ret
-	gosub *pop          ;object<S()
-	goto *fsubr_func_or_l1
+  if %arg1 == %nil goto *fsubr_func_or_l3
+  mov %arg0, %arg1
+  gosub *push         ;S(arg)
+  mov %arg0, %arg2
+  gosub *push         ;S(env, arg)
+  mov %arg0, %arg1
+  gosub *car          ;CAR(arg) => expr
+  mov %tmp, %ret
+  gosub *pop          ;env<S(arg)
+  mov %arg0, %ret
+  gosub *push         ;S(env, arg)
+  mov %arg1, %arg0
+  mov %arg0, %tmp
+  gosub *eval         ;Eval(expr, env) => object
+  if %ret != %sharp_f goto *fsubr_func_or_l2
+  mov %arg0, %ret
+  gosub *pop          ;env<S(arg)
+  mov %tmp, %ret
+  gosub *pop          ;arg<S()
+  mov %tmp1, %ret
+  gosub *push         ;S(object)
+  mov %arg0, %tmp
+  gosub *push         ;S(env, object)
+  mov %arg0, %tmp1
+  gosub *cdr          ;arg = CDR(arg)
+  mov %arg1, %ret
+  gosub *pop          ;env<S(object)
+  mov %arg2, %ret
+  gosub *pop          ;object<S()
+  goto *fsubr_func_or_l1
 *fsubr_func_or_l2  ;(ret = object, S(env, arg))
-	mov %tmp, %ret
-	gosub *pop         ;env<S(arg)
-	gosub *pop         ;arg<S()
-	mov %ret, %tmp
-	return
+  mov %tmp, %ret
+  gosub *pop         ;env<S(arg)
+  gosub *pop         ;arg<S()
+  mov %ret, %tmp
+  return
 *fsubr_func_or_l3
-	mov %ret, %sharp_f
-	return
+  mov %ret, %sharp_f
+  return
 
 
 
@@ -2670,316 +2670,316 @@ mov $sarg0, $sarg0
 ;;;*let_arg_split1(arglist)
 ;;;;;;;;;;
 *let_arg_split1
-	gosub *push         ;S(arglist)
-	gosub *create_cons  ;root
-	mov %tmp, %ret
-	gosub *pop          ;arglist<S()
-	mov %tmp2, %ret
-	mov %arg0, %tmp
-	gosub *push         ;S(root)
-	mov %arg0, %tmp2
+  gosub *push         ;S(arglist)
+  gosub *create_cons  ;root
+  mov %tmp, %ret
+  gosub *pop          ;arglist<S()
+  mov %tmp2, %ret
+  mov %arg0, %tmp
+  gosub *push         ;S(root)
+  mov %arg0, %tmp2
 *let_arg_split1_l1  ;(tmp = current, arg0 = arglist, S(root))
-	if %arg0 == %nil goto *let_arg_split1_l2
-	gosub *push         ;S(arglist, root)
-	mov %tmp1, %arg0
-	mov %arg0, %tmp
-	gosub *push         ;S(current, arglist, root)
-	mov %arg0, %tmp1
-	gosub *car          ;pair
-	mov %arg0, %ret
-	gosub *car          ;name
-	mov %arg0, %ret
-	gosub *push         ;S(name, current, arglist, root)
-	gosub *create_cons
-	mov %arg0, %ret
-	gosub *pop          ;name<S(current, arglist, root)
-	mov %arg1, %ret
-	gosub *push         ;S(new cons, current, arglist, root)
-	gosub *set_car      ;new cons = (name ...)
-	gosub *pop          ;new cons<S(current, arglist, root)
-	mov %arg0, %ret
-	mov %arg1, %nil
-	gosub *push         ;S(new cons, current, arglist, root)
-	gosub *set_cdr      ;new cons = (name . nil)
-	gosub *pop          ;new cons<S(current, arglist, root)
-	mov %arg1, %ret
-	gosub *pop          ;current<S(arglist, root)
-	mov %arg0, %ret
-	gosub *push         ;S(current, arglist, root)
-	gosub *set_cdr      ;current = (... . new cons)
-	gosub *pop          ;current<S(arglist, root)
-	mov %arg0, %ret
-	gosub *pop          ;arglist<S(root)
-	mov %tmp, %ret
-	gosub *push         ;S(current, root)
-	mov %arg0, %tmp
-	gosub *cdr          ;arglist = CDR(arglist)
-	mov %arg0, %ret
-	gosub *pop          ;current<S(root)
-	mov %tmp, %ret
-	gosub *push         ;S(arglist, root)
-	mov %arg0, %tmp
-	gosub *cdr          ;current = CDR(current)
-	mov %tmp, %ret
-	gosub *pop
-	mov %arg0, %ret
-	goto *let_arg_split1_l1  ;(tmp = current, arg0 = arglist, S(root))
+  if %arg0 == %nil goto *let_arg_split1_l2
+  gosub *push         ;S(arglist, root)
+  mov %tmp1, %arg0
+  mov %arg0, %tmp
+  gosub *push         ;S(current, arglist, root)
+  mov %arg0, %tmp1
+  gosub *car          ;pair
+  mov %arg0, %ret
+  gosub *car          ;name
+  mov %arg0, %ret
+  gosub *push         ;S(name, current, arglist, root)
+  gosub *create_cons
+  mov %arg0, %ret
+  gosub *pop          ;name<S(current, arglist, root)
+  mov %arg1, %ret
+  gosub *push         ;S(new cons, current, arglist, root)
+  gosub *set_car      ;new cons = (name ...)
+  gosub *pop          ;new cons<S(current, arglist, root)
+  mov %arg0, %ret
+  mov %arg1, %nil
+  gosub *push         ;S(new cons, current, arglist, root)
+  gosub *set_cdr      ;new cons = (name . nil)
+  gosub *pop          ;new cons<S(current, arglist, root)
+  mov %arg1, %ret
+  gosub *pop          ;current<S(arglist, root)
+  mov %arg0, %ret
+  gosub *push         ;S(current, arglist, root)
+  gosub *set_cdr      ;current = (... . new cons)
+  gosub *pop          ;current<S(arglist, root)
+  mov %arg0, %ret
+  gosub *pop          ;arglist<S(root)
+  mov %tmp, %ret
+  gosub *push         ;S(current, root)
+  mov %arg0, %tmp
+  gosub *cdr          ;arglist = CDR(arglist)
+  mov %arg0, %ret
+  gosub *pop          ;current<S(root)
+  mov %tmp, %ret
+  gosub *push         ;S(arglist, root)
+  mov %arg0, %tmp
+  gosub *cdr          ;current = CDR(current)
+  mov %tmp, %ret
+  gosub *pop
+  mov %arg0, %ret
+  goto *let_arg_split1_l1  ;(tmp = current, arg0 = arglist, S(root))
 *let_arg_split1_l2  ;S(root)
-	gosub *pop         ;root<S()
-	mov %arg0, %ret
-	gosub *cdr         ;CDR(root)
-	return
+  gosub *pop         ;root<S()
+  mov %arg0, %ret
+  gosub *cdr         ;CDR(root)
+  return
 
 ;;;;;;;;;;
 ;;;*let_arg_split2(arglist)
 ;;;;;;;;;;
 *let_arg_split2
-	gosub *push         ;S(arglist)
-	gosub *create_cons  ;root
-	mov %tmp, %ret
-	gosub *pop          ;arglist<S()
-	mov %tmp2, %ret
-	mov %arg0, %tmp
-	gosub *push         ;S(root)
-	mov %arg0, %tmp2
+  gosub *push         ;S(arglist)
+  gosub *create_cons  ;root
+  mov %tmp, %ret
+  gosub *pop          ;arglist<S()
+  mov %tmp2, %ret
+  mov %arg0, %tmp
+  gosub *push         ;S(root)
+  mov %arg0, %tmp2
 *let_arg_split2_l1  ;(tmp = current, arg0 = arglist, S(root))
-	if %arg0 == %nil goto *let_arg_split2_l2
-	gosub *push         ;S(arglist, root)
-	mov %tmp1, %arg0
-	mov %arg0, %tmp
-	gosub *push         ;S(current, arglist, root)
-	mov %arg0, %tmp1
-	gosub *car          ;pair
-	mov %arg0, %ret
-	gosub *cdr          ;(val)
-	mov %arg0, %ret
-	gosub *car          ;val
-	mov %arg0, %ret
-	gosub *push         ;S(name, current, arglist, root)
-	gosub *create_cons
-	mov %arg0, %ret
-	gosub *pop          ;name<S(current, arglist, root)
-	mov %arg1, %ret
-	gosub *push         ;S(new cons, current, arglist, root)
-	gosub *set_car      ;new cons = (name ...)
-	gosub *pop          ;new cons<S(current, arglist, root)
-	mov %arg0, %ret
-	mov %arg1, %nil
-	gosub *push         ;S(new cons, current, arglist, root)
-	gosub *set_cdr      ;new cons = (name . nil)
-	gosub *pop          ;new cons<S(current, arglist, root)
-	mov %arg1, %ret
-	gosub *pop          ;current<S(arglist, root)
-	mov %arg0, %ret
-	gosub *push         ;S(current, arglist, root)
-	gosub *set_cdr      ;current = (... . new cons)
-	gosub *pop          ;current<S(arglist, root)
-	mov %arg0, %ret
-	gosub *pop          ;arglist<S(root)
-	mov %tmp, %ret
-	gosub *push         ;S(current, root)
-	mov %arg0, %tmp
-	gosub *cdr          ;arglist = CDR(arglist)
-	mov %arg0, %ret
-	gosub *pop          ;current<S(root)
-	mov %tmp, %ret
-	gosub *push         ;S(arglist, root)
-	mov %arg0, %tmp
-	gosub *cdr          ;current = CDR(current)
-	mov %tmp, %ret
-	gosub *pop
-	mov %arg0, %ret
-	goto *let_arg_split2_l1  ;(tmp = current, arg0 = arglist, S(root))
+  if %arg0 == %nil goto *let_arg_split2_l2
+  gosub *push         ;S(arglist, root)
+  mov %tmp1, %arg0
+  mov %arg0, %tmp
+  gosub *push         ;S(current, arglist, root)
+  mov %arg0, %tmp1
+  gosub *car          ;pair
+  mov %arg0, %ret
+  gosub *cdr          ;(val)
+  mov %arg0, %ret
+  gosub *car          ;val
+  mov %arg0, %ret
+  gosub *push         ;S(name, current, arglist, root)
+  gosub *create_cons
+  mov %arg0, %ret
+  gosub *pop          ;name<S(current, arglist, root)
+  mov %arg1, %ret
+  gosub *push         ;S(new cons, current, arglist, root)
+  gosub *set_car      ;new cons = (name ...)
+  gosub *pop          ;new cons<S(current, arglist, root)
+  mov %arg0, %ret
+  mov %arg1, %nil
+  gosub *push         ;S(new cons, current, arglist, root)
+  gosub *set_cdr      ;new cons = (name . nil)
+  gosub *pop          ;new cons<S(current, arglist, root)
+  mov %arg1, %ret
+  gosub *pop          ;current<S(arglist, root)
+  mov %arg0, %ret
+  gosub *push         ;S(current, arglist, root)
+  gosub *set_cdr      ;current = (... . new cons)
+  gosub *pop          ;current<S(arglist, root)
+  mov %arg0, %ret
+  gosub *pop          ;arglist<S(root)
+  mov %tmp, %ret
+  gosub *push         ;S(current, root)
+  mov %arg0, %tmp
+  gosub *cdr          ;arglist = CDR(arglist)
+  mov %arg0, %ret
+  gosub *pop          ;current<S(root)
+  mov %tmp, %ret
+  gosub *push         ;S(arglist, root)
+  mov %arg0, %tmp
+  gosub *cdr          ;current = CDR(current)
+  mov %tmp, %ret
+  gosub *pop
+  mov %arg0, %ret
+  goto *let_arg_split2_l1  ;(tmp = current, arg0 = arglist, S(root))
 *let_arg_split2_l2  ;S(root)
-	gosub *pop         ;root<S()
-	mov %arg0, %ret
-	gosub *cdr         ;CDR(root)
-	return
+  gosub *pop         ;root<S()
+  mov %arg0, %ret
+  gosub *cdr         ;CDR(root)
+  return
 
 ;;;;;;;;;;
 ;;;*let_create_env(namelist, vallist, env)
 ;;;;;;;;;;
 *let_create_env
-	mov %tmp, %arg0
-	mov %arg0, %arg2
-	gosub *push       ;S(env)
-	mov %arg0, %arg1
-	gosub *push       ;S(vallist, env)
-	mov %arg0, %tmp
-	gosub *push       ;S(namelist, vallist, env)
-	gosub *create_new_env
-	mov %arg0, %ret
+  mov %tmp, %arg0
+  mov %arg0, %arg2
+  gosub *push       ;S(env)
+  mov %arg0, %arg1
+  gosub *push       ;S(vallist, env)
+  mov %arg0, %tmp
+  gosub *push       ;S(namelist, vallist, env)
+  gosub *create_new_env
+  mov %arg0, %ret
 *let_create_env_l1  ;(arg0 = new env, S(namelist, vallist, env)
-	gosub *pop        ;namelist<S(vallist, env)
-	if %ret == %nil goto *let_create_env_l2  ;(arg0 = new env, S(vallist, env))
-	mov %tmp, %ret
-	gosub *push       ;S(new env, vallist, env)
-	mov %arg0, %tmp
-	gosub *push       ;S(namelist, new env, vallist, env)
-	gosub *car        ;CAR(namelist) => name
-	mov %tmp, %ret
-	gosub *pop        ;namelist<S(new env, vallist, env)
-	mov %tmp1, %ret
-	gosub *pop        ;new env<S(vallist, env)
-	mov %tmp2, %ret
-	gosub *pop        ;vallist<S(env)
-	mov %arg0, %ret
-	gosub *push       ;S(vallist, env)
-	mov %tmp3, %arg0
-	mov %arg0, %tmp2  
-	gosub *push       ;S(new env, vallist, env)
-	mov %arg0, %tmp1  
-	gosub *push       ;S(namelist, new env, vallist, env)
-	mov %arg0, %tmp
-	gosub *push       ;S(name, namelist, new env, vallist, env)
-	mov %arg0, %tmp3
-	gosub *car        ;CAR(vallist) => val
-	mov %arg2, %ret
-	gosub *pop        ;name<S(namelist, new env, vallist, env)
-	mov %arg1, %ret
-	gosub *pop        ;namelist<S(new env, vallist, env)
-	mov %arg0, %ret
-	gosub *pop        ;new env<S(vallist, env)
-	mov %tmp1, %ret
-	gosub *push       ;S(namelist, vallist, env)
-	mov %arg0, %tmp1
-	gosub *push       ;S(new env, namelist, vallist, env)
-	gosub *add_bind_to_env
-	gosub *pop        ;new env<S(namelist, vallist, env)
-	mov %arg0, %ret
-	gosub *pop        ;namelist<S(vallist, env)
-	mov %tmp, %ret
-	gosub *push       ;S(new env, vallist, env)
-	mov %arg0, %tmp
-	gosub *cdr        ;namelist = CDR(namelist)
-	mov %arg0, %ret
-	gosub *pop        ;new env<S(vallist, env)
-	mov %tmp, %ret
-	gosub *pop        ;vallist<S(env)
-	mov %tmp1, %ret
-	gosub *push       ;S(namelist, env)
-	mov %arg0, %tmp
-	gosub *push       ;S(new env, namelist, nev)
-	mov %arg0, %tmp1
-	gosub *cdr        ;vallist = CDR(vallist)
-	mov %arg0, %ret
-	gosub *pop        ;new env<S(namelist, env)
-	mov %tmp, %ret
-	gosub *pop        ;namelist<S(env)
-	mov %tmp1, %ret
-	gosub *push       ;S(vallist, env)
-	mov %arg0, %tmp1
-	gosub *push       ;S(namelist, vallist, env)
-	mov %arg0, %tmp   ;arg0 = new env
-	goto *let_create_env_l1  ;(arg0 = new env, S(namelist, vallist, env))
+  gosub *pop        ;namelist<S(vallist, env)
+  if %ret == %nil goto *let_create_env_l2  ;(arg0 = new env, S(vallist, env))
+  mov %tmp, %ret
+  gosub *push       ;S(new env, vallist, env)
+  mov %arg0, %tmp
+  gosub *push       ;S(namelist, new env, vallist, env)
+  gosub *car        ;CAR(namelist) => name
+  mov %tmp, %ret
+  gosub *pop        ;namelist<S(new env, vallist, env)
+  mov %tmp1, %ret
+  gosub *pop        ;new env<S(vallist, env)
+  mov %tmp2, %ret
+  gosub *pop        ;vallist<S(env)
+  mov %arg0, %ret
+  gosub *push       ;S(vallist, env)
+  mov %tmp3, %arg0
+  mov %arg0, %tmp2  
+  gosub *push       ;S(new env, vallist, env)
+  mov %arg0, %tmp1  
+  gosub *push       ;S(namelist, new env, vallist, env)
+  mov %arg0, %tmp
+  gosub *push       ;S(name, namelist, new env, vallist, env)
+  mov %arg0, %tmp3
+  gosub *car        ;CAR(vallist) => val
+  mov %arg2, %ret
+  gosub *pop        ;name<S(namelist, new env, vallist, env)
+  mov %arg1, %ret
+  gosub *pop        ;namelist<S(new env, vallist, env)
+  mov %arg0, %ret
+  gosub *pop        ;new env<S(vallist, env)
+  mov %tmp1, %ret
+  gosub *push       ;S(namelist, vallist, env)
+  mov %arg0, %tmp1
+  gosub *push       ;S(new env, namelist, vallist, env)
+  gosub *add_bind_to_env
+  gosub *pop        ;new env<S(namelist, vallist, env)
+  mov %arg0, %ret
+  gosub *pop        ;namelist<S(vallist, env)
+  mov %tmp, %ret
+  gosub *push       ;S(new env, vallist, env)
+  mov %arg0, %tmp
+  gosub *cdr        ;namelist = CDR(namelist)
+  mov %arg0, %ret
+  gosub *pop        ;new env<S(vallist, env)
+  mov %tmp, %ret
+  gosub *pop        ;vallist<S(env)
+  mov %tmp1, %ret
+  gosub *push       ;S(namelist, env)
+  mov %arg0, %tmp
+  gosub *push       ;S(new env, namelist, nev)
+  mov %arg0, %tmp1
+  gosub *cdr        ;vallist = CDR(vallist)
+  mov %arg0, %ret
+  gosub *pop        ;new env<S(namelist, env)
+  mov %tmp, %ret
+  gosub *pop        ;namelist<S(env)
+  mov %tmp1, %ret
+  gosub *push       ;S(vallist, env)
+  mov %arg0, %tmp1
+  gosub *push       ;S(namelist, vallist, env)
+  mov %arg0, %tmp   ;arg0 = new env
+  goto *let_create_env_l1  ;(arg0 = new env, S(namelist, vallist, env))
 *let_create_env_l2  ;(arg0 = new env, S(vallist, env))
-	gosub *pop        ;vallist<S(env)
-	gosub *pop        ;env<S()
-	mov %arg1, %ret
-	gosub *push       ;S(new env)
-	gosub *nconc
-	gosub *pop        ;new env<S()
-	return
+  gosub *pop        ;vallist<S(env)
+  gosub *pop        ;env<S()
+  mov %arg1, %ret
+  gosub *push       ;S(new env)
+  gosub *nconc
+  gosub *pop        ;new env<S()
+  return
 
 ;;;;;;;;;;
 ;;;*letrec_bind(env, namelist, vallist)
 ;;;;;;;;;;
 *letrec_bind
-	if %arg1 == %nil goto *letrec_bind_l1
-	gosub *push      ;S(env)
-	mov %arg0, %arg1
-	gosub *push      ;S(namelist, env)
-	mov %arg0, %arg2
-	gosub *push      ;S(vallist, namelist, env)
-	gosub *car       ;CAR(vallist) => val
-	mov %arg0, %ret
-	mov %tmp, %sp - 3;=env
-	mov %arg1, %%tmp
-	gosub *eval      ;eval(val, env)
-	mov %arg0, %ret
-	gosub *push      ;S(new object, vallist, namelist, env)
-	mov %tmp, %sp - 3;=namelist
-	mov %arg0, %%tmp
-	gosub *car       ;CAR(namelist) => name
-	mov %arg1, %ret
-	gosub *pop       ;new object<S(vallist, namelist, env)
-	mov %arg2, %ret
-	mov %tmp, %sp - 3;=env
-	mov %arg0, %%tmp
-	gosub *add_bind_to_env
-	gosub *pop       ;vallist<S(namelist, env)
-	mov %arg0, %ret
-	gosub *cdr       ;vallist = CDR(vallist)
-	mov %arg0, %ret
-	gosub *pop       ;namelist<S(env)
-	mov %tmp1, %ret
-	gosub *push      ;S(vallist, env)
-	mov %arg0, %tmp1
-	gosub *cdr       ;namelist = CDR(namelist)
-	mov %arg1, %ret
-	gosub *pop       ;vallist<S(env)
-	mov %arg2, %ret
-	gosub *pop       ;env<S()
-	mov %arg0, %ret
-	goto *letrec_bind
+  if %arg1 == %nil goto *letrec_bind_l1
+  gosub *push      ;S(env)
+  mov %arg0, %arg1
+  gosub *push      ;S(namelist, env)
+  mov %arg0, %arg2
+  gosub *push      ;S(vallist, namelist, env)
+  gosub *car       ;CAR(vallist) => val
+  mov %arg0, %ret
+  mov %tmp, %sp - 3;=env
+  mov %arg1, %%tmp
+  gosub *eval      ;eval(val, env)
+  mov %arg0, %ret
+  gosub *push      ;S(new object, vallist, namelist, env)
+  mov %tmp, %sp - 3;=namelist
+  mov %arg0, %%tmp
+  gosub *car       ;CAR(namelist) => name
+  mov %arg1, %ret
+  gosub *pop       ;new object<S(vallist, namelist, env)
+  mov %arg2, %ret
+  mov %tmp, %sp - 3;=env
+  mov %arg0, %%tmp
+  gosub *add_bind_to_env
+  gosub *pop       ;vallist<S(namelist, env)
+  mov %arg0, %ret
+  gosub *cdr       ;vallist = CDR(vallist)
+  mov %arg0, %ret
+  gosub *pop       ;namelist<S(env)
+  mov %tmp1, %ret
+  gosub *push      ;S(vallist, env)
+  mov %arg0, %tmp1
+  gosub *cdr       ;namelist = CDR(namelist)
+  mov %arg1, %ret
+  gosub *pop       ;vallist<S(env)
+  mov %arg2, %ret
+  gosub *pop       ;env<S()
+  mov %arg0, %ret
+  goto *letrec_bind
 *letrec_bind_l1  ;(arg0 = env)
-	mov %ret, %arg0
-	return
+  mov %ret, %arg0
+  return
 
 ;;;;;;;;;;
 ;;;*letstar_bind(env, namelist, vallist)
 ;;;;;;;;;;
 *letstar_bind
-	if %arg1 == %nil goto *letstar_bind_l1
-	mov %tmp1, %arg0
-	mov %arg0, %arg1
-	gosub *push      ;S(namelist)
-	mov %arg0, %arg2
-	gosub *push      ;S(vallist, namelist)
-	mov %arg0, %tmp1
-	gosub *push      ;S(env, vallist, namlist)
-	gosub *create_new_env
-	mov %arg0, %ret
-	gosub *pop       ;env<S(vallist, namelist)
-	mov %arg1, %ret
-	gosub *push      ;S(new env, vallist, namelist)
-	gosub *nconc
-	mov %tmp, %sp - 2;=vallist
-	mov %arg0, %%tmp
-	gosub *car       ;CAR(vallist) => val
-	mov %arg0, %ret
-	mov %tmp, %sp - 1;=new env
-	mov %arg1, %%tmp
-	gosub *eval      ;eval(val, env)
-	mov %arg0, %ret
-	gosub *push      ;S(new object, new env, vallist, namelist)
-	mov %tmp, %sp - 4;=namelist
-	mov %arg0, %%tmp
-	gosub *car       ;CAR(namelist) => name
-	mov %arg1, %ret
-	gosub *pop       ;new object<S(new env, vallist, namelist)
-	mov %arg2, %ret
-	mov %tmp, %sp - 1;=new env
-	mov %arg0, %%tmp
-	gosub *add_bind_to_env
-	mov %tmp, %sp - 2;=vallist
-	mov %arg0, %%tmp
-	gosub *cdr       ;vallist = CDR(vallist)
-	mov %arg0, %ret
-	gosub *push      ;S(vallist, new env, vallist, namelist)
-	mov %tmp, %sp - 4;=namelist
-	mov %arg0, %%tmp
-	gosub *cdr       ;namelist = CDR(namelist)
-	mov %arg1, %ret
-	mov %tmp, %sp - 1;=namelist
-	mov %arg2, %%tmp
-	mov %tmp, %sp - 2;=new env
-	mov %arg0, %%tmp
-	sub %sp, 4       ;<S()
-	goto *letstar_bind
+  if %arg1 == %nil goto *letstar_bind_l1
+  mov %tmp1, %arg0
+  mov %arg0, %arg1
+  gosub *push      ;S(namelist)
+  mov %arg0, %arg2
+  gosub *push      ;S(vallist, namelist)
+  mov %arg0, %tmp1
+  gosub *push      ;S(env, vallist, namlist)
+  gosub *create_new_env
+  mov %arg0, %ret
+  gosub *pop       ;env<S(vallist, namelist)
+  mov %arg1, %ret
+  gosub *push      ;S(new env, vallist, namelist)
+  gosub *nconc
+  mov %tmp, %sp - 2;=vallist
+  mov %arg0, %%tmp
+  gosub *car       ;CAR(vallist) => val
+  mov %arg0, %ret
+  mov %tmp, %sp - 1;=new env
+  mov %arg1, %%tmp
+  gosub *eval      ;eval(val, env)
+  mov %arg0, %ret
+  gosub *push      ;S(new object, new env, vallist, namelist)
+  mov %tmp, %sp - 4;=namelist
+  mov %arg0, %%tmp
+  gosub *car       ;CAR(namelist) => name
+  mov %arg1, %ret
+  gosub *pop       ;new object<S(new env, vallist, namelist)
+  mov %arg2, %ret
+  mov %tmp, %sp - 1;=new env
+  mov %arg0, %%tmp
+  gosub *add_bind_to_env
+  mov %tmp, %sp - 2;=vallist
+  mov %arg0, %%tmp
+  gosub *cdr       ;vallist = CDR(vallist)
+  mov %arg0, %ret
+  gosub *push      ;S(vallist, new env, vallist, namelist)
+  mov %tmp, %sp - 4;=namelist
+  mov %arg0, %%tmp
+  gosub *cdr       ;namelist = CDR(namelist)
+  mov %arg1, %ret
+  mov %tmp, %sp - 1;=namelist
+  mov %arg2, %%tmp
+  mov %tmp, %sp - 2;=new env
+  mov %arg0, %%tmp
+  sub %sp, 4       ;<S()
+  goto *letstar_bind
 *letstar_bind_l1  ;(arg0 = env)
-	mov %ret, %arg0
-	return
+  mov %ret, %arg0
+  return
 
 
 
@@ -2987,57 +2987,57 @@ mov $sarg0, $sarg0
 ;;;*add_bind_to_env(env, sym, val)
 ;;;;;;;;;;
 *add_bind_to_env
-	gosub *push       ;S(env)
-	mov %arg0, %arg1
-	gosub *push       ;S(sym, env)
-	mov %arg0, %arg2
-	gosub *push       ;S(val. sym, env)
-	gosub *create_cons
-	mov %tmp, %arg0   ;arg0 = new cons
-	gosub *pop        ;val<S(sym, env)
-	mov %arg1, %ret
-	gosub *push       ;S(new cons, sym, env)
-	gosub *set_cdr    ;new cons = (... . val)
-	gosub *pop        ;new cons<S(sym, env)
-	mov %arg0, %ret
-	gosub *pop        ;sym<S(env)
-	mov %arg1, %ret
-	gosub *push       ;S(new cons, env)
-	gosub *set_car    ;new cons = (name . val)
-	gosub *pop        ;new cons<S(env)
-	mov %arg0, %ret
-	gosub *pop        ;env<S()
-	mov %arg1, %ret
-	gosub *push       ;S(new cons)
-	mov %arg0, %arg1
-	gosub *push        ;S(env, new cons)
-	gosub *cdr
-	mov %arg0, %ret   ;arg0 = CDR(env)
-	gosub *push       ;S(CDR(env), env, new cons)
-	gosub *create_cons
-	mov %arg0, %ret   ;arg0 = new cons2
-	gosub *pop        ;CDR(env)<S(env, new cons)
-	mov %arg1, %ret
-	gosub *push       ;S(new cons2, env, new cons)
-	gosub *set_cdr    ;new cons2 = (... . CDR(env))
-	gosub *pop        ;new cons2<S(env, new cons)
-	mov %tmp, %ret
-	gosub *pop        ;env<S(new cons)
-	mov %arg0, %ret
-	gosub *pop        ;new cons<S()
-	mov %arg1, %ret
-	gosub *push       ;S(env)
-	mov %arg0, %tmp
-	gosub *push       ;S(new cons2, env)
-	gosub *set_car    ;new cons2 = (new cons . CDR(env))
-	gosub *pop        ;new cons2<S(env)
-	mov %arg1, %ret
-	gosub *pop        ;env<S()
-	mov %arg0, %ret
-	gosub *push       ;S(env)
-	gosub *set_cdr    ;env = (... new cons ...)
-	gosub *pop        ;env<S()
-	return
+  gosub *push       ;S(env)
+  mov %arg0, %arg1
+  gosub *push       ;S(sym, env)
+  mov %arg0, %arg2
+  gosub *push       ;S(val. sym, env)
+  gosub *create_cons
+  mov %tmp, %arg0   ;arg0 = new cons
+  gosub *pop        ;val<S(sym, env)
+  mov %arg1, %ret
+  gosub *push       ;S(new cons, sym, env)
+  gosub *set_cdr    ;new cons = (... . val)
+  gosub *pop        ;new cons<S(sym, env)
+  mov %arg0, %ret
+  gosub *pop        ;sym<S(env)
+  mov %arg1, %ret
+  gosub *push       ;S(new cons, env)
+  gosub *set_car    ;new cons = (name . val)
+  gosub *pop        ;new cons<S(env)
+  mov %arg0, %ret
+  gosub *pop        ;env<S()
+  mov %arg1, %ret
+  gosub *push       ;S(new cons)
+  mov %arg0, %arg1
+  gosub *push        ;S(env, new cons)
+  gosub *cdr
+  mov %arg0, %ret   ;arg0 = CDR(env)
+  gosub *push       ;S(CDR(env), env, new cons)
+  gosub *create_cons
+  mov %arg0, %ret   ;arg0 = new cons2
+  gosub *pop        ;CDR(env)<S(env, new cons)
+  mov %arg1, %ret
+  gosub *push       ;S(new cons2, env, new cons)
+  gosub *set_cdr    ;new cons2 = (... . CDR(env))
+  gosub *pop        ;new cons2<S(env, new cons)
+  mov %tmp, %ret
+  gosub *pop        ;env<S(new cons)
+  mov %arg0, %ret
+  gosub *pop        ;new cons<S()
+  mov %arg1, %ret
+  gosub *push       ;S(env)
+  mov %arg0, %tmp
+  gosub *push       ;S(new cons2, env)
+  gosub *set_car    ;new cons2 = (new cons . CDR(env))
+  gosub *pop        ;new cons2<S(env)
+  mov %arg1, %ret
+  gosub *pop        ;env<S()
+  mov %arg0, %ret
+  gosub *push       ;S(env)
+  gosub *set_cdr    ;env = (... new cons ...)
+  gosub *pop        ;env<S()
+  return
 
 
 
@@ -3048,23 +3048,23 @@ mov $sarg0, $sarg0
 ;;arg1  = n
 ;;;;;;;;;;
 *add_subr_to_env
-	gosub *push           ;S(env)
-	mov %arg0, %arg1
-	gosub *push           ;S(n, env)
-	gosub *create_symbol
-	mov %arg0, %ret       ;arg0 = new symbol
-	gosub *pop            ;n<S(env)
-	mov %tmp, %ret
-	gosub *push           ;S(new symbol, env)
-	mov %arg0, %tmp
-	gosub *create_subr
-	mov %arg2, %ret       ;arg2 = new subr
-	gosub *pop            ;new symbol<S(env)
-	mov %arg1, %ret       ;arg1 = new symbol
-	gosub *pop            ;env<S()
-	mov %arg0, %ret       ;arg0 = env
-	goto *add_bind_to_env ;tail call
-	return
+  gosub *push           ;S(env)
+  mov %arg0, %arg1
+  gosub *push           ;S(n, env)
+  gosub *create_symbol
+  mov %arg0, %ret       ;arg0 = new symbol
+  gosub *pop            ;n<S(env)
+  mov %tmp, %ret
+  gosub *push           ;S(new symbol, env)
+  mov %arg0, %tmp
+  gosub *create_subr
+  mov %arg2, %ret       ;arg2 = new subr
+  gosub *pop            ;new symbol<S(env)
+  mov %arg1, %ret       ;arg1 = new symbol
+  gosub *pop            ;env<S()
+  mov %arg0, %ret       ;arg0 = env
+  goto *add_bind_to_env ;tail call
+  return
 
 
 ;;;;;;;;;;
@@ -3074,23 +3074,23 @@ mov $sarg0, $sarg0
 ;;arg1  = n
 ;;;;;;;;;;
 *add_fsubr_to_env
-	gosub *push           ;S(env)
-	mov %arg0, %arg1
-	gosub *push           ;S(n, env)
-	gosub *create_symbol
-	mov %arg0, %ret       ;arg0 = new symbol
-	gosub *pop            ;n<S(env)
-	mov %tmp, %ret
-	gosub *push           ;S(new symbol, env)
-	mov %arg0, %tmp
-	gosub *create_fsubr
-	mov %arg2, %ret       ;arg2 = new fsubr
-	gosub *pop            ;new symbol<S(env)
-	mov %arg1, %ret       ;arg1 = new symbol
-	gosub *pop            ;env<S()
-	mov %arg0, %ret       ;arg0 = env
-	goto *add_bind_to_env ;tail call
-	return
+  gosub *push           ;S(env)
+  mov %arg0, %arg1
+  gosub *push           ;S(n, env)
+  gosub *create_symbol
+  mov %arg0, %ret       ;arg0 = new symbol
+  gosub *pop            ;n<S(env)
+  mov %tmp, %ret
+  gosub *push           ;S(new symbol, env)
+  mov %arg0, %tmp
+  gosub *create_fsubr
+  mov %arg2, %ret       ;arg2 = new fsubr
+  gosub *pop            ;new symbol<S(env)
+  mov %arg1, %ret       ;arg1 = new symbol
+  gosub *pop            ;env<S()
+  mov %arg0, %ret       ;arg0 = env
+  goto *add_bind_to_env ;tail call
+  return
 
 
 
@@ -3098,189 +3098,189 @@ mov $sarg0, $sarg0
 ;;;*set_global_env()
 ;;;;;;;;;;
 *set_global_env
-	mov $sarg0, "((dummy . dummy) (＃f . ＃f) (＃t . ＃t) (nil . nil) (else . ＃t))"
-	gosub *input_to_lobject
-	mov %global_env, %ret
-	mov %arg0, %global_env
-	;;SUBR
-	mov %arg1, lf_car
-	mov $sarg0, "car"
-	gosub *add_subr_to_env  ;car
-	mov %arg0, %global_env
-	mov %arg1, lf_cdr
-	mov $sarg0, "cdr"
-	gosub *add_subr_to_env  ;cdr
-	mov %arg0, %global_env
-	mov %arg1, lf_cons
-	mov $sarg0, "cons"
-	gosub *add_subr_to_env  ;cons
-	mov %arg0, %global_env
-	mov %arg1, lf_eq
-	mov $sarg0, "eq?"
-	gosub *add_subr_to_env  ;eq?
-	mov %arg0, %global_env
-	mov %arg1, lf_atom
-	mov $sarg0, "atom?"
-	gosub *add_subr_to_env  ;atom?
-	mov %arg0, %global_env
-	mov %arg1, lf_add
-	mov $sarg0, "+"
-	gosub *add_subr_to_env  ;+
-	mov %arg0, %global_env
-	mov %arg1, lf_sub
-	mov $sarg0, "-"
-	gosub *add_subr_to_env  ;-
-	mov %arg0, %global_env
-	mov %arg1, lf_mul
-	mov $sarg0, "*"
-	gosub *add_subr_to_env  ;*
-	mov %arg0, %global_env
-	mov %arg1, lf_div
-	mov $sarg0, "／"
-	gosub *add_subr_to_env  ;/
-	mov %arg0, %global_env
-	mov %arg1, lf_mod
-	mov $sarg0, "mod"
-	gosub *add_subr_to_env  ;mod
-	mov %arg0, %global_env
-	mov %arg1, lf_gt
-	mov $sarg0, "＞"
-	gosub *add_subr_to_env  ;gt
-	mov %arg0, %global_env
-	mov %arg1, lf_ge
-	mov $sarg0, "＞＝"
-	gosub *add_subr_to_env  ;ge
-	mov %arg0, %global_env
-	mov %arg1, lf_ls
-	mov $sarg0, "＜"
-	gosub *add_subr_to_env  ;ls
-	mov %arg0, %global_env
-	mov %arg1, lf_le
-	mov $sarg0, "＜＝"
-	gosub *add_subr_to_env  ;le
-	mov %arg0, %global_env
-	mov %arg1, lf_eq
-	mov $sarg0, "＝"
-	gosub *add_subr_to_env  ;=(eq?にとばすだけ)
-	mov %arg0, %global_env
-	mov %arg1, lf_set_car
-	mov $sarg0, "set-car！"
-	gosub *add_subr_to_env  ;set-car!
-	mov %arg0, %global_env
-	mov %arg1, lf_set_cdr
-	mov $sarg0, "set-cdr！"
-	gosub *add_subr_to_env  ;set-cdr!
-	mov %arg0, %global_env
-	mov %arg1, lf_eval
-	mov $sarg0, "eval"
-	gosub *add_subr_to_env  ;eval
-	mov %arg0, %global_env
-	mov %arg1, lf_apply_primitive
-	mov $sarg0, "apply-primitive"
-	gosub *add_subr_to_env  ;apply-primitive
-	mov %arg0, %global_env
-	mov %arg1, lf_booleanp
-	mov $sarg0, "boolean?"
-	gosub *add_subr_to_env  ;boolean?
-	mov %arg0, %global_env
-	mov %arg1, lf_pairp
-	mov $sarg0, "pair?"
-	gosub *add_subr_to_env  ;pair?
-	mov %arg0, %global_env
-	mov %arg1, lf_symbolp
-	mov $sarg0, "symbol?"
-	gosub *add_subr_to_env  ;symbol?
-	mov %arg0, %global_env
-	mov %arg1, lf_numberp
-	mov $sarg0, "number?"
-	gosub *add_subr_to_env  ;number?
-	mov %arg0, %global_env
-	mov %arg1, lf_procedurep
-	mov $sarg0, "procedure?"
-	gosub *add_subr_to_env  ;procedure?
-	mov %arg0, %global_env
-	mov %arg1, lf_null
-	mov $sarg0, "null?"
-	gosub *add_subr_to_env  ;null
-	mov %arg0, %global_env
-	mov %arg1, lf_read
-	mov $sarg0, "read"
-	gosub *add_subr_to_env  ;read
-	mov %arg0, %global_env
-	mov %arg1, lf_write
-	mov $sarg0, "write"
-	gosub *add_subr_to_env  ;write
-	;;FSUBR
-	mov %arg0, %global_env
-	mov %arg1, lf_quote
-	mov $sarg0, "quote"
-	gosub *add_fsubr_to_env  ;quote
-	mov %arg0, %global_env
-	mov %arg1, lf_begin
-	mov $sarg0, "begin"
-	gosub *add_fsubr_to_env  ;begin
-	mov %arg0, %global_env
-	mov %arg1, lf_cond
-	mov $sarg0, "cond"
-	gosub *add_fsubr_to_env  ;cond
-	mov %arg0, %global_env
-	mov %arg1, lf_lambda
-	mov $sarg0, "lambda"
-	gosub *add_fsubr_to_env  ;lambda
-	mov %arg0, %global_env
-	mov %arg1, lf_nlambda
-	mov $sarg0, "nlambda"
-	gosub *add_fsubr_to_env  ;nlambda
-	mov %arg0, %global_env
-	mov %arg1, lf_define
-	mov $sarg0, "define"
-	gosub *add_fsubr_to_env  ;define
-	mov %arg0, %global_env
-	mov %arg1, lf_let
-	mov $sarg0, "let"
-	gosub *add_fsubr_to_env  ;let
-	mov %arg0, %global_env
-	mov %arg1, lf_if
-	mov $sarg0, "if"
-	gosub *add_fsubr_to_env  ;if
-	mov %arg0, %global_env
-	mov %arg1, lf_and
-	mov $sarg0, "and"
-	gosub *add_fsubr_to_env  ;and
-	mov %arg0, %global_env
-	mov %arg1, lf_or
-	mov $sarg0, "or"
-	gosub *add_fsubr_to_env  ;or
-	mov %arg0, %global_env
-	mov %arg1, lf_set
-	mov $sarg0, "set！"
-	gosub *add_fsubr_to_env  ;set!
-	mov %arg0, %global_env
-	mov %arg1, lf_letrec
-	mov $sarg0, "letrec"
-	gosub *add_fsubr_to_env  ;letrec
-	mov %arg0, %global_env
-	mov %arg1, lf_letstar
-	mov $sarg0, "let*"
-	gosub *add_fsubr_to_env  ;letstar
-	mov $sarg0, "(define equal? (lambda (x y) (or (eq? x y) (and (pair? x) (pair? y) (equal? (car x) (car y)) (equal? (cdr x) (cdr y))))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	return
+  mov $sarg0, "((dummy . dummy) (＃f . ＃f) (＃t . ＃t) (nil . nil) (else . ＃t))"
+  gosub *input_to_lobject
+  mov %global_env, %ret
+  mov %arg0, %global_env
+  ;;SUBR
+  mov %arg1, lf_car
+  mov $sarg0, "car"
+  gosub *add_subr_to_env  ;car
+  mov %arg0, %global_env
+  mov %arg1, lf_cdr
+  mov $sarg0, "cdr"
+  gosub *add_subr_to_env  ;cdr
+  mov %arg0, %global_env
+  mov %arg1, lf_cons
+  mov $sarg0, "cons"
+  gosub *add_subr_to_env  ;cons
+  mov %arg0, %global_env
+  mov %arg1, lf_eq
+  mov $sarg0, "eq?"
+  gosub *add_subr_to_env  ;eq?
+  mov %arg0, %global_env
+  mov %arg1, lf_atom
+  mov $sarg0, "atom?"
+  gosub *add_subr_to_env  ;atom?
+  mov %arg0, %global_env
+  mov %arg1, lf_add
+  mov $sarg0, "+"
+  gosub *add_subr_to_env  ;+
+  mov %arg0, %global_env
+  mov %arg1, lf_sub
+  mov $sarg0, "-"
+  gosub *add_subr_to_env  ;-
+  mov %arg0, %global_env
+  mov %arg1, lf_mul
+  mov $sarg0, "*"
+  gosub *add_subr_to_env  ;*
+  mov %arg0, %global_env
+  mov %arg1, lf_div
+  mov $sarg0, "／"
+  gosub *add_subr_to_env  ;/
+  mov %arg0, %global_env
+  mov %arg1, lf_mod
+  mov $sarg0, "mod"
+  gosub *add_subr_to_env  ;mod
+  mov %arg0, %global_env
+  mov %arg1, lf_gt
+  mov $sarg0, "＞"
+  gosub *add_subr_to_env  ;gt
+  mov %arg0, %global_env
+  mov %arg1, lf_ge
+  mov $sarg0, "＞＝"
+  gosub *add_subr_to_env  ;ge
+  mov %arg0, %global_env
+  mov %arg1, lf_ls
+  mov $sarg0, "＜"
+  gosub *add_subr_to_env  ;ls
+  mov %arg0, %global_env
+  mov %arg1, lf_le
+  mov $sarg0, "＜＝"
+  gosub *add_subr_to_env  ;le
+  mov %arg0, %global_env
+  mov %arg1, lf_eq
+  mov $sarg0, "＝"
+  gosub *add_subr_to_env  ;=(eq?にとばすだけ)
+  mov %arg0, %global_env
+  mov %arg1, lf_set_car
+  mov $sarg0, "set-car！"
+  gosub *add_subr_to_env  ;set-car!
+  mov %arg0, %global_env
+  mov %arg1, lf_set_cdr
+  mov $sarg0, "set-cdr！"
+  gosub *add_subr_to_env  ;set-cdr!
+  mov %arg0, %global_env
+  mov %arg1, lf_eval
+  mov $sarg0, "eval"
+  gosub *add_subr_to_env  ;eval
+  mov %arg0, %global_env
+  mov %arg1, lf_apply_primitive
+  mov $sarg0, "apply-primitive"
+  gosub *add_subr_to_env  ;apply-primitive
+  mov %arg0, %global_env
+  mov %arg1, lf_booleanp
+  mov $sarg0, "boolean?"
+  gosub *add_subr_to_env  ;boolean?
+  mov %arg0, %global_env
+  mov %arg1, lf_pairp
+  mov $sarg0, "pair?"
+  gosub *add_subr_to_env  ;pair?
+  mov %arg0, %global_env
+  mov %arg1, lf_symbolp
+  mov $sarg0, "symbol?"
+  gosub *add_subr_to_env  ;symbol?
+  mov %arg0, %global_env
+  mov %arg1, lf_numberp
+  mov $sarg0, "number?"
+  gosub *add_subr_to_env  ;number?
+  mov %arg0, %global_env
+  mov %arg1, lf_procedurep
+  mov $sarg0, "procedure?"
+  gosub *add_subr_to_env  ;procedure?
+  mov %arg0, %global_env
+  mov %arg1, lf_null
+  mov $sarg0, "null?"
+  gosub *add_subr_to_env  ;null
+  mov %arg0, %global_env
+  mov %arg1, lf_read
+  mov $sarg0, "read"
+  gosub *add_subr_to_env  ;read
+  mov %arg0, %global_env
+  mov %arg1, lf_write
+  mov $sarg0, "write"
+  gosub *add_subr_to_env  ;write
+  ;;FSUBR
+  mov %arg0, %global_env
+  mov %arg1, lf_quote
+  mov $sarg0, "quote"
+  gosub *add_fsubr_to_env  ;quote
+  mov %arg0, %global_env
+  mov %arg1, lf_begin
+  mov $sarg0, "begin"
+  gosub *add_fsubr_to_env  ;begin
+  mov %arg0, %global_env
+  mov %arg1, lf_cond
+  mov $sarg0, "cond"
+  gosub *add_fsubr_to_env  ;cond
+  mov %arg0, %global_env
+  mov %arg1, lf_lambda
+  mov $sarg0, "lambda"
+  gosub *add_fsubr_to_env  ;lambda
+  mov %arg0, %global_env
+  mov %arg1, lf_nlambda
+  mov $sarg0, "nlambda"
+  gosub *add_fsubr_to_env  ;nlambda
+  mov %arg0, %global_env
+  mov %arg1, lf_define
+  mov $sarg0, "define"
+  gosub *add_fsubr_to_env  ;define
+  mov %arg0, %global_env
+  mov %arg1, lf_let
+  mov $sarg0, "let"
+  gosub *add_fsubr_to_env  ;let
+  mov %arg0, %global_env
+  mov %arg1, lf_if
+  mov $sarg0, "if"
+  gosub *add_fsubr_to_env  ;if
+  mov %arg0, %global_env
+  mov %arg1, lf_and
+  mov $sarg0, "and"
+  gosub *add_fsubr_to_env  ;and
+  mov %arg0, %global_env
+  mov %arg1, lf_or
+  mov $sarg0, "or"
+  gosub *add_fsubr_to_env  ;or
+  mov %arg0, %global_env
+  mov %arg1, lf_set
+  mov $sarg0, "set！"
+  gosub *add_fsubr_to_env  ;set!
+  mov %arg0, %global_env
+  mov %arg1, lf_letrec
+  mov $sarg0, "letrec"
+  gosub *add_fsubr_to_env  ;letrec
+  mov %arg0, %global_env
+  mov %arg1, lf_letstar
+  mov $sarg0, "let*"
+  gosub *add_fsubr_to_env  ;letstar
+  mov $sarg0, "(define equal? (lambda (x y) (or (eq? x y) (and (pair? x) (pair? y) (equal? (car x) (car y)) (equal? (cdr x) (cdr y))))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  return
 
 
 
 
 ;;;;;;;;;;;;;;;;;;;;
 *start
-	goto *main_game_start
-	end
+  goto *main_game_start
+  end
 
 
 *read_from_console
-	textclear
-	mov $sret, ""
-	textfield $sret, 30, 120, 610, 140, 10, 20, 0
-	return
+  textclear
+  mov $sret, ""
+  textfield $sret, 30, 120, 610, 140, 10, 20, 0
+  return
