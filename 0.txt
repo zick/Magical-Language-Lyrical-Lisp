@@ -11,10 +11,11 @@
 ;;;
 ;;; Lisp objects:
 ;;;   [MSB]                      [LSB]
-;;;   DDDDDDDDDDDDDDDDDDDDDDDDDDTTTTTG
-;;;     D: Data    (26 bits)
+;;;   0DDDDDDDDDDDDDDDDDDDDDDDDDTTTTTG
+;;;     D: Data    (25 bits)
 ;;;     T: Tag     (5 bits)
 ;;;     G: GC Mark (1 bit)
+;;;     (MSB must be 0 because we use arithmetic ops instead of binary ops.)
 ;;;   EXPR and FEXPR are represented with lists such as (env arg . body).
 ;;;
 ;;; ATTENTION:
@@ -32,7 +33,6 @@
 *define
 nsa
   textgosub *text_cw
-  rmenu "文字を消す", windowerase, "回想", lookback, "セーブする", save, "ロードする", load
 
   ; Effect
   numalias E_FAST, 10
@@ -158,6 +158,7 @@ nsa
   numalias TAG_EXPR, 5
   numalias TAG_FEXPR, 6
   numalias TAG_FREE, 7
+  numalias MAX_NUMBER, 33554431
 
   ; Aliases for numerical variables
   ;; General variables
@@ -344,7 +345,7 @@ nsa
 
   defaultspeed 50,15,5
   caption "Magical Language Lyrical Lisp"
-  versionstr "Magical Language Lyrical Lisp 20100919", "Open Source"
+  versionstr "Magical Language Lyrical Lisp 20100920", "Open Source"
   resetmenu
   insertmenu "終了", END
   insertmenu "バージョン情報", VERSION
@@ -739,8 +740,13 @@ if %gc_silent == 1 goto *gc_sl2
   for %i=%i+1 to MEM_END
     mov %arg0, %i
     gosub *get_gc
+    if %ret == 1 goto *gc_sweep_l1
     ; Append the new unused cell to the free-list if GC-bit is 0.
-    if %ret == 0 mov %arg0, %gc_tmp : mov %arg1, %i : gosub *reuse_cell : mov %gc_tmp, %i
+    mov %arg0, %gc_tmp
+    mov %arg1, %i
+    gosub *reuse_cell
+    mov %gc_tmp, %i
+  *gc_sweep_l1
     mov %arg0, %i
     mov %arg1, 0
     gosub *set_gc  ; Unmark
@@ -767,6 +773,8 @@ if %gc_silent == 1 goto *gc_sl2
 ;;;*create_num(n)
 ;;;;;;;;;;
 *create_num
+  if %arg0 > MAX_NUMBER mov %arg0, 0
+  if %arg0 < 0 mov %arg0, 0
   gosub *push       ; S(n)
   gosub *next_cell
   mov %arg0, %ret   ; new cell
@@ -909,7 +917,15 @@ if %gc_silent == 1 goto *gc_sl2
   len %tmp, $sarg0
   for %i=0 to %tmp-1
     mid $stmp, $sarg0, %i, 1
-    if $stmp != " " && $stmp != "　" && $stmp != $sTAB && $stmp != $sCR && $stmp != $sLF mov %tmp1, 1 : break;
+    if $stmp != " " && $stmp != "　" && $stmp != $sTAB goto *next_token_l1
+    goto *next_token_l3
+  *next_token_l1
+    if $stmp != $sCR && $stmp != $sLF goto *next_token_l2
+    goto *next_token_l3
+  *next_token_l2
+    mov %tmp1, 1
+    break
+  *next_token_l3
     mov %ret, %ret + 1
   next
   if $stmp == "("  mov $sret, "（" : mov %ret, %ret+1 : return
@@ -971,7 +987,6 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *push
   len %arg0, $sarg0
   mov %ret, 0
-  ;;if %arg0 > 8 gosub *pop : mov %arg0, %ret : mov $sarg0, "0" : mov %ret, 0 : return
   for %i=0 to %arg0-1
     mid $stmp, $sarg0, %i, 1
     if $stmp == "0" goto *is_number_l1
@@ -990,10 +1005,22 @@ if %gc_silent == 1 goto *gc_sl2
   if %ret == 0 goto *is_number_l2
   return  ; Not number
 *is_number_l2  ; All characters are digits
+  if %arg0 <= 8 goto *is_number_l3
   ; Greater than the 8-digit number
-  if %arg0 > 8 gosub *pop : mov %arg0, %ret : mov $sarg0, "0" : mov %ret, 0 : return
+  gosub *pop
+  mov %arg0, %ret
+  mov $sarg0, "0"
+  mov %ret, 0
+  return
+*is_number_l3
   atoi %arg0, $sarg0
-  if %arg0 > 67108863 gosub *pop : mov %arg0, %ret : mov $sarg0, "0" : mov %ret, 0 : return
+  if %arg0 <= MAX_NUMBER goto *is_number_l4
+  gosub *pop
+  mov %arg0, %ret
+  mov $sarg0, "0"
+  mov %ret, 0
+  return
+*is_number_l4
   gosub *pop
   mov %arg0, %ret
   mov %ret, 0
@@ -1065,7 +1092,13 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *spush      ;str
   mov $sarg0, $sret
   gosub *is_number
-  if %ret == 0 atoi %arg0, $sarg0 : gosub *create_num : gosub *spop : mov $sarg0, $sret : return
+  if %ret != 0 goto *input_to_lobject_l1
+  atoi %arg0, $sarg0
+  gosub *create_num
+  gosub *spop
+  mov $sarg0, $sret
+  return
+*input_to_lobject_l1
   gosub *create_symbol
   gosub *spop       ;str
   mov $sarg0, $sret
@@ -1167,9 +1200,17 @@ if %gc_silent == 1 goto *gc_sl2
   mov %arg0, %ret
   gosub *get_tag
   if %arg0 == %nil goto *cons_to_string_l2
-  if %ret != TAG_CONS mov $sarg0, $stmp3 : gosub *spush : gosub *lobject_to_string : mov $stmp2, $sret : gosub *spop : mov $stmp3, $sret : mov $stmp3, $stmp3 + "　．" + $stmp2 : goto *cons_to_string_l2
-  mov $stmp3, $stmp3 + "　"  ; ZENKAKU is required (the number of characters may be an even number?)
-  ;;mov %arg0, %arg0 %arg0にはcdrが入っている
+  if %ret == TAG_CONS goto *cons_to_string_l11
+  mov $sarg0, $stmp3
+  gosub *spush
+  gosub *lobject_to_string
+  mov $stmp2, $sret
+  gosub *spop
+  mov $stmp3, $sret
+  mov $stmp3, $stmp3 + "　．" + $stmp2
+  goto *cons_to_string_l2
+*cons_to_string_l11
+  mov $stmp3, $stmp3 + "　"  ; ZENKAKU space
   goto *cons_to_string_l1
 *cons_to_string_l2
   mov $stmp3, $stmp3 + "）"
@@ -1184,15 +1225,27 @@ if %gc_silent == 1 goto *gc_sl2
 ;;;;;;;;;;
 *lobject_to_string
   gosub *get_tag
-  if %ret == TAG_SUBR mov $sarg0, "＃＜ｐｒｏｃｅｄｕｒｅ＞" : gosub *print_string : return
-  if %ret == TAG_FSUBR mov $sarg0, "＃＜ｐｒｏｃｅｄｕｒｅ＞" : gosub *print_string : return
-  if %ret == TAG_EXPR mov $sarg0, "＃＜ｐｒｏｃｅｄｕｒｅ＞" : gosub *print_string : return
-  if %ret == TAG_FEXPR mov $sarg0, "＃＜ｐｒｏｃｅｄｕｒｅ＞" : gosub *print_string : return
-  if %ret == TAG_NUM gosub *get_data : itoa $sarg0, %ret : gosub *print_string : return
-  if %ret == TAG_SYMBOL gosub *get_data : mov $sarg0, $%ret : gosub *print_string : return
+  if %ret == TAG_SUBR goto *lobject_to_string_l1
+  if %ret == TAG_FSUBR goto *lobject_to_string_l1
+  if %ret == TAG_EXPR goto *lobject_to_string_l1
+  if %ret == TAG_FEXPR goto *lobject_to_string_l1
+  if %ret == TAG_NUM  goto *lobject_to_string_l2
+  if %ret == TAG_SYMBOL goto *lobject_to_string_l3
   if %ret == TAG_CONS gosub *cons_to_string : return
   return
-
+*lobject_to_string_l1
+  mov $sarg0, "＃＜ｐｒｏｃｅｄｕｒｅ＞"
+  goto *lobject_to_string_l4
+*lobject_to_string_l2
+  gosub *get_data
+  itoa $sarg0, %ret
+  goto *lobject_to_string_l4
+*lobject_to_string_l3
+  gosub *get_data
+  mov $sarg0, $%ret
+*lobject_to_string_l4
+  gosub *print_string
+  return
 
 ;;;;;;;;;;
 ;;;*print_string(str)
@@ -1756,7 +1809,11 @@ if %gc_silent == 1 goto *gc_sl2
   mov %arg1, %ret   ; %arg1 = TAG(CAR(arg))
   gosub *get_data
   mov %arg0, %ret   ; %arg0 = DATA(CAR(arg))
-  if %arg3 == TAG_NUM && %arg1 == TAG_NUM && %arg2 == %arg0 mov %ret, %sharp_t : return
+  if %arg3 == TAG_NUM && %arg1 == TAG_NUM goto *subr_func_eq_l1
+  goto *subr_func_eq_l2
+*subr_func_eq_l1
+  if %arg2 == %arg0 mov %ret, %sharp_t : return
+*subr_func_eq_l2
   mov %ret, %sharp_f
   return
 
@@ -2096,7 +2153,11 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *car
   mov %arg0, %ret
   gosub *get_tag
-  if %ret != TAG_EXPR && %ret != TAG_FEXPR && %ret != TAG_SUBR && %ret != TAG_FEXPR mov %ret, %sharp_f : return
+  if %ret != TAG_EXPR && %ret != TAG_FSUBR goto *subr_func_procedurep_l1
+  goto *subr_func_procedurep_l2
+*subr_func_procedurep_l1
+  if %ret != TAG_SUBR && %ret != TAG_FEXPR mov %ret, %sharp_f : return
+*subr_func_procedurep_l2
   mov %ret, %sharp_t
   return
 
@@ -3107,7 +3168,8 @@ if %gc_silent == 1 goto *gc_sl2
 ;;;*set_global_env()
 ;;;;;;;;;;
 *set_global_env
-  mov $sarg0, "((dummy . dummy) (＃f . ＃f) (＃t . ＃t) (nil . nil) (else . ＃t))"
+  mov $sarg0, "((dummy . dummy) (＃f . ＃f) (＃t . ＃t)"
+  mov $sarg0, $sarg0 + "(nil . nil) (else . ＃t))"
   gosub *input_to_lobject
   mov %global_env, %ret
   mov %arg0, %global_env
@@ -3272,7 +3334,9 @@ if %gc_silent == 1 goto *gc_sl2
   mov %arg1, lf_letstar
   mov $sarg0, "let*"
   gosub *add_fsubr_to_env  ; letstar
-  mov $sarg0, "(define equal? (lambda (x y) (or (eq? x y) (and (pair? x) (pair? y) (equal? (car x) (car y)) (equal? (cdr x) (cdr y))))))"
+  mov $sarg0, "(define equal? (lambda (x y) (or (eq? x y)(and (pair? x)"
+  mov $sarg0, $sarg0 + "(pair? y) (equal? (car x) (car y))"
+  mov $sarg0, $sarg0 + "(equal? (cdr x) (cdr y))))))""
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
