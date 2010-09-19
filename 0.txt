@@ -344,7 +344,7 @@ nsa
 
   defaultspeed 50,15,5
   caption "Magical Language Lyrical Lisp"
-  versionstr "Magical Language Lyrical Lisp", "Open Source"
+  versionstr "Magical Language Lyrical Lisp 20100919", "Open Source"
   resetmenu
   insertmenu "終了", END
   insertmenu "バージョン情報", VERSION
@@ -739,11 +739,11 @@ if %gc_silent == 1 goto *gc_sl2
   for %i=%i+1 to MEM_END
     mov %arg0, %i
     gosub *get_gc
-                ; Unmark and append the new unused cell to the free-list.
+    ; Append the new unused cell to the free-list if GC-bit is 0.
     if %ret == 0 mov %arg0, %gc_tmp : mov %arg1, %i : gosub *reuse_cell : mov %gc_tmp, %i
     mov %arg0, %i
     mov %arg1, 0
-    gosub *set_gc
+    gosub *set_gc  ; Unmark
   next
   mov %arg0, %gc_tmp
   mov %arg1, MEM_OVER  ; The end of the free-list.
