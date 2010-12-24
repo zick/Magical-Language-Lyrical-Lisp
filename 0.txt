@@ -158,7 +158,10 @@ nsa
   numalias TAG_EXPR, 5
   numalias TAG_FEXPR, 6
   numalias TAG_FREE, 7
-  numalias MAX_NUMBER, 33554431
+  numalias MAX_NUMBER, 16777215          ; 2^24 - 1
+  numalias MIN_NUMBER, -16777216         ; - 2^24
+  numalias UNSIGNED_MAX_PLUS1, 33554432  ; 2^25
+  numalias MIN_INT32, -2147483648        ; - 2^31
 
   ; Aliases for numerical variables
   ;; General variables
@@ -472,6 +475,14 @@ nsa
   div %ret, 64
   return
 
+*get_num_data
+  gosub *get_data
+  if %ret <= MAX_NUMBER return
+  mul %ret, 64
+  add %ret, MIN_INT32
+  div %ret, 64
+  return
+
 
 ;;;;;;;;;;
 ;;;*set_data(*obj, data)
@@ -773,8 +784,9 @@ if %gc_silent == 1 goto *gc_sl2
 ;;;*create_num(n)
 ;;;;;;;;;;
 *create_num
-  if %arg0 > MAX_NUMBER mov %arg0, 0
-  if %arg0 < 0 mov %arg0, 0
+  if %arg0 < MIN_NUMBER mov %arg0, %arg0 + MIN_INT32
+  if %arg0 > MAX_NUMBER mov %arg0, %arg0 mod UNSIGNED_MAX_PLUS1
+  if %arg0 < 0 mov %arg0, %arg0 + UNSIGNED_MAX_PLUS1
   gosub *push       ; S(n)
   gosub *next_cell
   mov %arg0, %ret   ; new cell
@@ -987,7 +999,13 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *push
   len %arg0, $sarg0
   mov %ret, 0
-  for %i=0 to %arg0-1
+  mov %tmp, 0
+  mid $stmp, $sarg0, 0, 1
+  if $stmp != "-" goto *is_number_plus
+  if %arg0 == 1 gosub *pop : mov %ret, 1 : return  ; Not number
+  mov %tmp, 1
+  *is_number_plus
+  for %i=%tmp to %arg0-1
     mid $stmp, $sarg0, %i, 1
     if $stmp == "0" goto *is_number_l1
     if $stmp == "1" goto *is_number_l1
@@ -1023,6 +1041,7 @@ if %gc_silent == 1 goto *gc_sl2
 *is_number_l4
   gosub *pop
   mov %arg0, %ret
+  if %tmp == 1 mov %arg0, %arg0 * -1
   mov %ret, 0
   return
 
@@ -1237,7 +1256,7 @@ if %gc_silent == 1 goto *gc_sl2
   mov $sarg0, "”ƒ‚‚’‚‚ƒ‚…‚„‚•‚’‚…„"
   goto *lobject_to_string_l4
 *lobject_to_string_l2
-  gosub *get_data
+  gosub *get_num_data
   itoa $sarg0, %ret
   goto *lobject_to_string_l4
 *lobject_to_string_l3
@@ -1835,7 +1854,7 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *push     ; S(arg, result)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %tmp, %ret
   gosub *pop      ; arg < S(result)
   mov %tmp1, %ret
@@ -1858,7 +1877,7 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %arg0, %ret
   gosub *pop      ; arg < S()
   mov %tmp, %ret
@@ -1868,13 +1887,11 @@ if %gc_silent == 1 goto *gc_sl2
   mov %arg0, %ret
   gosub *car      ; CADR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %tmp, %ret
   gosub *pop      ; result < S()
   mov %arg0, %ret
   mov %arg0, %arg0 - %tmp
-  if %arg0 >= 0 goto *subr_func_sub_l1
-  mov %arg0, 0
 *subr_func_sub_l1
   goto *create_num  ; tail call
   return
@@ -1888,7 +1905,7 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *push     ; S(arg, result)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %tmp, %ret
   gosub *pop      ; arg < S(result)
   mov %tmp1, %ret
@@ -1911,7 +1928,7 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %arg0, %ret
   gosub *pop      ; arg < S()
   mov %tmp, %ret
@@ -1921,7 +1938,7 @@ if %gc_silent == 1 goto *gc_sl2
   mov %arg0, %ret
   gosub *car      ; CADR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %tmp, %ret
   gosub *pop      ; result < S()
   mov %arg0, %ret
@@ -1934,7 +1951,7 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %arg0, %ret
   gosub *pop      ; arg < S()
   mov %tmp, %ret
@@ -1944,7 +1961,7 @@ if %gc_silent == 1 goto *gc_sl2
   mov %arg0, %ret
   gosub *car      ; CADR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %tmp, %ret
   gosub *pop      ; result < S()
   mov %arg0, %ret
@@ -1957,7 +1974,7 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %arg0, %ret
   gosub *pop      ; arg < S()
   mov %tmp, %ret
@@ -1967,7 +1984,7 @@ if %gc_silent == 1 goto *gc_sl2
   mov %arg0, %ret
   gosub *car      ; CADR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %tmp, %ret  ; y = tmp
   gosub *pop      ; x < S()
   mov %arg0, %ret
@@ -1980,7 +1997,7 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %arg0, %ret
   gosub *pop      ; arg < S()
   mov %tmp, %ret
@@ -1990,7 +2007,7 @@ if %gc_silent == 1 goto *gc_sl2
   mov %arg0, %ret
   gosub *car      ; CADR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %tmp, %ret  ; y = tmp
   gosub *pop      ; x < S()
   mov %arg0, %ret
@@ -2003,7 +2020,7 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %arg0, %ret
   gosub *pop      ; arg < S()
   mov %tmp, %ret
@@ -2013,7 +2030,7 @@ if %gc_silent == 1 goto *gc_sl2
   mov %arg0, %ret
   gosub *car      ; CADR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %tmp, %ret  ; y = tmp
   gosub *pop      ; x < S()
   mov %arg0, %ret
@@ -2026,7 +2043,7 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %arg0, %ret
   gosub *pop      ; arg < S()
   mov %tmp, %ret
@@ -2036,7 +2053,7 @@ if %gc_silent == 1 goto *gc_sl2
   mov %arg0, %ret
   gosub *car      ; CADR(arg)
   mov %arg0, %ret
-  gosub *get_data
+  gosub *get_num_data
   mov %tmp, %ret  ; y = tmp
   gosub *pop      ; x < S()
   mov %arg0, %ret
