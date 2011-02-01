@@ -232,6 +232,7 @@ nsa
   numalias adv_ball_vx, 28
   numalias adv_vol, 29
   numalias adv_rmode, 30
+  numalias adv_num_loss, 31
 
   ; Aliases for string variables
   numalias sarg0, 10

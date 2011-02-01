@@ -96,10 +96,13 @@ if %adv_same_level == 6 csel "Lƒpƒ“ƒ`", *battle_punch, "LƒLƒbƒN", *battle_kick
 
 
 *battle04
+	mov %adv_num_loss, 0
+*battle04_restart
 	mov %adv_rmode, 0
 	mov %adv_hp, 150
 	mov %adv_maxhp, 150
 	mov %adv_ehp, 300
+	mov %adv_ehp, %adv_ehp - %adv_num_loss * 60
 	mov %adv_noroi_off, 1 ;;;
 	vsp SP_R, 0 : vsp SP_L, 0
 	bg black, E_SLOW
@@ -240,10 +243,11 @@ csel "ƒTƒƒEƒF[ƒu", *battle_wave, "ƒTƒƒuƒ‰ƒXƒ^[", *battle_blaster, "ƒTƒƒVƒ…
 
 
 *battle04_gameover
+	inc %adv_num_loss
 	csp SP_C
 	print E_SLOW
 L“‡‚Í”s–k‚µ‚½cc\
-csel "Ä’§í", *battle04, "ƒ^ƒCƒgƒ‹‚É–ß‚é", *battle04_lost
+csel "Ä’§í", *battle04_restart, "ƒ^ƒCƒgƒ‹‚É–ß‚é", *battle04_lost
 
 *battle04_lost
 	mov %adv_rmode, 1
@@ -310,10 +314,13 @@ csel "Ä’§í", *battle04, "ƒ^ƒCƒgƒ‹‚É–ß‚é", *battle04_lost
 	return
 
 *battle09
+	mov %adv_num_loss, 0
+*battle09_restart
 	mov %adv_rmode, 0
 	mov %adv_hp, 200
 	mov %adv_maxhp, 200
 	mov %adv_ehp, 450
+	mov %adv_ehp, %adv_ehp - %adv_num_loss * 90
 	mov %adv_noroi_off, 1 ;;;
 	vsp SP_R, 0 : vsp SP_L, 0
 	bg black, E_SLOW
@@ -451,10 +458,11 @@ csel "ƒTƒƒEƒF[ƒu", *battle_wave, "ƒTƒƒuƒ‰ƒXƒ^[", *battle_blaster, "ƒTƒƒVƒ…
 
 
 *battle09_gameover
+	inc %adv_num_loss
 	csp SP_C
 	print E_SLOW
 L“‡‚Í”s–k‚µ‚½cc\
-csel "Ä’§í", *battle09, "ƒ^ƒCƒgƒ‹‚É–ß‚é", *battle09_lost
+csel "Ä’§í", *battle09_restart, "ƒ^ƒCƒgƒ‹‚É–ß‚é", *battle09_lost
 
 *battle09_lost
 	mov %adv_rmode, 1
