@@ -4,16 +4,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;‚±‚±‚ÍŒã‚ÅÁ‚·‚±‚Æ
 *battle04_test
-	gosub *destroy_title
-	goto *battle04
+  gosub *destroy_title
+  goto *battle04
 
 *battle09_test
-	gosub *destroy_title
-	goto *battle09
+  gosub *destroy_title
+  goto *battle09
 
 *battle12_test
-	gosub *destroy_title
-	goto *battle12
+  gosub *destroy_title
+  goto *battle12
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -23,46 +23,46 @@
 ;;;‹¤’Ê
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 *battle_set_escact
-	rnd %tmp, 7
-	if %tmp == 0 mov $sret, "Œ©“¦‚·"
-	if %tmp == 1 mov $sret, "’Ç‚¢•¥‚¤"
-	if %tmp == 2 mov $sret, "’âíŒğÂ"
-	if %tmp == 3 mov $sret, "Œ©“¦‚µ‚Ä‚à‚ç‚¤"
-	if %tmp == 4 mov $sret, "“¦‘–‚·‚é"
-	if %tmp == 5 mov $sret, "”s‘–‚·‚é"
-	if %tmp == 6 mov $sret, "‘Ş‹p‚·‚é"
-	return
+  rnd %tmp, 7
+  if %tmp == 0 mov $sret, "Œ©“¦‚·"
+  if %tmp == 1 mov $sret, "’Ç‚¢•¥‚¤"
+  if %tmp == 2 mov $sret, "’âíŒğÂ"
+  if %tmp == 3 mov $sret, "Œ©“¦‚µ‚Ä‚à‚ç‚¤"
+  if %tmp == 4 mov $sret, "“¦‘–‚·‚é"
+  if %tmp == 5 mov $sret, "”s‘–‚·‚é"
+  if %tmp == 6 mov $sret, "‘Ş‹p‚·‚é"
+  return
 
 *battle_show_state
-	itoa2 $stmp, %adv_hp
-	itoa2 $stmp2, %adv_maxhp
-	mov $stmp, ":s/20,20,1;#FFFFFF" + $stmp + "^" + $stmp2
-	lsph SP_TMP2, ":l;img/state_box.bmp", 10, 500
-	lsph SP_TMP1, $stmp, 65, 505
-	lsph SP_TMP, ":s/20,20,1;#FFFFFFL“‡", 15, 505
-	vsp SP_TMP, 1
-	vsp SP_TMP1, 1
-	vsp SP_TMP2, 1
-	return
+  itoa2 $stmp, %adv_hp
+  itoa2 $stmp2, %adv_maxhp
+  mov $stmp, ":s/20,20,1;#FFFFFF" + $stmp + "^" + $stmp2
+  lsph SP_TMP2, ":l;img/state_box.bmp", 10, 500
+  lsph SP_TMP1, $stmp, 65, 505
+  lsph SP_TMP, ":s/20,20,1;#FFFFFFL“‡", 15, 505
+  vsp SP_TMP, 1
+  vsp SP_TMP1, 1
+  vsp SP_TMP2, 1
+  return
 
 *battle_hide_state
-	vsp SP_TMP, 0
-	vsp SP_TMP1, 0
-	vsp SP_TMP2, 0
-	print 1
-	return
+  vsp SP_TMP, 0
+  vsp SP_TMP1, 0
+  vsp SP_TMP2, 0
+  print 1
+  return
 
 *battle_prev_atc
-	talk_mode
-	csp SP_R
-	c_show ":l;img/same.bmp"
-	return
+  talk_mode
+  csp SP_R
+  c_show ":l;img/same.bmp"
+  return
 
 *battle_prev_act
-	speak_mode
-	csp SP_R : csp SP_C : csp SP_L
-	r_show ":l;img/same.bmp"
-	return
+  speak_mode
+  csp SP_R : csp SP_C : csp SP_L
+  r_show ":l;img/same.bmp"
+  return
 
 
 *battle_attack
@@ -88,189 +88,189 @@ if %adv_same_level == 6 csel "Lƒpƒ“ƒ`", *battle_punch, "LƒLƒbƒN", *battle_kick
 ;;;4˜b—p
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 *battle04_eprev_atc
-	talk_mode
-	csp SP_R
-	c_show ":l;img/jiku.bmp"
-	return
+  talk_mode
+  csp SP_R
+  c_show ":l;img/jiku.bmp"
+  return
 
 
 
 *battle04
-	mov %adv_num_loss, 0
+  mov %adv_num_loss, 0
 *battle04_restart
-	mov %adv_rmode, 0
-	mov %adv_hp, 150
-	mov %adv_maxhp, 150
-	mov %adv_ehp, 300
-	mov %adv_ehp, %adv_ehp - %adv_num_loss * 60
-	mov %adv_noroi_off, 1 ;;;
-	vsp SP_R, 0 : vsp SP_L, 0
-	bg black, E_SLOW
-	mov %adv_same_level, 1
-	if %adv_noroi_kill >= 1 mov %adv_same_level, 2
-	if %adv_noroi_kill >= 10 mov %adv_same_level, 3
-	if %adv_noroi_kill >= 30 mov %adv_same_level, 4
-	if %adv_noroi_kill >= 50 mov %adv_same_level, 5
-	if %adv_noroi_kill >= 100 mov %adv_same_level, 6
-;	r_load ":l;img/same.bmp"
-	print E_NORMAL
-	goto *battle04_act
+  mov %adv_rmode, 0
+  mov %adv_hp, 150
+  mov %adv_maxhp, 150
+  mov %adv_ehp, 300
+  mov %adv_ehp, %adv_ehp - %adv_num_loss * 60
+  mov %adv_noroi_off, 1 ;;;
+  vsp SP_R, 0 : vsp SP_L, 0
+  bg black, E_SLOW
+  mov %adv_same_level, 1
+  if %adv_noroi_kill >= 1 mov %adv_same_level, 2
+  if %adv_noroi_kill >= 10 mov %adv_same_level, 3
+  if %adv_noroi_kill >= 30 mov %adv_same_level, 4
+  if %adv_noroi_kill >= 50 mov %adv_same_level, 5
+  if %adv_noroi_kill >= 100 mov %adv_same_level, 6
+;  r_load ":l;img/same.bmp"
+  print E_NORMAL
+  goto *battle04_act
 
 *battle04_act
-	gosub *battle_set_escact
-	gosub *battle_show_state
-	gosub *battle_prev_act
+  gosub *battle_set_escact
+  gosub *battle_show_state
+  gosub *battle_prev_act
 csel "‚½‚½‚©‚¤", *battle04_attack, "–‚–@", *battle04_magic, $sret, *battle04_esc
 
 *battle04_esc
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡ucc¸”s‚µ‚Ü‚µ‚½v\
-	goto *battle04_enemy
+  goto *battle04_enemy
 
 
 *battle04_attack
-	mov $sadv_label, "*battle04_damage_a"
-	goto *battle_attack
+  mov $sadv_label, "*battle04_damage_a"
+  goto *battle_attack
 
 *battle04_magic
-	mov $sadv_label, "*battle04_damage_m"
+  mov $sadv_label, "*battle04_damage_m"
 csel "ƒTƒƒEƒF[ƒu", *battle_wave, "ƒTƒƒuƒ‰ƒXƒ^[", *battle_blaster, "ƒTƒƒVƒ…[ƒg", *battle_shoot
 
 
 *battle04_damage_a
-	rnd %tmp, 9
-	add %tmp, 16
-	mul %ret, %tmp
-	div %ret, 10
-	mov %tmp, %ret  ;;‚±‚ê‚ª‚È‚¢‚Æ‰½ŒÌ‚©%ret‚ªÁ¸‚µ‚½cc
-	sub %adv_ehp, %tmp
-	gosub *battle04_effect_a
-	if %adv_ehp <= 0 goto *battle04_clear
-	goto *battle04_enemy
+  rnd %tmp, 9
+  add %tmp, 16
+  mul %ret, %tmp
+  div %ret, 10
+  mov %tmp, %ret  ;;‚±‚ê‚ª‚È‚¢‚Æ‰½ŒÌ‚©%ret‚ªÁ¸‚µ‚½cc
+  sub %adv_ehp, %tmp
+  gosub *battle04_effect_a
+  if %adv_ehp <= 0 goto *battle04_clear
+  goto *battle04_enemy
 
 *battle04_damage_m
-	sub %ret, %adv_miss
-	rnd %tmp, 3
-	add %tmp, 19
-	mul %ret, %tmp
-	div %ret, 10
-	mov %tmp, %ret  ;;‚±‚ê‚ª‚È‚¢‚Æ‰½ŒÌ‚©%ret‚ªÁ¸‚µ‚½cc
-	sub %adv_ehp, %tmp
-	gosub *battle04_effect_m
-	if %adv_ehp <= 0 goto *battle04_clear
-	goto *battle04_enemy
+  sub %ret, %adv_miss
+  rnd %tmp, 3
+  add %tmp, 19
+  mul %ret, %tmp
+  div %ret, 10
+  mov %tmp, %ret  ;;‚±‚ê‚ª‚È‚¢‚Æ‰½ŒÌ‚©%ret‚ªÁ¸‚µ‚½cc
+  sub %adv_ehp, %tmp
+  gosub *battle04_effect_m
+  if %adv_ehp <= 0 goto *battle04_clear
+  goto *battle04_enemy
 
 
 *battle04_judge
-	if %adv_hp <= 0 goto *battle04_gameover
-	goto *battle04_act
+  if %adv_hp <= 0 goto *battle04_gameover
+  goto *battle04_act
 
 
 *battle04_enemy
-	gosub *battle04_eprev_atc
-	rnd %tmp, 3
-	if %tmp == 0 gosub *battle04_enemy0
-	if %tmp == 1 gosub *battle04_enemy1
-	if %tmp == 2 && %adv_ehp > 150 gosub *battle04_enemy2
-	if %tmp == 2 && %adv_ehp <= 150 gosub *battle04_enemy3
-	rnd %tmp, 6
-	add %ret, %tmp
-	mov %tmp, %ret
-	gosub *battle04_eeffect
-	sub %adv_hp, %tmp
-	goto *battle04_judge
+  gosub *battle04_eprev_atc
+  rnd %tmp, 3
+  if %tmp == 0 gosub *battle04_enemy0
+  if %tmp == 1 gosub *battle04_enemy1
+  if %tmp == 2 && %adv_ehp > 150 gosub *battle04_enemy2
+  if %tmp == 2 && %adv_ehp <= 150 gosub *battle04_enemy3
+  rnd %tmp, 6
+  add %ret, %tmp
+  mov %tmp, %ret
+  gosub *battle04_eeffect
+  sub %adv_hp, %tmp
+  goto *battle04_judge
 
 
 ;;;•Ï”‚ÌÕ“Ë‚É—v’ˆÓ
 *battle04_effect_m
-	csp SP_C
-	c_load ":l;img/jiku.bmp"
-	bg black, E_NORMAL
-	lsp SP_FILL, ":c;img/same_blue.bmp", 0, 0
-	print E_BUBBLE
-	csp SP_FILL
-	print 1
-	quake 4,200
-	itoa2 $sarg0, %tmp
-	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
-	lsp SP_TMP, $sarg0, 360, 500
-	print E_NORMAL
-	delay 1000
-	csp SP_TMP
-	print E_FAST
-	return
+  csp SP_C
+  c_load ":l;img/jiku.bmp"
+  bg black, E_NORMAL
+  lsp SP_FILL, ":c;img/same_blue.bmp", 0, 0
+  print E_BUBBLE
+  csp SP_FILL
+  print 1
+  quake 4,200
+  itoa2 $sarg0, %tmp
+  mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+  lsp SP_TMP, $sarg0, 360, 500
+  print E_NORMAL
+  delay 1000
+  csp SP_TMP
+  print E_FAST
+  return
 
 ;;;•Ï”‚ÌÕ“Ë‚É—v’ˆÓ
 *battle04_effect_a
-	csp SP_C
-	c_load ":l;img/jiku.bmp"
-	bg black, E_NORMAL
-	lsp SP_FILL, ":c;img/same_yellow.bmp", 0, 0
-	print E_FAST
-	csp SP_FILL
-	print 1
-	quake 4,200
-	itoa2 $sarg0, %tmp
-	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
-	lsp SP_TMP, $sarg0, 360, 500
-	print E_NORMAL
-	delay 1000
-	csp SP_TMP
-	print E_FAST
-	return
+  csp SP_C
+  c_load ":l;img/jiku.bmp"
+  bg black, E_NORMAL
+  lsp SP_FILL, ":c;img/same_yellow.bmp", 0, 0
+  print E_FAST
+  csp SP_FILL
+  print 1
+  quake 4,200
+  itoa2 $sarg0, %tmp
+  mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+  lsp SP_TMP, $sarg0, 360, 500
+  print E_NORMAL
+  delay 1000
+  csp SP_TMP
+  print E_FAST
+  return
 
 ;;;•Ï”‚ÌÕ“Ë‚É—v’ˆÓ
 *battle04_eeffect
-	csp SP_C
-	c_load ":l;img/same.bmp"
-	bg black, E_NORMAL
-	lsp SP_FILL, ":c;img/jiku_blue.bmp", 0, 0
-	print E_RAIN
-	csp SP_FILL
-	print 1
-	quake 4,200
-	itoa2 $sarg0, %tmp
-	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
-	lsp SP_TMP, $sarg0, 360, 500
-	print E_NORMAL
-	delay 1000
-	csp SP_TMP
-	print E_FAST
-	return
+  csp SP_C
+  c_load ":l;img/same.bmp"
+  bg black, E_NORMAL
+  lsp SP_FILL, ":c;img/jiku_blue.bmp", 0, 0
+  print E_RAIN
+  csp SP_FILL
+  print 1
+  quake 4,200
+  itoa2 $sarg0, %tmp
+  mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+  lsp SP_TMP, $sarg0, 360, 500
+  print E_NORMAL
+  delay 1000
+  csp SP_TMP
+  print E_FAST
+  return
 
 
 
 
 *battle04_gameover
-	inc %adv_num_loss
-	csp SP_C
-	print E_SLOW
+  inc %adv_num_loss
+  csp SP_C
+  print E_SLOW
 L“‡‚Í”s–k‚µ‚½cc\
 csel "Ä’§í", *battle04_restart, "ƒ^ƒCƒgƒ‹‚É–ß‚é", *battle04_lost
 
 *battle04_lost
-	mov %adv_rmode, 1
-	mov %ret, 1
-	return
+  mov %adv_rmode, 1
+  mov %ret, 1
+  return
 
 
 *battle04_clear
-	csp SP_C
-	print E_SLOW
+  csp SP_C
+  print E_SLOW
 L“‡‚ÍŸ—˜‚µ‚½II\
-	speak_mode
-	r_show ":l;img/same.bmp"
+  speak_mode
+  r_show ":l;img/same.bmp"
 L“‡‚ÌƒŒƒxƒ‹‚ªã‚ª‚Á‚½
 @EUŒ‚—Í‚ª#FFFF33‚S#FFFFFFã¸‚µ‚½
 @E–‚—Í‚ª#FFFF33‚V#FFFFFFã¸‚µ‚½
 @E‘Ì—Í‚ª#FFFF33‚T#FFFFFFã¸‚µ‚½\
-	csp SP_R
-	talk_mode
-	bg black, E_SLOW
-	mov %ret, 0
-	mov %adv_rmode, 1
-	return  ;;–{•Ò‚Ö
+  csp SP_R
+  talk_mode
+  bg black, E_SLOW
+  mov %ret, 0
+  mov %adv_rmode, 1
+  return  ;;–{•Ò‚Ö
 
 
 
@@ -281,21 +281,21 @@ csel "Ä’§í", *battle04_restart, "ƒ^ƒCƒgƒ‹‚É–ß‚é", *battle04_lost
 
 *battle04_enemy0
 –u‚¨‘O‚É‚Í‚±‚Ì’ö“x‚Ì’á‹‰–‚–@‚Å\•ªIv\
-	mov %ret, 15
-	return
+  mov %ret, 15
+  return
 *battle04_enemy1
 –u‚±‚ÁA‚±‚Ì–‚–@‚µ‚©g‚¦‚È‚¢–ó‚¶‚á‚È‚¢‚ñ
 @@‚¾‚©‚ç‚È‚ÁIv\
-	mov %ret, 15
-	return
+  mov %ret, 15
+  return
 *battle04_enemy2
 –uƒtƒHƒgƒ“ƒoƒŒƒbƒg”­ËIIv\
-	mov %ret, 15
-	return
+  mov %ret, 15
+  return
 *battle04_enemy3
 –u‚¿‚å‚Á‚Æ‚¾‚¯–{‹C‚¾‚©‚ç‚ÈIv\
-	mov %ret, 25
-	return
+  mov %ret, 25
+  return
 
 
 
@@ -308,209 +308,209 @@ csel "Ä’§í", *battle04_restart, "ƒ^ƒCƒgƒ‹‚É–ß‚é", *battle04_lost
 ;;;9˜b—p
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 *battle09_eprev_atc
-	talk_mode
-	csp SP_R
-	c_show ":l;img/jiku2.bmp"
-	return
+  talk_mode
+  csp SP_R
+  c_show ":l;img/jiku2.bmp"
+  return
 
 *battle09
-	mov %adv_num_loss, 0
+  mov %adv_num_loss, 0
 *battle09_restart
-	mov %adv_rmode, 0
-	mov %adv_hp, 200
-	mov %adv_maxhp, 200
-	mov %adv_ehp, 450
-	mov %adv_ehp, %adv_ehp - %adv_num_loss * 90
-	mov %adv_noroi_off, 1 ;;;
-	vsp SP_R, 0 : vsp SP_L, 0
-	bg black, E_SLOW
-	mov %adv_same_level, 1
-	if %adv_noroi_kill >= 1 mov %adv_same_level, 2
-	if %adv_noroi_kill >= 10 mov %adv_same_level, 3
-	if %adv_noroi_kill >= 30 mov %adv_same_level, 4
-	if %adv_noroi_kill >= 50 mov %adv_same_level, 5
-	if %adv_noroi_kill >= 100 mov %adv_same_level, 6
-	print E_NORMAL
-	goto *battle09_act
+  mov %adv_rmode, 0
+  mov %adv_hp, 200
+  mov %adv_maxhp, 200
+  mov %adv_ehp, 450
+  mov %adv_ehp, %adv_ehp - %adv_num_loss * 90
+  mov %adv_noroi_off, 1 ;;;
+  vsp SP_R, 0 : vsp SP_L, 0
+  bg black, E_SLOW
+  mov %adv_same_level, 1
+  if %adv_noroi_kill >= 1 mov %adv_same_level, 2
+  if %adv_noroi_kill >= 10 mov %adv_same_level, 3
+  if %adv_noroi_kill >= 30 mov %adv_same_level, 4
+  if %adv_noroi_kill >= 50 mov %adv_same_level, 5
+  if %adv_noroi_kill >= 100 mov %adv_same_level, 6
+  print E_NORMAL
+  goto *battle09_act
 
 *battle09_act
-	gosub *battle_set_escact
-	gosub *battle_show_state
-	gosub *battle_prev_act
+  gosub *battle_set_escact
+  gosub *battle_show_state
+  gosub *battle_prev_act
 csel "‚½‚½‚©‚¤", *battle09_attack, "–‚–@", *battle09_magic, $sret, *battle09_esc
 
 *battle09_esc
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡ucc¸”s‚µ‚Ü‚µ‚½v\
-	goto *battle09_enemy
+  goto *battle09_enemy
 
 
 *battle09_attack
-	mov $sadv_label, "*battle09_damage_a"
-	goto *battle_attack
+  mov $sadv_label, "*battle09_damage_a"
+  goto *battle_attack
 
 *battle09_magic
-	mov $sadv_label, "*battle09_damage_m"
+  mov $sadv_label, "*battle09_damage_m"
 csel "ƒTƒƒEƒF[ƒu", *battle_wave, "ƒTƒƒuƒ‰ƒXƒ^[", *battle_blaster, "ƒTƒƒVƒ…[ƒg", *battle_shoot, "ƒTƒƒuƒŒ[ƒh", *battle_blade, "ƒTƒƒLƒƒƒmƒ“", *battle_cannon, "ƒTƒƒXƒ}ƒbƒVƒƒ[", *battle_smasher
 
 
 *battle09_damage_a
-	rnd %tmp, 11
-	add %tmp, 18
-	mul %ret, %tmp
-	div %ret, 10
-	mov %tmp, %ret  ;;‚±‚ê‚ª‚È‚¢‚Æ‰½ŒÌ‚©%ret‚ªÁ¸‚µ‚½cc
-	sub %adv_ehp, %tmp
-	gosub *battle09_effect_a
-	if %adv_ehp <= 0 goto *battle09_clear
-	goto *battle09_enemy
+  rnd %tmp, 11
+  add %tmp, 18
+  mul %ret, %tmp
+  div %ret, 10
+  mov %tmp, %ret  ;;‚±‚ê‚ª‚È‚¢‚Æ‰½ŒÌ‚©%ret‚ªÁ¸‚µ‚½cc
+  sub %adv_ehp, %tmp
+  gosub *battle09_effect_a
+  if %adv_ehp <= 0 goto *battle09_clear
+  goto *battle09_enemy
 
 *battle09_damage_m
-	sub %ret, %adv_miss
-	rnd %tmp, 3
-	add %tmp, 20
-	mul %ret, %tmp
-	div %ret, 10
-	mov %tmp, %ret  ;;‚±‚ê‚ª‚È‚¢‚Æ‰½ŒÌ‚©%ret‚ªÁ¸‚µ‚½cc
-	sub %adv_ehp, %tmp
-	gosub *battle09_effect_m
-	if %adv_ehp <= 0 goto *battle09_clear
-	goto *battle09_enemy
+  sub %ret, %adv_miss
+  rnd %tmp, 3
+  add %tmp, 20
+  mul %ret, %tmp
+  div %ret, 10
+  mov %tmp, %ret  ;;‚±‚ê‚ª‚È‚¢‚Æ‰½ŒÌ‚©%ret‚ªÁ¸‚µ‚½cc
+  sub %adv_ehp, %tmp
+  gosub *battle09_effect_m
+  if %adv_ehp <= 0 goto *battle09_clear
+  goto *battle09_enemy
 
 
 *battle09_judge
-	if %adv_hp <= 0 goto *battle09_gameover
-	goto *battle09_act
+  if %adv_hp <= 0 goto *battle09_gameover
+  goto *battle09_act
 
 
 *battle09_enemy
-	gosub *battle09_eprev_atc
-	rnd %tmp, 4
-	if %tmp == 0 gosub *battle09_enemy0
-	if %tmp == 1 gosub *battle09_enemy1
-	if %tmp == 2 gosub *battle09_enemy2
-	if %tmp == 3 gosub *battle09_enemy3
-	rnd %tmp, 20
-	add %ret, %tmp
-	mov %tmp, %ret
-	gosub *battle09_eeffect
-	sub %adv_hp, %tmp
-	goto *battle09_judge
+  gosub *battle09_eprev_atc
+  rnd %tmp, 4
+  if %tmp == 0 gosub *battle09_enemy0
+  if %tmp == 1 gosub *battle09_enemy1
+  if %tmp == 2 gosub *battle09_enemy2
+  if %tmp == 3 gosub *battle09_enemy3
+  rnd %tmp, 20
+  add %ret, %tmp
+  mov %tmp, %ret
+  gosub *battle09_eeffect
+  sub %adv_hp, %tmp
+  goto *battle09_judge
 
 
 ;;;•Ï”‚ÌÕ“Ë‚É—v’ˆÓ
 *battle09_effect_m
-	csp SP_C
-	c_load ":l;img/jiku2.bmp"
-	bg black, E_NORMAL
-	lsp SP_FILL, ":c;img/same_blue.bmp", 0, 0
-	print E_BUBBLE
-	csp SP_FILL
-	print 1
-	quake 4,200
-	itoa2 $sarg0, %tmp
-	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
-	lsp SP_TMP, $sarg0, 360, 500
-	print E_NORMAL
-	delay 1000
-	csp SP_TMP
-	print E_FAST
-	return
+  csp SP_C
+  c_load ":l;img/jiku2.bmp"
+  bg black, E_NORMAL
+  lsp SP_FILL, ":c;img/same_blue.bmp", 0, 0
+  print E_BUBBLE
+  csp SP_FILL
+  print 1
+  quake 4,200
+  itoa2 $sarg0, %tmp
+  mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+  lsp SP_TMP, $sarg0, 360, 500
+  print E_NORMAL
+  delay 1000
+  csp SP_TMP
+  print E_FAST
+  return
 
 ;;;•Ï”‚ÌÕ“Ë‚É—v’ˆÓ
 *battle09_effect_a
-	csp SP_C
-	c_load ":l;img/jiku2.bmp"
-	bg black, E_NORMAL
-	lsp SP_FILL, ":c;img/same_yellow.bmp", 0, 0
-	print E_FAST
-	csp SP_FILL
-	print 1
-	quake 4,200
-	itoa2 $sarg0, %tmp
-	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
-	lsp SP_TMP, $sarg0, 360, 500
-	print E_NORMAL
-	delay 1000
-	csp SP_TMP
-	print E_FAST
-	return
+  csp SP_C
+  c_load ":l;img/jiku2.bmp"
+  bg black, E_NORMAL
+  lsp SP_FILL, ":c;img/same_yellow.bmp", 0, 0
+  print E_FAST
+  csp SP_FILL
+  print 1
+  quake 4,200
+  itoa2 $sarg0, %tmp
+  mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+  lsp SP_TMP, $sarg0, 360, 500
+  print E_NORMAL
+  delay 1000
+  csp SP_TMP
+  print E_FAST
+  return
 
 ;;;•Ï”‚ÌÕ“Ë‚É—v’ˆÓ
 *battle09_eeffect
-	csp SP_C
-	c_load ":l;img/same.bmp"
-	bg black, E_NORMAL
-	lsp SP_FILL, ":c;img/jiku_blue.bmp", 0, 0
-	print E_RAIN
-	csp SP_FILL
-	print 1
-	quake 4,200
-	itoa2 $sarg0, %tmp
-	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
-	lsp SP_TMP, $sarg0, 360, 500
-	print E_NORMAL
-	delay 1000
-	csp SP_TMP
-	print E_FAST
-	return
+  csp SP_C
+  c_load ":l;img/same.bmp"
+  bg black, E_NORMAL
+  lsp SP_FILL, ":c;img/jiku_blue.bmp", 0, 0
+  print E_RAIN
+  csp SP_FILL
+  print 1
+  quake 4,200
+  itoa2 $sarg0, %tmp
+  mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+  lsp SP_TMP, $sarg0, 360, 500
+  print E_NORMAL
+  delay 1000
+  csp SP_TMP
+  print E_FAST
+  return
 
 
 *battle09_gameover
-	inc %adv_num_loss
-	csp SP_C
-	print E_SLOW
+  inc %adv_num_loss
+  csp SP_C
+  print E_SLOW
 L“‡‚Í”s–k‚µ‚½cc\
 csel "Ä’§í", *battle09_restart, "ƒ^ƒCƒgƒ‹‚É–ß‚é", *battle09_lost
 
 *battle09_lost
-	mov %adv_rmode, 1
-	mov %ret, 1
-	return
+  mov %adv_rmode, 1
+  mov %ret, 1
+  return
 
 
 *battle09_clear
-	csp SP_C
-	print E_SLOW
+  csp SP_C
+  print E_SLOW
 L“‡‚ÍŸ—˜‚µ‚½II\
-	speak_mode
-	r_show ":l;img/same.bmp"
+  speak_mode
+  r_show ":l;img/same.bmp"
 L“‡‚ÌƒŒƒxƒ‹‚ªã‚ª‚Á‚½
 @EUŒ‚—Í‚ª#FFFF33‚U#FFFFFFã¸‚µ‚½
 @E–‚—Í‚ª#FFFF33‚T#FFFFFFã¸‚µ‚½
 @E‘Ì—Í‚ª#FFFF33‚P‚O#FFFFFFã¸‚µ‚½\
-	csp SP_R
-	talk_mode
-	bg black, E_SLOW
-	mov %ret, 0
-	mov %adv_rmode, 1
-	return  ;;–{•Ò‚Ö
+  csp SP_R
+  talk_mode
+  bg black, E_SLOW
+  mov %ret, 0
+  mov %adv_rmode, 1
+  return  ;;–{•Ò‚Ö
 
 
 
 *battle09_enemy0
 –u‚È‚ñ‚Æ‚©ƒoƒXƒ^[”­ËIIv\
-	mov %ret, 22
-	return
+  mov %ret, 22
+  return
 
 *battle09_enemy1
 –u˜Vl”@‚«‚É‚l‚n‚s‚s‚`‚h‚m‚`‚h‚ªcc‹ò‚ç
 @@‚¦I@Œ‹\‹­‚¢–‚–@IIv\
-	mov %ret, 27
-	return
+  mov %ret, 27
+  return
 
 *battle09_enemy2
 –u‚ ‚ñ‚Ü‚µ‹­‚­‚È‚¢‚Ì‚Íè‰ÁŒ¸‚µ‚Ä‚é‚¾‚¯‚È
 @@‚ñ‚¾‚©‚ç‚ÈIIv\
-	mov %ret, 20
-	return
+  mov %ret, 20
+  return
 
 *battle09_enemy3
 –u‚¢‚¢‚©AƒfƒoƒCƒX‚ª‹­‚¢‚ñ‚¶‚á‚È‚¢‚¼A‰´
 @@‚ª‹­‚¢‚ñ‚¾‚¼IIv\
-	mov %ret, 25
-	return
+  mov %ret, 25
+  return
 
 
 
@@ -526,215 +526,215 @@ csel "Ä’§í", *battle09_restart, "ƒ^ƒCƒgƒ‹‚É–ß‚é", *battle09_lost
 
 
 *battle12_eprev_atc
-	talk_mode
-	csp SP_R
-	c_show ":l;img/nano.bmp"
-	return
+  talk_mode
+  csp SP_R
+  c_show ":l;img/nano.bmp"
+  return
 
 *battle12
-	mov %adv_rmode, 0
-	mov %adv_hp, 300
-	mov %adv_maxhp, 300
-	mov %adv_ehp, 1000
-	mov %adv_noroi_off, 1 ;;;
-	vsp SP_R, 0 : vsp SP_L, 0
-	bg black, E_SLOW
-	mov %adv_same_level, 1
-	if %adv_noroi_kill >= 1 mov %adv_same_level, 2
-	if %adv_noroi_kill >= 10 mov %adv_same_level, 3
-	if %adv_noroi_kill >= 30 mov %adv_same_level, 4
-	if %adv_noroi_kill >= 50 mov %adv_same_level, 5
-	if %adv_noroi_kill >= 100 mov %adv_same_level, 6
-	print E_NORMAL
-	goto *battle12_act
+  mov %adv_rmode, 0
+  mov %adv_hp, 300
+  mov %adv_maxhp, 300
+  mov %adv_ehp, 1000
+  mov %adv_noroi_off, 1 ;;;
+  vsp SP_R, 0 : vsp SP_L, 0
+  bg black, E_SLOW
+  mov %adv_same_level, 1
+  if %adv_noroi_kill >= 1 mov %adv_same_level, 2
+  if %adv_noroi_kill >= 10 mov %adv_same_level, 3
+  if %adv_noroi_kill >= 30 mov %adv_same_level, 4
+  if %adv_noroi_kill >= 50 mov %adv_same_level, 5
+  if %adv_noroi_kill >= 100 mov %adv_same_level, 6
+  print E_NORMAL
+  goto *battle12_act
 
 *battle12_act
-	gosub *battle_set_escact
-	gosub *battle_show_state
-	gosub *battle_prev_act
+  gosub *battle_set_escact
+  gosub *battle_show_state
+  gosub *battle_prev_act
 csel "‚½‚½‚©‚¤", *battle12_attack, "–‚–@", *battle12_magic, $sret, *battle12_esc
 
 *battle12_esc
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡ucc¸”s‚µ‚Ü‚µ‚½v\
-	goto *battle12_enemy
+  goto *battle12_enemy
 
 
 *battle12_attack
-	mov $sadv_label, "*battle12_damage_a"
-	goto *battle_attack
+  mov $sadv_label, "*battle12_damage_a"
+  goto *battle_attack
 
 *battle12_magic
-	mov $sadv_label, "*battle12_damage_m"
+  mov $sadv_label, "*battle12_damage_m"
 csel "ƒTƒƒEƒF[ƒu", *battle_wave, "ƒTƒƒuƒ‰ƒXƒ^[", *battle_blaster, "ƒTƒƒVƒ…[ƒg", *battle_shoot, "ƒTƒƒuƒŒ[ƒh", *battle_blade, "ƒTƒƒLƒƒƒmƒ“", *battle_cannon, "ƒTƒƒXƒ}ƒbƒVƒƒ[", *battle_smasher, "ƒTƒƒGƒ~ƒbƒVƒ‡ƒ“", *battle_emission, "ƒTƒƒXƒiƒCƒv", *battle_snipe, "ƒTƒƒ‰ƒ“ƒT[", *battle_lancer, "ƒTƒ™ƒLƒƒƒ‰ƒbƒg", *battle_nekomimi
 
 
 *battle12_damage_a
-	rnd %tmp, 13
-	add %tmp, 20
-	mul %ret, %tmp
-	div %ret, 10
-	mov %tmp, %ret  ;;‚±‚ê‚ª‚È‚¢‚Æ‰½ŒÌ‚©%ret‚ªÁ¸‚µ‚½cc
-	sub %adv_ehp, %tmp
-	gosub *battle12_effect_a
-	if %adv_ehp <= 0 goto *battle12_clear
-	goto *battle12_enemy
+  rnd %tmp, 13
+  add %tmp, 20
+  mul %ret, %tmp
+  div %ret, 10
+  mov %tmp, %ret  ;;‚±‚ê‚ª‚È‚¢‚Æ‰½ŒÌ‚©%ret‚ªÁ¸‚µ‚½cc
+  sub %adv_ehp, %tmp
+  gosub *battle12_effect_a
+  if %adv_ehp <= 0 goto *battle12_clear
+  goto *battle12_enemy
 
 *battle12_damage_m
-	sub %ret, %adv_miss
-	rnd %tmp, 4
-	add %tmp, 21
-	mul %ret, %tmp
-	div %ret, 10
-	mov %tmp, %ret  ;;‚±‚ê‚ª‚È‚¢‚Æ‰½ŒÌ‚©%ret‚ªÁ¸‚µ‚½cc
-	sub %adv_ehp, %tmp
-	gosub *battle12_effect_m
-	if %adv_ehp <= 0 goto *battle12_clear
-	goto *battle12_enemy
+  sub %ret, %adv_miss
+  rnd %tmp, 4
+  add %tmp, 21
+  mul %ret, %tmp
+  div %ret, 10
+  mov %tmp, %ret  ;;‚±‚ê‚ª‚È‚¢‚Æ‰½ŒÌ‚©%ret‚ªÁ¸‚µ‚½cc
+  sub %adv_ehp, %tmp
+  gosub *battle12_effect_m
+  if %adv_ehp <= 0 goto *battle12_clear
+  goto *battle12_enemy
 
 
 *battle12_judge
-	if %adv_hp <= 0 goto *battle12_gameover
-	goto *battle12_act
+  if %adv_hp <= 0 goto *battle12_gameover
+  goto *battle12_act
 
 
 *battle12_enemy
-	gosub *battle12_eprev_atc
-	rnd %tmp, 6
-	if %tmp == 0 gosub *battle12_enemy0
-	if %tmp == 1 gosub *battle12_enemy1
-	if %tmp == 2 gosub *battle12_enemy2
-	if %tmp == 3 gosub *battle12_enemy3
-	if %tmp == 4 gosub *battle12_enemy4
-	if %tmp == 5 gosub *battle12_enemy5
-	rnd %tmp, 20
-	add %ret, %tmp
-	mov %tmp, %ret
-	gosub *battle12_eeffect
-	sub %adv_hp, %tmp
-	goto *battle12_judge
+  gosub *battle12_eprev_atc
+  rnd %tmp, 6
+  if %tmp == 0 gosub *battle12_enemy0
+  if %tmp == 1 gosub *battle12_enemy1
+  if %tmp == 2 gosub *battle12_enemy2
+  if %tmp == 3 gosub *battle12_enemy3
+  if %tmp == 4 gosub *battle12_enemy4
+  if %tmp == 5 gosub *battle12_enemy5
+  rnd %tmp, 20
+  add %ret, %tmp
+  mov %tmp, %ret
+  gosub *battle12_eeffect
+  sub %adv_hp, %tmp
+  goto *battle12_judge
 
 
 ;;;•Ï”‚ÌÕ“Ë‚É—v’ˆÓ
 *battle12_effect_m
-	csp SP_C
-	c_load ":l;img/nano.bmp"
-	bg black, E_NORMAL
-	lsp SP_FILL, ":c;img/same_blue.bmp", 0, 0
-	print E_BUBBLE
-	csp SP_FILL
-	print 1
-	quake 4,200
-	itoa2 $sarg0, %tmp
-	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
-	lsp SP_TMP, $sarg0, 360, 500
-	print E_NORMAL
-	delay 1000
-	csp SP_TMP
-	print E_FAST
-	return
+  csp SP_C
+  c_load ":l;img/nano.bmp"
+  bg black, E_NORMAL
+  lsp SP_FILL, ":c;img/same_blue.bmp", 0, 0
+  print E_BUBBLE
+  csp SP_FILL
+  print 1
+  quake 4,200
+  itoa2 $sarg0, %tmp
+  mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+  lsp SP_TMP, $sarg0, 360, 500
+  print E_NORMAL
+  delay 1000
+  csp SP_TMP
+  print E_FAST
+  return
 
 ;;;•Ï”‚ÌÕ“Ë‚É—v’ˆÓ
 *battle12_effect_a
-	csp SP_C
-	c_load ":l;img/nano.bmp"
-	bg black, E_NORMAL
-	lsp SP_FILL, ":c;img/same_yellow.bmp", 0, 0
-	print E_FAST
-	csp SP_FILL
-	print 1
-	quake 4,200
-	itoa2 $sarg0, %tmp
-	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
-	lsp SP_TMP, $sarg0, 360, 500
-	print E_NORMAL
-	delay 1000
-	csp SP_TMP
-	print E_FAST
-	return
+  csp SP_C
+  c_load ":l;img/nano.bmp"
+  bg black, E_NORMAL
+  lsp SP_FILL, ":c;img/same_yellow.bmp", 0, 0
+  print E_FAST
+  csp SP_FILL
+  print 1
+  quake 4,200
+  itoa2 $sarg0, %tmp
+  mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+  lsp SP_TMP, $sarg0, 360, 500
+  print E_NORMAL
+  delay 1000
+  csp SP_TMP
+  print E_FAST
+  return
 
 ;;;•Ï”‚ÌÕ“Ë‚É—v’ˆÓ
 *battle12_eeffect
-	csp SP_C
-	c_load ":l;img/same.bmp"
-	bg black, E_NORMAL
-	lsp SP_FILL, ":c;img/nano_pink.bmp", 0, 0
-	print E_RAIN
-	csp SP_FILL
-	print 1
-	quake 4,200
-	itoa2 $sarg0, %tmp
-	mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
-	lsp SP_TMP, $sarg0, 360, 500
-	print E_NORMAL
-	delay 1000
-	csp SP_TMP
-	print E_FAST
-	return
+  csp SP_C
+  c_load ":l;img/same.bmp"
+  bg black, E_NORMAL
+  lsp SP_FILL, ":c;img/nano_pink.bmp", 0, 0
+  print E_RAIN
+  csp SP_FILL
+  print 1
+  quake 4,200
+  itoa2 $sarg0, %tmp
+  mov $sarg0, ":s/40,40,1;#FFFF33" + $sarg0
+  lsp SP_TMP, $sarg0, 360, 500
+  print E_NORMAL
+  delay 1000
+  csp SP_TMP
+  print E_FAST
+  return
 
 
 *battle12_gameover
-	csp SP_C
-	print E_SLOW
+  csp SP_C
+  print E_SLOW
 L“‡‚Í”s–k‚µ‚½cc\
-	mov %ret, 1
-	mov %adv_rmode, 1
-	return
+  mov %ret, 1
+  mov %adv_rmode, 1
+  return
 
 
 *battle12_clear
-	csp SP_C
-	print E_SLOW
+  csp SP_C
+  print E_SLOW
 L“‡‚ÍŸ—˜‚µ‚½II\
-	speak_mode
-	r_show ":l;img/same.bmp"
+  speak_mode
+  r_show ":l;img/same.bmp"
 L“‡‚ÌƒŒƒxƒ‹‚ªã‚ª‚Á‚½
 @EUŒ‚—Í‚ª#FFFF33‚X#FFFFFFã¸‚µ‚½
 @E–‚—Í‚ª#FFFF33‚P‚U#FFFFFFã¸‚µ‚½
 @E‘Ì—Í‚ª#FFFF33‚W#FFFFFFã¸‚µ‚½\
-	csp SP_R
-	talk_mode
-	bg black, E_SLOW
-	mov %ret, 0
-	mov %adv_rmode, 1
-	return  ;;–{•Ò‚Ö
+  csp SP_R
+  talk_mode
+  bg black, E_SLOW
+  mov %ret, 0
+  mov %adv_rmode, 1
+  return  ;;–{•Ò‚Ö
 
 
 
 *battle12_enemy0
 ‚È‚Ì‚ÍuƒfƒBƒoƒCƒ“ƒVƒ…[ƒgv\
-	mov %ret, 80
-	return
+  mov %ret, 80
+  return
 
 *battle12_enemy1
 ‚È‚Ì‚ÍuƒXƒ^[ƒ‰ƒCƒgƒuƒŒƒCƒJ[v\
-	mov %ret, 120
-	return
+  mov %ret, 120
+  return
 
 *battle12_enemy2
 ‚È‚Ì‚ÍuƒfƒBƒoƒCƒ“ƒVƒ…[ƒ^[v\
-	mov %ret, 60
-	return
+  mov %ret, 60
+  return
 
 *battle12_enemy3
 ‚È‚Ì‚ÍuƒAƒNƒZƒ‹ƒVƒ…[ƒ^[v\
-	mov %ret, 50
-	return
+  mov %ret, 50
+  return
 
 *battle12_enemy4
 ‚È‚Ì‚Íuƒtƒ‰ƒbƒVƒ…ƒCƒ“ƒpƒNƒgv\
-	mov %ret, 60
-	return
+  mov %ret, 60
+  return
 
 *battle12_enemy5
 ‚È‚Ì‚ÍuƒoƒŒƒ‹ƒVƒ‡ƒbƒgv\
-	c_show ":l;img/same.bmp"
+  c_show ":l;img/same.bmp"
 L“‡‚ÍA‚È‚Ì‚Í‚ÉƒoƒCƒ“ƒh‚³‚ê‚½I\
-	c_show ":l;img/nano.bmp"
+  c_show ":l;img/nano.bmp"
 ‚È‚Ì‚ÍuƒGƒNƒZƒŠƒIƒ“ƒoƒXƒ^[v\
-	mov %ret, 150
-	return
+  mov %ret, 150
+  return
 
 
 
@@ -755,214 +755,214 @@ csel "ƒTƒƒEƒF[ƒu", *battle_wave, "ƒTƒƒuƒ‰ƒXƒ^[", *battle_blaster, "ƒTƒƒVƒ…
 
 
 *battle_wave
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡uv‚¢o‚·ccB
 @@@“ú–{ŠC‚Ìr”g‚É†‚Ü‚ê‚Ä‚¢‚½‚±‚ë‚ğIv\
 L“‡uƒTƒƒEƒF[ƒuIIIv\
-	mov %ret, 30
-	goto $sadv_label
+  mov %ret, 30
+  goto $sadv_label
 
 *battle_blaster
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡u¯‚Ì‚«‚ç‚ß‚«‚Íl‚Ì‘z‚¢ccB
 @@@‹M—l‚É“Í‚¯I
 @@@‚±‚Ì„‚Ì”M‚¢v‚¢IIv\
 L“‡uƒTƒƒuƒ‰ƒXƒ^[IIIv\
-	mov %ret, 30
-	goto $sadv_label
+  mov %ret, 30
+  goto $sadv_label
 
 *battle_shoot
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡uƒ{[ƒ‹‚Í—F’BB
 @@@ƒ|[ƒ‹‚Í‘å‚«‚È‚¨—F’BIIv\
 L“‡uƒTƒƒVƒ…[ƒgIIIv\
-	mov %ret, 30
-	goto $sadv_label
+  mov %ret, 30
+  goto $sadv_label
 
 *battle_blade
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡uƒRƒoƒ“ƒUƒ‚Ì•‚æ‚èí‚èo‚µ‚½‚±‚ÌŒ•‚ª
 @@@ƒZƒ‰ƒ~ƒbƒN‘•b‚ğ‚àŠÑ‚­‚¼IIv\
 L“‡uƒTƒƒuƒŒ[ƒhIIIv\
-	mov %ret, 40
-	goto $sadv_label
+  mov %ret, 40
+  goto $sadv_label
 
 *battle_cannon
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡u‚»‚ê‚ÍAµ“x–Ú‚Ìá‚Ì‹GßB
 @@@‚Ç‚±‚©ˆá‚¤‹C‚ª‚·‚é‚ªA‚©‚Ü‚í‚ñIv\
 L“‡uƒTƒƒLƒƒƒmƒ“IIIv\
-	mov %ret, 40
-	goto $sadv_label
+  mov %ret, 40
+  goto $sadv_label
 
 *battle_smasher
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡u“ã‚¬•¥‚¦Iv\
 L“‡uƒTƒƒXƒ}ƒbƒVƒƒ[IIIv\
-	mov %ret, 40
-	goto $sadv_label
+  mov %ret, 40
+  goto $sadv_label
 
 *battle_emission
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡uƒnƒ@`ƒnƒ@`v\
 L“‡uƒTƒƒGƒ~ƒbƒVƒ‡ƒ“IIIv\
-	mov %ret, 55
-	goto $sadv_label
+  mov %ret, 55
+  goto $sadv_label
 
 *battle_snipe
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡u¸”s‚ğ‚·‚ê‚Îw‚¨‚µ‚¨‚«x
 @@@–½‚ğŒœ‚¯‚½‚¨‚µ‚²‚Æ
 @@@‘_‚Á‚½Šl•¨‚Í“¦‚ª‚³‚È‚¢Iv\
 L“‡uƒTƒƒXƒiƒCƒvIIIv\
-	mov %ret, 50
-	goto $sadv_label
+  mov %ret, 50
+  goto $sadv_label
 
 *battle_lancer
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡uƒTƒƒo[ƒT[ƒNIIIv\
 L“‡uƒhƒ[Aƒ‚ƒ“ƒXƒ^[ƒJ[ƒhI
 @@@ƒhƒ[Aƒ‚ƒ“ƒXƒ^[ƒJ[ƒhII
 @@@ƒhƒ[Aƒ‚ƒ“ƒXƒ^[ƒJ[ƒhIIIv\
-	mov %ret, 60
-	goto $sadv_label
+  mov %ret, 60
+  goto $sadv_label
 
 *battle_nekomimi
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡u‚Ë‚½–‚Â‚é‚Æ‚±‚ë‚É‰ä‚Íİ‚è
 @@@‚±‚ê‚ğ•·‚­‚Æ‚±‚ë‚É“ğİ‚è
 @@@¨‚æ‚èo‚Å‚æI@_‚Ì—‹Iv\
-	mov %ret, 70
-	goto $sadv_label
+  mov %ret, 70
+  goto $sadv_label
 
 
 
 *battle_punch
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡u„‚ÌŒ‚ªŒõ‚Á‚ÄšX‚éI‹M—l‚ğ“|‚¹‚Æ‹P‚«
 @@@‹©‚ÔIv\
 L“‡uLƒpƒ“ƒ`v\
-	mov %ret, 10
-	goto $sadv_label
+  mov %ret, 10
+  goto $sadv_label
 
 *battle_kick
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡u‰ä‚ª”ü‹r‚ªŒJ‚èo‚·Œ|p\\v\
 L“‡uLƒLƒbƒNv\
-	mov %ret, 11
-	goto $sadv_label
+  mov %ret, 11
+  goto $sadv_label
 
 *battle_chop
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡u³Šm‚ÉÎ‚ß‚S‚T“x‚ğ•`‚­‹OÕ\\v\
 L“‡uLƒ`ƒ‡ƒbƒvv\
-	mov %ret, 11
-	goto $sadv_label
+  mov %ret, 11
+  goto $sadv_label
 
 *battle_head
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡uˆø“±‚ğ“n‚µ‚Ä‚­‚ê‚é\\v\
 L“‡u‚³‚ßƒwƒbƒhIIv\
-	mov %ret, 20
-	goto $sadv_label
+  mov %ret, 20
+  goto $sadv_label
 
 *battle_dynamic
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡u‚r‚ƒ‚ˆ‚…‚‚…‚Íƒ_ƒCƒiƒ~ƒbƒNƒXƒR[ƒv‚Å
 @@@‚Í‚È‚¢‚ª‚»‚ñ‚È‚±‚Æ‚ÍŠÖŒW‚È‚¢\\v\
 L“‡u‚³‚ßƒ_ƒCƒiƒ~ƒbƒNIIv\
-	mov %ret, 17
-	goto $sadv_label
+  mov %ret, 17
+  goto $sadv_label
 
 *battle_tornado
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡uŒ³ƒlƒ^‚ªˆê‘Ì‚È‚ñ‚È‚Ì‚©A‹M—l‚É‚Í•ª‚©
 @@@‚é‚Ü‚¢\\v\
 L“‡u—³ŠªŒE‚³‚ßƒgƒ‹ƒl[ƒhIv\
-	mov %ret, 18
-	goto $sadv_label
+  mov %ret, 18
+  goto $sadv_label
 
 *battle_beam
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡uo‚Å‚æI‰ä‚ªŠái‚Ü‚È‚±j‚Ì—Í\\v\
 L“‡uƒTƒƒr[ƒ€v\
-	mov %ret, 30
-	goto $sadv_label
+  mov %ret, 30
+  goto $sadv_label
 
 *battle_destroyer
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡uH‚ç‚¦AÅI‰ñ‚ÌˆĞ—Í\\v\
 L“‡uƒTƒƒIƒLƒVƒWƒFƒ“ƒfƒXƒgƒƒCƒ„[v\
-	mov %ret, 31
-	goto $sadv_label
+  mov %ret, 31
+  goto $sadv_label
 
 *battle_steal
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡u‚±‚Ì‹Z‚Ì–¼‘O‚ÌˆÓ–¡‚Í‰½‚È‚Ì‚©A‚±‚ê‚©
 @@@‚ç€‚Ê‹M—l‚É‹³‚¦‚é•K—v‚Í‚È‚¢\\v\
 L“‡uƒTƒƒXƒ`[ƒ‹ƒE[ƒ‹v\
-	mov %ret, 32
-	goto $sadv_label
+  mov %ret, 32
+  goto $sadv_label
 
 *battle_88
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡uƒƒ“ƒƒ‹‚Éö‚©‚è‚µA‰ä‚ª”é–@\\v\
 L“‡u‚r‚`‚l‚d@‚W‚W‚@‚f‚t‚mv\
-	mov %ret, 40
-	goto $sadv_label
+  mov %ret, 40
+  goto $sadv_label
 
 *battle_missile
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡u‹M—l‚Ì¨‚É‚ÍwL–¡‘Xx‚Æ‚µ‚©•·‚±‚¦‚È
 @@@‚¢‚¾‚ë‚¤\\v\
 L“‡u‚r‚`‚l‚d@‚l‚h‚r‚r‚h‚k‚dv\
-	mov %ret, 43
-	goto $sadv_label
+  mov %ret, 43
+  goto $sadv_label
 
 *battle_laser
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡uƒoƒjƒ“ƒOƒX‰Æ‚Ì‰ÈŠw—Í‚ÍA
 @@@¢ŠEˆê‚¡‚¡‚¡‚¡‚¡‚¡‚¡\\v\
 L“‡u‚r‚`‚l‚d@‚k‚`‚r‚d‚qv\
-	mov %ret, 45
-	goto $sadv_label
+  mov %ret, 45
+  goto $sadv_label
 
 *battle_57
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡u–{•Ò‚Åo”Ô‚Ì­‚È‚¢„‚É—^‚¦‚ç‚ê‚½”­
 @@@‚È‚¢İ’èA‚»‚ê‚ª”N—î‚¾\\v\
 L“‡u‚T‚VÎ‚Ì’ê—Ív\
-	mov %ret, 57
-	goto $sadv_label
+  mov %ret, 57
+  goto $sadv_label
 
 *battle_ikari
-	gosub *battle_hide_state
-	gosub *battle_prev_atc
+  gosub *battle_hide_state
+  gosub *battle_prev_atc
 L“‡u•S‚ğ’´‚¦‚éƒtƒFƒŒƒbƒg‚ğˆ¬‚è‚Â‚Ô‚µ‚Ä‚«
 @@@‚½„‚Ì“{‚è‚ğŒ©‚¹‚Ä‚â‚é\\v\
 L“‡u‚Ç‚è‚á‚Ÿ‚Ÿ‚Ÿ‚ ‚ ‚ ‚ IIIv\
-	mov %ret, 200
-	goto $sadv_label
+  mov %ret, 200
+  goto $sadv_label

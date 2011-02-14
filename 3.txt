@@ -2,163 +2,163 @@
 ;;;*set_additional_func()
 ;;;;;;;;;;
 *set_additional_func
-	mov %adv_rmode, 0
+  mov %adv_rmode, 0
 アリサ「ちょっとまってね……」
-	mov $sarg0, "(define caar (lambda (x) (car (car x))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define cadr (lambda (x) (car (cdr x))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define cdar (lambda (x) (cdr (car x))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define cddr (lambda (x) (cdr (cdr x))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define list (lambda lst lst))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define assq (lambda (key lst) (cond ((null? lst) nil) ((eq? key (caar lst)) (car lst)) (else (assq key (cdr lst))))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define length (lambda (lst) (define length-iter (lambda (n lst) (cond ((null? lst) n) (else (length-iter (+ n 1) (cdr lst)))))) (length-iter 0 lst)))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define list-ref (lambda (lst n) (car (list-tail lst n))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define list-tail (lambda (lst n) (cond ((eq? n 0) lst) (else (list-tail (cdr lst) (- n 1))))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define append (lambda (x y) (cond ((null? x) y) (else (cons (car x) (append (cdr x) y))))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define apply (lambda (fn . args) (define apply-iter (lambda (lst) (cond ((null? (cdr lst)) nil) (else (cons (car lst) (apply-iter (cdr lst))))))) (let ((arg0 (apply-iter args)) (argn (list-ref args (- (length args) 1)))) (cond ((null? arg0) (apply-primitive fn argn)) (else (apply-primitive fn (append arg0 argn)))))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define map (lambda (fn lst . more) (define map1 (lambda (l) (cond ((null? l) nil) (else (cons (fn (car l)) (map1 (cdr l))))))) (define map-more (lambda (l m) (cond ((null? l) nil) (else (cons (apply fn (car l) (map car m)) (map-more (cdr l) (map cdr m))))))) (cond ((null? more) (map1 lst)) (else (map-more lst more)))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define list? (lambda (x) (cond ((eq? x nil) #t) ((pair? x) (list? (cdr x))) (else #f))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define not (lambda (x) (eq? x #f)))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define memq(lambda (x lst) (cond ((null? lst) #f) ((eq? x (car lst)) lst) (else (memq x (cdr lst))))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define member(lambda (x lst) (cond ((null? lst) #f) ((equal? x (car lst)) lst) (else (member x (cdr lst))))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
-	mov $sarg0, "(define assoc (lambda (key lst) (cond ((null? lst) nil) ((equal? key (caar lst)) (car lst)) (else (assoc key (cdr lst))))))"
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %global_env
-	gosub *eval
+  mov $sarg0, "(define caar (lambda (x) (car (car x))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define cadr (lambda (x) (car (cdr x))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define cdar (lambda (x) (cdr (car x))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define cddr (lambda (x) (cdr (cdr x))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define list (lambda lst lst))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define assq (lambda (key lst) (cond ((null? lst) nil) ((eq? key (caar lst)) (car lst)) (else (assq key (cdr lst))))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define length (lambda (lst) (define length-iter (lambda (n lst) (cond ((null? lst) n) (else (length-iter (+ n 1) (cdr lst)))))) (length-iter 0 lst)))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define list-ref (lambda (lst n) (car (list-tail lst n))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define list-tail (lambda (lst n) (cond ((eq? n 0) lst) (else (list-tail (cdr lst) (- n 1))))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define append (lambda (x y) (cond ((null? x) y) (else (cons (car x) (append (cdr x) y))))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define apply (lambda (fn . args) (define apply-iter (lambda (lst) (cond ((null? (cdr lst)) nil) (else (cons (car lst) (apply-iter (cdr lst))))))) (let ((arg0 (apply-iter args)) (argn (list-ref args (- (length args) 1)))) (cond ((null? arg0) (apply-primitive fn argn)) (else (apply-primitive fn (append arg0 argn)))))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define map (lambda (fn lst . more) (define map1 (lambda (l) (cond ((null? l) nil) (else (cons (fn (car l)) (map1 (cdr l))))))) (define map-more (lambda (l m) (cond ((null? l) nil) (else (cons (apply fn (car l) (map car m)) (map-more (cdr l) (map cdr m))))))) (cond ((null? more) (map1 lst)) (else (map-more lst more)))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define list? (lambda (x) (cond ((eq? x nil) #t) ((pair? x) (list? (cdr x))) (else #f))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define not (lambda (x) (eq? x #f)))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define memq(lambda (x lst) (cond ((null? lst) #f) ((eq? x (car lst)) lst) (else (memq x (cdr lst))))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define member(lambda (x lst) (cond ((null? lst) #f) ((equal? x (car lst)) lst) (else (member x (cdr lst))))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
+  mov $sarg0, "(define assoc (lambda (key lst) (cond ((null? lst) nil) ((equal? key (caar lst)) (car lst)) (else (assoc key (cdr lst))))))"
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval
 textclear
-	mov %adv_additional, 1
-	return
+  mov %adv_additional, 1
+  return
 
 
 
 
 *free_mode
-	gosub *destroy_title
-	print 1
-	speak_mode
+  gosub *destroy_title
+  print 1
+  speak_mode
 bgm ms_ex
-	mov %adv_bgm, 1
-	mov %adv_tmp, 0
-	mov %save_flag, 0  ;セーブ不能
-	csp SP_R : csp SP_L
-	r_show ari_n
-	mov %adv_char, 1    ;=arisa
+  mov %adv_bgm, 1
+  mov %adv_tmp, 0
+  mov %save_flag, 0  ;セーブ不能
+  csp SP_R : csp SP_L
+  r_show ari_n
+  mov %adv_char, 1    ;=arisa
 
-	;;ゲーム進行状況を読み込む
-	csvopen "arisa.szk", "rc"
-	csvread %adv_clear
-	csvclose
+  ;;ゲーム進行状況を読み込む
+  csvopen "arisa.szk", "rc"
+  csvread %adv_clear
+  csvclose
 
-	;;Lisp側の準備
-	if %adv_additional == 0 gosub *set_additional_func
-	gosub *create_new_env  ;自由にいじれるように新しい環境を作る
-	mov %arg0, %ret
-	mov %adv_tmp3, %arg0
-	gosub *push  ;GC対策
-	mov %arg1, %global_env
-	gosub *nconc
-	mov %gc_limit, 0
+  ;;Lisp側の準備
+  if %adv_additional == 0 gosub *set_additional_func
+  gosub *create_new_env  ;自由にいじれるように新しい環境を作る
+  mov %arg0, %ret
+  mov %adv_tmp3, %arg0
+  gosub *push  ;GC対策
+  mov %arg1, %global_env
+  gosub *nconc
+  mov %gc_limit, 0
 *fm01
-	mov %gc_run, 0  ;GC起動回数を初期化
-	mov $sarg0, ""
-	textclear
-	gosub *fm01_say_tab
-	textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-	getret %ret
-	;if %ret == 1 goto *fm01_end  ;Tab
-	if %ret == 1 goto *fm01_menu  ;Tab
-	if $sarg0 == "" goto *fm01
+  mov %gc_run, 0  ;GC起動回数を初期化
+  mov $sarg0, ""
+  textclear
+  gosub *fm01_say_tab
+  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+  getret %ret
+  ;if %ret == 1 goto *fm01_end  ;Tab
+  if %ret == 1 goto *fm01_menu  ;Tab
+  if $sarg0 == "" goto *fm01
 textclear
-	gosub *fm01_say_calc
+  gosub *fm01_say_calc
 repaint
-	gosub *check_lr_parenthesis
-	if %ret != 0 gosub *fm01_say_parenthesis_error : goto *fm01
-	gosub *input_to_lobject
-	mov %arg0, %ret
-	mov %arg1, %adv_tmp3
-	gosub *eval
-	mov %arg0, %ret
-	gosub *lobject_to_string
-	textclear
-	gosub *fm01_say_result
-	inc %adv_tmp    ;;;?
-	goto *fm01
+  gosub *check_lr_parenthesis
+  if %ret != 0 gosub *fm01_say_parenthesis_error : goto *fm01
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %adv_tmp3
+  gosub *eval
+  mov %arg0, %ret
+  gosub *lobject_to_string
+  textclear
+  gosub *fm01_say_result
+  inc %adv_tmp    ;;;?
+  goto *fm01
 
 *fm01_end
-	gosub *pop
-	mov %gc_limit, 5
-	saveon
-	mov %save_flag, 1  ;セーブ可能
-	textclear
-	gosub *fm01_say_goodbye
+  gosub *pop
+  mov %gc_limit, 5
+  saveon
+  mov %save_flag, 1  ;セーブ可能
+  textclear
+  gosub *fm01_say_goodbye
 stop
-	csp SP_R
-	print E_FAST
-	goto *title
+  csp SP_R
+  print E_FAST
+  goto *title
 
 
 *fm01_menu
@@ -167,16 +167,16 @@ csel "戻る", *fm01, "ＢＧＭ　ＯＮ／ＯＦＦ", *fm01_menu_bgm, "立ち絵", *fm01_menu
 
 
 *fm01_menu_bgm
-	if %adv_bgm == 1 mov %adv_bgm, 0 : stop : goto *fm01
+  if %adv_bgm == 1 mov %adv_bgm, 0 : stop : goto *fm01
 bgm ms_ex
-	mov %adv_bgm, 1
-	goto *fm01
+  mov %adv_bgm, 1
+  goto *fm01
 
 *fm01_menu_char
-	if %adv_char == 1 mov %adv_char, 0 : csp SP_R : print E_FAST : goto *fm01
-	r_show ari_n
-	mov %adv_char, 1
-	goto *fm01
+  if %adv_char == 1 mov %adv_char, 0 : csp SP_R : print E_FAST : goto *fm01
+  r_show ari_n
+  mov %adv_char, 1
+  goto *fm01
 
 *fm01_menu_char_change
 if %adv_clear <= 3 csel "立ち絵なし", *fm01_char_non, "アリサ", *fm01_char_arisa, "すずか", *fm01_char_suzuka
@@ -188,130 +188,130 @@ csel "立ち絵なし", *fm01_char_non, "アリサ", *fm01_char_arisa, "すずか", *fm01_c
 
 
 *fm01_char_non
-	mov %adv_char, 0
-	csp SP_R
-	print E_FAST
-	goto *fm01
+  mov %adv_char, 0
+  csp SP_R
+  print E_FAST
+  goto *fm01
 
 *fm01_char_arisa
-	mov %adv_char, 1
-	r_show ari_n
+  mov %adv_char, 1
+  r_show ari_n
 アリサ「さあ、やるわよ！」\
-	goto *fm01
+  goto *fm01
 
 *fm01_char_suzuka
-	mov %adv_char, 2
-	r_show suzur_nc
+  mov %adv_char, 2
+  r_show suzur_nc
 すずか「頑張ろうね」\
-	goto *fm01
+  goto *fm01
 
 *fm01_char_samejima
-	mov %adv_char, 3
-	r_show ":l;img/same.bmp"
+  mov %adv_char, 3
+  r_show ":l;img/same.bmp"
 鮫島「お呼びでしょうか？」\
-	goto *fm01
+  goto *fm01
 
 *fm01_char_jiku
-	mov %adv_char, 4
-	r_show ":l;img/jiku.bmp"
+  mov %adv_char, 4
+  r_show ":l;img/jiku.bmp"
 局員「は！　お呼びでしょうか」\
-	goto *fm01
+  goto *fm01
 
 *fm01_char_jiku2
-	mov %adv_char, 5
-	r_show ":l;img/jiku2.bmp"
+  mov %adv_char, 5
+  r_show ":l;img/jiku2.bmp"
 局員「あー、めんどくさ……」\
-	goto *fm01
+  goto *fm01
 
 *fm01_char_nanoha
-	mov %adv_char, 6
-	r_show ":l;img/nano.bmp"
+  mov %adv_char, 6
+  r_show ":l;img/nano.bmp"
 なのは「なのっ！」\
-	goto *fm01
+  goto *fm01
 
 
 *fm01_say_goodbye
-	mov %adv_rmode, 1
-	if %adv_char == 0 puttext "お疲れ様でした\"
-	if %adv_char == 1 puttext "アリサ「おつかれさま」\"
-	if %adv_char == 2 puttext "すずか「ばいば～い」\"
-	if %adv_char == 3 puttext "鮫島「ありがとうございました」\"
-	if %adv_char == 4 puttext "局員「了解しました！」\"
-	if %adv_char == 5 puttext "局員「ひっ、ひぃぃぃーーー！」\"
-	if %adv_char == 6 puttext "なのは「おわりなの」\"
-	return
+  mov %adv_rmode, 1
+  if %adv_char == 0 puttext "お疲れ様でした\"
+  if %adv_char == 1 puttext "アリサ「おつかれさま」\"
+  if %adv_char == 2 puttext "すずか「ばいば～い」\"
+  if %adv_char == 3 puttext "鮫島「ありがとうございました」\"
+  if %adv_char == 4 puttext "局員「了解しました！」\"
+  if %adv_char == 5 puttext "局員「ひっ、ひぃぃぃーーー！」\"
+  if %adv_char == 6 puttext "なのは「おわりなの」\"
+  return
 
 *fm01_say_tab
-	if %adv_char == 0 puttext "Ｔａｂキーでメニューが開けます"
-	if %adv_char == 1 puttext "アリサ「Ｔａｂキーでメニューが開けるわよ」"
-	if %adv_char == 2 puttext "すずか「Ｔａｂキーでメニューが開けるよ」"
-	if %adv_char == 3 puttext "鮫島「Ｔａｂキーでメニューが開けます」"
-	if %adv_char == 4 puttext "局員「Ｔａｂキーでメニューが開けます！」"
-	if %adv_char == 5 puttext "局員「Ｔａｂキーでメニューが開けるぞ！」"
-	if %adv_char == 6 puttext "なのは「Ｔａｂキーでメニューが開けるの」"
-	return
+  if %adv_char == 0 puttext "Ｔａｂキーでメニューが開けます"
+  if %adv_char == 1 puttext "アリサ「Ｔａｂキーでメニューが開けるわよ」"
+  if %adv_char == 2 puttext "すずか「Ｔａｂキーでメニューが開けるよ」"
+  if %adv_char == 3 puttext "鮫島「Ｔａｂキーでメニューが開けます」"
+  if %adv_char == 4 puttext "局員「Ｔａｂキーでメニューが開けます！」"
+  if %adv_char == 5 puttext "局員「Ｔａｂキーでメニューが開けるぞ！」"
+  if %adv_char == 6 puttext "なのは「Ｔａｂキーでメニューが開けるの」"
+  return
 
 *fm01_say_calc
-	if %adv_char == 0 puttext "!s0計算中……!sd"
-	if %adv_char == 1 puttext "!s0アリサ「計算中……」!sd"
-	if %adv_char == 2 puttext "!s0すずか「計算中だよ……」!sd"
-	if %adv_char == 3 puttext "!s0鮫島「計算中です……」!sd"
-	if %adv_char == 4 puttext "!s0局員「計算中です！」!sd"
-	if %adv_char == 5 puttext "!s0局員「計算中だ！」!sd"
-	if %adv_char == 6 puttext "!s0なのは「計算中なの」!sd"
-	return
+  if %adv_char == 0 puttext "!s0計算中……!sd"
+  if %adv_char == 1 puttext "!s0アリサ「計算中……」!sd"
+  if %adv_char == 2 puttext "!s0すずか「計算中だよ……」!sd"
+  if %adv_char == 3 puttext "!s0鮫島「計算中です……」!sd"
+  if %adv_char == 4 puttext "!s0局員「計算中です！」!sd"
+  if %adv_char == 5 puttext "!s0局員「計算中だ！」!sd"
+  if %adv_char == 6 puttext "!s0なのは「計算中なの」!sd"
+  return
 
 *fm01_say_result
-	if %adv_char == 0 goto *fm01_say_result0
-	if %adv_char == 1 goto *fm01_say_result1
-	if %adv_char == 2 goto *fm01_say_result2
-	if %adv_char == 3 goto *fm01_say_result3
-	if %adv_char == 4 goto *fm01_say_result4
-	if %adv_char == 5 goto *fm01_say_result5
-	if %adv_char == 6 goto *fm01_say_result6
+  if %adv_char == 0 goto *fm01_say_result0
+  if %adv_char == 1 goto *fm01_say_result1
+  if %adv_char == 2 goto *fm01_say_result2
+  if %adv_char == 3 goto *fm01_say_result3
+  if %adv_char == 4 goto *fm01_say_result4
+  if %adv_char == 5 goto *fm01_say_result5
+  if %adv_char == 6 goto *fm01_say_result6
 
 *fm01_say_result0
 『$sret』@
-	return
+  return
 *fm01_say_result1
 アリサ「結果は『$sret』ね」@
-	return
+  return
 *fm01_say_result2
 すずか「結果は『$sret』だよ」@
-	return
+  return
 *fm01_say_result3
 鮫島「結果は『$sret』でございます」@
-	return
+  return
 *fm01_say_result4
 局員「結果は『$sret』です！」@
-	return
+  return
 *fm01_say_result5
 局員「結果は『$sret』だ！」@
-	return
+  return
 *fm01_say_result6
 なのは「結果は『$sret』なの」@
-	return
+  return
 
 *fm01_say_parenthesis_error
-	textclear
-	if %adv_char == 0 puttext "括弧の開く数と、閉じる数が一致していません\"
-	if %adv_char == 1 goto *fm01_say_parenthesis_error_arisa
-	if %adv_char == 2 goto *fm01_say_parenthesis_error_suzuka
-	if %adv_char == 3 puttext "鮫島「括弧の開く数と、閉じる数が一致しておりません」\"
-	if %adv_char == 4 puttext "局員「括弧の開く数と、閉じる数が一致していません！」\"
-	if %adv_char == 5 puttext "局員「括弧の開く数と、閉じる数が一致していない！」\"
-	if %adv_char == 6 puttext "なのは「括弧の開く数と、閉じる数が一致していないの」\"
-	return
+  textclear
+  if %adv_char == 0 puttext "括弧の開く数と、閉じる数が一致していません\"
+  if %adv_char == 1 goto *fm01_say_parenthesis_error_arisa
+  if %adv_char == 2 goto *fm01_say_parenthesis_error_suzuka
+  if %adv_char == 3 puttext "鮫島「括弧の開く数と、閉じる数が一致しておりません」\"
+  if %adv_char == 4 puttext "局員「括弧の開く数と、閉じる数が一致していません！」\"
+  if %adv_char == 5 puttext "局員「括弧の開く数と、閉じる数が一致していない！」\"
+  if %adv_char == 6 puttext "なのは「括弧の開く数と、閉じる数が一致していないの」\"
+  return
 
 
 *fm01_say_parenthesis_error_arisa
-	r_show ari_die
+  r_show ari_die
 アリサ「括弧の開く数と、閉じる数が一致していないわよ」\
-	r_show ari_n
-	return
+  r_show ari_n
+  return
 
 *fm01_say_parenthesis_error_suzuka
-	r_show suzur_ase
+  r_show suzur_ase
 すずか「括弧の開く数と、閉じる数が一致していないよ」\
-	r_show suzur_n
-	return
+  r_show suzur_n
+  return

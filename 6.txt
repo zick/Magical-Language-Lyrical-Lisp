@@ -4,100 +4,100 @@
 ;;600y460
 
 *komiyan_vita
-	amsp SP_ARROW, 480, 400
-	vsp SP_ARROW, 1
-	print 1
-	return
+  amsp SP_ARROW, 480, 400
+  vsp SP_ARROW, 1
+  print 1
+  return
 
 *komiyan_zafila
-	amsp SP_ARROW, 600, 460
-	vsp SP_ARROW, 1
-	print 1
-	return
+  amsp SP_ARROW, 600, 460
+  vsp SP_ARROW, 1
+  print 1
+  return
 
 *komiyan_rein
-	amsp SP_ARROW, 538, 400
-	vsp SP_ARROW, 1
-	print 1
-	return
+  amsp SP_ARROW, 538, 400
+  vsp SP_ARROW, 1
+  print 1
+  return
 
 *komiyan
-	bgm ms_omake
-	lsph SP_ARROW, ":l;img/arrow.bmp", 0, 0
-	bg black, E_NORMAL
-	speak_mode
-	r_load ":l;img/three.bmp"
-	bg "img/yama_b.bmp", E_NORMAL
-	gosub *komiyan_vita
+  bgm ms_omake
+  lsph SP_ARROW, ":l;img/arrow.bmp", 0, 0
+  bg black, E_NORMAL
+  speak_mode
+  r_load ":l;img/three.bmp"
+  bg "img/yama_b.bmp", E_NORMAL
+  gosub *komiyan_vita
 ヴィータ「アリサたちを守る鮫島は、京都にいるアリサたちをほうって大阪に行ったよな？@/
 　このとき局員が他にもいて、京都に向かっていたらどうなってたんだろうな」\
-	gosub *komiyan_rein
+  gosub *komiyan_rein
 リイン「どうやら彼は、半径２００Ｋｍ以内の気配を察知できるらしいのです。@/
 京都にいれば、少なくとも近畿地方は全部範囲内なんですよ」\
-	gosub *komiyan_vita
+  gosub *komiyan_vita
 ヴィータ「ということは、追っ手が一人と分かったから、反撃に出たのかよ」\
-	gosub *komiyan_zafila
+  gosub *komiyan_zafila
 ザフィーラ「それだけではない。相手が自分ひとりで倒せると踏んだ上での判断だ。@/
 戦力判断も出来るすごい能力といえるだろう」\
-	gosub *komiyan_vita
+  gosub *komiyan_vita
 ヴィータ「管理局がほしがるような逸材だな」\
-	gosub *komiyan_rein
+  gosub *komiyan_rein
 リイン「でも、わざわざ正面から当たる意味はあったんでしょうか。@/
 こちらの居場所が知られていないなら、不意打ちしてこちらの損害を減らすべきだと思いますが……」\
-	gosub *komiyan_vita
+  gosub *komiyan_vita
 ヴィータ「騎士道精神に反するからだろ」\
-	gosub *komiyan_rein
+  gosub *komiyan_rein
 リイン「彼は執事ですけど……」\
-	gosub *komiyan_vita
+  gosub *komiyan_vita
 ヴィータ「じゃあ、執事道精神だ」\
-	gosub *komiyan_rein
+  gosub *komiyan_rein
 リイン「執事道ってなんですか」\
-	gosub *komiyan_zafila
+  gosub *komiyan_zafila
 ザフィーラ「しかし、この反撃は失敗だったかもしれんな」\
-	gosub *komiyan_rein
+  gosub *komiyan_rein
 リイン「え？　なんでですか。ちゃんと撃退しましたよ」\
-	gosub *komiyan_zafila
+  gosub *komiyan_zafila
 ザフィーラ「だから、管理局も本腰になって、なのはまで投入したのだろう」\
-	gosub *komiyan_vita
+  gosub *komiyan_vita
 ヴィータ「でも、逃げ回ったって、見つからなければ、向こうも本気になるんだろ？@/
 　結局、一緒じゃねーのか？」\
-	gosub *komiyan_zafila
+  gosub *komiyan_zafila
 ザフィーラ「しかし、時間稼ぎにはなる。@/
 なのはに連絡できなかったのは、早期になのはが捕獲作戦に参加したからだろう」\
-	gosub *komiyan_rein
+  gosub *komiyan_rein
 リイン「そうか。そうすれば、管理局より先になのはさんに接触できたかもしれないですね」\
-	gosub *komiyan_vita
+  gosub *komiyan_vita
 ヴィータ「で、なのはにうやむやにしてもらう、ってか？」\
-	gosub *komiyan_zafila
+  gosub *komiyan_zafila
 ザフィーラ「それにしても、老人一人とはいえ、局員を一人しか派遣しないとは……。@/
 時空管理局も地に落ちたか」\
-	gosub *komiyan_vita
+  gosub *komiyan_vita
 ヴィータ「でも、強力なデバイスを持たせてるぜ。@/
 全くやる気がないわけじゃねーみたいだな」\
-	gosub *komiyan_zafila
+  gosub *komiyan_zafila
 ザフィーラ「よく分からんことをするな。ちゃんと捕らえたいならもっと人員を投入すればよい。@/
 捜索に人員を割くのは基本だ。捕らえる気が無いなら、強力なデバイスなど使う意味はない」\
-	gosub *komiyan_vita
+  gosub *komiyan_vita
 ヴィータ「そのデバイスは役に立たなかったみたいだけどな。@/
 いや、そもそも、捕らえる気がないんなら、誰も送り込む必要なんかないんじゃねーのか？」\
-	gosub *komiyan_rein
+  gosub *komiyan_rein
 リイン「まぁ、ＬＩＳＰマシンを使っているようなところですから、私たちには理解できない何かがあるのでしょう」\
-	gosub *komiyan_zafila
+  gosub *komiyan_zafila
 ザフィーラ「普通のやつらの上を行っている、ということか」\
-	stop
-	csp SP_ARROW
-	csp SP_R
-	bg black, E_SLOW
-	goto *title
+  stop
+  csp SP_ARROW
+  csp SP_R
+  bg black, E_SLOW
+  goto *title
 
 
 
 *hint
-	bgm ms_setsume
-	talk_mode
-	r_load ari_n
-	l_load suzu_nc
-	bg "img/blackboard.bmp", E_SLOW
+  bgm ms_setsume
+  talk_mode
+  r_load ari_n
+  l_load suzu_nc
+  bg "img/blackboard.bmp", E_SLOW
 すずか「リリカルＬｉｓｐを最後までプレイし
 　　　　ていただきありがとうございます」\
 アリサ「このゲームはエンディングが二つ用意
@@ -105,36 +105,35 @@
 　　　　たかしら？」\
 すずか「まだ、一つしか見てないという人にヒ
 　　　　ントを出すね」\
-	r_show ari_exc
+  r_show ari_exc
 アリサ「物語が分岐するのは、鮫島がなのはと
 　　　　戦うところなの」\
-	l_show suzu_ase
+  l_show suzu_ase
 すずか「なのはちゃんは物凄く強いよね。@/
-	l_show suzu_n
+  l_show suzu_n
 だけ
 　　　　ど鮫島さんも素質があるから、努力を
 　　　　すれば実は勝てちゃうの」\
-	r_show ari_n
+  r_show ari_n
 アリサ「重要なのは#FFFF33たたかう#FFFFFFを選んで使える技
 　　　　の種類よ」\
-	l_show suzu_qes
+  l_show suzu_qes
 すずか「『最後まで三種類しか使えなかった』
 　　　　なんてことはない？」\
 アリサ「実は、ある条件を満たすと、鮫島が使
 　　　　える技の数が増えるの」\
-	l_show suzu_excc
+  l_show suzu_excc
 すずか「ヒントは、この黒板の左下に見える、
 　　　　ウサギのぬいぐるみだよ」\
-	r_show ari_hrt
+  r_show ari_hrt
 アリサ「クリックしたらきっと面白いことが起
 　　　　こるわよ」\
-	l_show suzu_ase
+  l_show suzu_ase
 すずか「面白いというか、少しかわいそうなこ
 　　　　とをする必要があるんだけどね」\
-	r_show ari_n
+  r_show ari_n
 アリサ「それじゃあ、あとは頑張ってね！」\
-	stop
-	csp SP_R : csp SP_L
-	bg black, E_SLOW
-	goto *title
-
+  stop
+  csp SP_R : csp SP_L
+  bg black, E_SLOW
+  goto *title

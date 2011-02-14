@@ -349,7 +349,7 @@ nsa
 
   defaultspeed 50,15,5
   caption "Magical Language Lyrical Lisp"
-  versionstr "Magical Language Lyrical Lisp 20100920", "Open Source"
+  versionstr "Magical Language Lyrical Lisp", "Open Source"
   resetmenu
   insertmenu "終了", END
   insertmenu "バージョン情報", VERSION

@@ -7,306 +7,306 @@
 ;;tmp1     : ball type(1=フォーク, 2=低速化, 3=高速化)
 
 *yakyu
-	setwindow 8,16,29,20,26,26,0,2,20,1,1,#999999,0,0,799,599
-	bgm ms_yakyu
-	lsph SP_REIN01, ":l;img/rein01.bmp", 400, 557
-	lsph SP_REIN02, ":l;img/rein02.bmp", 400, 557
-	lsph SP_REIN03, ":l;img/rein03.bmp", 400, 557
-	lsph SP_VITA01, ":l;img/vita01.bmp", 100, 556
-	lsph SP_VITA02, ":l;img/vita02.bmp", 100, 556
-	lsph SP_BALL, ":l;img/ball.bmp", 0, 0
-	lsph SP_ARROW, ":l;img/arrow.bmp", 0, 0
+  setwindow 8,16,29,20,26,26,0,2,20,1,1,#999999,0,0,799,599
+  bgm ms_yakyu
+  lsph SP_REIN01, ":l;img/rein01.bmp", 400, 557
+  lsph SP_REIN02, ":l;img/rein02.bmp", 400, 557
+  lsph SP_REIN03, ":l;img/rein03.bmp", 400, 557
+  lsph SP_VITA01, ":l;img/vita01.bmp", 100, 556
+  lsph SP_VITA02, ":l;img/vita02.bmp", 100, 556
+  lsph SP_BALL, ":l;img/ball.bmp", 0, 0
+  lsph SP_ARROW, ":l;img/arrow.bmp", 0, 0
 
 *yakyu_l1
-	vsp SP_VITA01, 1 : vsp SP_VITA02, 0
-	vsp SP_REIN01, 1 : vsp SP_REIN02, 0 : vsp SP_REIN03, 0
-	print 1
+  vsp SP_VITA01, 1 : vsp SP_VITA02, 0
+  vsp SP_REIN01, 1 : vsp SP_REIN02, 0 : vsp SP_REIN03, 0
+  print 1
 
 *yakyu_menu
-	locate 4, 13
-	csel "ステージ１．目指せ、三割バッター！", *yakyu_stage1, "ステージ２．恐怖！リインの魔球！！", *yakyu_stage2, "ステージ３．ドキッ☆ラムダ山越え！？", *yakyu_stage3, "説明を読む", *yakyu_help, "タイトルに戻る", *yakyu_end
+  locate 4, 13
+  csel "ステージ１．目指せ、三割バッター！", *yakyu_stage1, "ステージ２．恐怖！リインの魔球！！", *yakyu_stage2, "ステージ３．ドキッ☆ラムダ山越え！？", *yakyu_stage3, "説明を読む", *yakyu_help, "タイトルに戻る", *yakyu_end
 
 *yakyu_main
-	if %tmp == 1 goto *yakyu_stage1_loop
-	if %tmp == 2 goto *yakyu_stage2_loop
-	if %tmp == 3 goto *yakyu_stage3_loop
+  if %tmp == 1 goto *yakyu_stage1_loop
+  if %tmp == 2 goto *yakyu_stage2_loop
+  if %tmp == 3 goto *yakyu_stage3_loop
 
 
 *yakyu_stage1
-	mov %tmp, 1
-	mov %adv_tmp1, 0
-	mov %adv_tmp2, 0
-	mov %adv_tmp3, 0
-	gosub *yakyu_norm
+  mov %tmp, 1
+  mov %adv_tmp1, 0
+  mov %adv_tmp2, 0
+  mov %adv_tmp3, 0
+  gosub *yakyu_norm
 *yakyu_stage1_loop
-	inc %adv_tmp1
-	if %adv_tmp1 > 6 goto *yakyu_result1
-	goto *yakyu_wait
+  inc %adv_tmp1
+  if %adv_tmp1 > 6 goto *yakyu_result1
+  goto *yakyu_wait
 
 *yakyu_stage2
-	mov %tmp, 2
-	mov %adv_tmp1, 0
-	mov %adv_tmp2, 0
-	mov %adv_tmp3, 0
-	gosub *yakyu_norm
+  mov %tmp, 2
+  mov %adv_tmp1, 0
+  mov %adv_tmp2, 0
+  mov %adv_tmp3, 0
+  gosub *yakyu_norm
 *yakyu_stage2_loop
-	inc %adv_tmp1
-	if %adv_tmp1 > 6 goto *yakyu_result2
-	goto *yakyu_wait
+  inc %adv_tmp1
+  if %adv_tmp1 > 6 goto *yakyu_result2
+  goto *yakyu_wait
 
 *yakyu_stage3
-	mov %tmp, 3
-	mov %adv_tmp1, 0
-	mov %adv_tmp2, 0
-	mov %adv_tmp3, 0
-	gosub *yakyu_norm
+  mov %tmp, 3
+  mov %adv_tmp1, 0
+  mov %adv_tmp2, 0
+  mov %adv_tmp3, 0
+  gosub *yakyu_norm
 *yakyu_stage3_loop
-	inc %adv_tmp1
-	if %adv_tmp1 > 6 goto *yakyu_result3
-	goto *yakyu_wait
+  inc %adv_tmp1
+  if %adv_tmp1 > 6 goto *yakyu_result3
+  goto *yakyu_wait
 
 
 *yakyu_balltype
-	mov %tmp1, 0
-	if %tmp == 1 return
-	rnd %adv_tmp, 10
-	if %adv_tmp <= 5 goto *yakyu_speedball
-	if %tmp == 2 && %adv_tmp <= 7 goto *yakyu_speedball
-	if %tmp == 3 && %adv_tmp <= 6 mov %tmp1, 1 : return
-	return
+  mov %tmp1, 0
+  if %tmp == 1 return
+  rnd %adv_tmp, 10
+  if %adv_tmp <= 5 goto *yakyu_speedball
+  if %tmp == 2 && %adv_tmp <= 7 goto *yakyu_speedball
+  if %tmp == 3 && %adv_tmp <= 6 mov %tmp1, 1 : return
+  return
 
 *yakyu_speedball
-	mov %tmp1, 3
-	if %adv_ball_vx > 5 mov %tmp1, 2
-	return
+  mov %tmp1, 3
+  if %adv_ball_vx > 5 mov %tmp1, 2
+  return
 
 
 ;[0.5-3.0sec]
 *yakyu_wait
-	vsp SP_REIN02, 0 : vsp SP_REIN03, 0
-	vsp SP_REIN01, 1
-	vsp SP_VITA02, 0
-	vsp SP_VITA01, 1
-	vsp SP_BALL, 0
-	rnd %adv_tmp, 2500
-	add %adv_tmp, 500
-	print 1
-	resettimer
-	waittimer %adv_tmp
+  vsp SP_REIN02, 0 : vsp SP_REIN03, 0
+  vsp SP_REIN01, 1
+  vsp SP_VITA02, 0
+  vsp SP_VITA01, 1
+  vsp SP_BALL, 0
+  rnd %adv_tmp, 2500
+  add %adv_tmp, 500
+  print 1
+  resettimer
+  waittimer %adv_tmp
 *yakyu_throw
-	mov %adv_ball_x, 400
-	mov %adv_ball_y, 568
-	;;[3-7]
-	rnd %adv_tmp, 4
-	add %adv_tmp, 3
-	mov %adv_ball_vx, %adv_tmp
-	vsp SP_REIN01, 0
-	if %adv_ball_vx <= 5 vsp SP_REIN02, 1
-	if %adv_ball_vx > 5 vsp SP_REIN03, 1
-	vsp SP_BALL, 1
-	sub %adv_ball_x, %adv_ball_vx * 3  ;ボールの初期位置を左の方に
-	gosub *yakyu_balltype  ;変化球の種類を決める
-	gosub *trap_init ;これ以前のマウス入力は捨てる
-	trap *yakyu_swing
+  mov %adv_ball_x, 400
+  mov %adv_ball_y, 568
+  ;;[3-7]
+  rnd %adv_tmp, 4
+  add %adv_tmp, 3
+  mov %adv_ball_vx, %adv_tmp
+  vsp SP_REIN01, 0
+  if %adv_ball_vx <= 5 vsp SP_REIN02, 1
+  if %adv_ball_vx > 5 vsp SP_REIN03, 1
+  vsp SP_BALL, 1
+  sub %adv_ball_x, %adv_ball_vx * 3  ;ボールの初期位置を左の方に
+  gosub *yakyu_balltype  ;変化球の種類を決める
+  gosub *trap_init ;これ以前のマウス入力は捨てる
+  trap *yakyu_swing
 *yakyu_throw_loop
-	resettimer
-	amsp SP_BALL, %adv_ball_x, %adv_ball_y
-	print 1
-	waittimer 33
-	sub %adv_ball_x, %adv_ball_vx
+  resettimer
+  amsp SP_BALL, %adv_ball_x, %adv_ball_y
+  print 1
+  waittimer 33
+  sub %adv_ball_x, %adv_ball_vx
 ;;
 if %tmp1 == 1 && %adv_ball_x <=200 && %adv_ball_x >= 158 mov %adv_tmp, %adv_ball_vx * 3 : div %adv_tmp, 5 : add %adv_ball_y, %adv_tmp
 if %tmp1 == 2 && %adv_ball_x <=200 mov %adv_ball_vx, 3 : mov %tmp1, 0
 if %tmp1 == 3 && %adv_ball_x <=250 mov %adv_ball_vx, 7 : mov %tmp1, 0
 ;;
-	if %adv_ball_x < -10 && %adv_ball_y == 568 trap off : goto *yakyu_main
-	if %adv_ball_x < -10 trap off : goto *yakyu_ball
-	goto *yakyu_throw_loop
+  if %adv_ball_x < -10 && %adv_ball_y == 568 trap off : goto *yakyu_main
+  if %adv_ball_x < -10 trap off : goto *yakyu_ball
+  goto *yakyu_throw_loop
 
 
 *yakyu_ball
-	lsp SP_TMP, ":s/50,50,1;#FFFFFFボール！", 100, 390
-	print E_NORMAL
-	delay 2000
-	csp SP_TMP
-	print E_NORMAL
-	dec %adv_tmp1
-	goto *yakyu_main
+  lsp SP_TMP, ":s/50,50,1;#FFFFFFボール！", 100, 390
+  print E_NORMAL
+  delay 2000
+  csp SP_TMP
+  print E_NORMAL
+  dec %adv_tmp1
+  goto *yakyu_main
 
 
 *yakyu_swing
-	vsp SP_VITA01, 0
-	vsp SP_VITA02, 1
-	print 1
-	if %adv_ball_x >= 159 goto *yakyu_strike
-	if %adv_ball_x <= 145 goto *yakyu_strike2
-	if %adv_ball_x >= 155 && %adv_ball_x <= 158 && %adv_ball_y == 568 goto *yakyu_hit
-	if %adv_ball_x >= 151 && %adv_ball_x <= 154 && %adv_ball_y == 568 goto *yakyu_homerun
-	if %adv_ball_x >= 146 && %adv_ball_x <= 150 && %adv_ball_y == 568 goto *yakyu_hit
-	goto *yakyu_strike
+  vsp SP_VITA01, 0
+  vsp SP_VITA02, 1
+  print 1
+  if %adv_ball_x >= 159 goto *yakyu_strike
+  if %adv_ball_x <= 145 goto *yakyu_strike2
+  if %adv_ball_x >= 155 && %adv_ball_x <= 158 && %adv_ball_y == 568 goto *yakyu_hit
+  if %adv_ball_x >= 151 && %adv_ball_x <= 154 && %adv_ball_y == 568 goto *yakyu_homerun
+  if %adv_ball_x >= 146 && %adv_ball_x <= 150 && %adv_ball_y == 568 goto *yakyu_hit
+  goto *yakyu_strike
 
 *yakyu_swing_loop
-	resettimer
-	print 1
-	waittimer 33
-	goto *yakyu_swing_loop
+  resettimer
+  print 1
+  waittimer 33
+  goto *yakyu_swing_loop
 
 *yakyu_hit
-	inc %adv_tmp2
-	mov %adv_ball_vx, 69  ;上方向の初速度x10
+  inc %adv_tmp2
+  mov %adv_ball_vx, 69  ;上方向の初速度x10
 
 *yakyu_hit_loop
-	resettimer
-	add %adv_ball_x, 12
-	mov %adv_tmp, %adv_ball_vx / 10
-	sub %adv_ball_y, %adv_tmp
-	sub %adv_ball_vx, 2
-	amsp SP_BALL, %adv_ball_x, %adv_ball_y
-	print 1
-	waittimer 33
-	if %adv_ball_x > 860 goto *yakyu_main
-	goto *yakyu_hit_loop
+  resettimer
+  add %adv_ball_x, 12
+  mov %adv_tmp, %adv_ball_vx / 10
+  sub %adv_ball_y, %adv_tmp
+  sub %adv_ball_vx, 2
+  amsp SP_BALL, %adv_ball_x, %adv_ball_y
+  print 1
+  waittimer 33
+  if %adv_ball_x > 860 goto *yakyu_main
+  goto *yakyu_hit_loop
 
 *yakyu_homerun
-	inc %adv_tmp3
-	mov %adv_ball_vx, 120  ;上方向の初速度x10
+  inc %adv_tmp3
+  mov %adv_ball_vx, 120  ;上方向の初速度x10
 *yakyu_homerun_loop
-	resettimer
-	add %adv_ball_x, 18
-	mov %adv_tmp, %adv_ball_vx / 10
-	sub %adv_ball_y, %adv_tmp
-	sub %adv_ball_vx, 2
-	amsp SP_BALL, %adv_ball_x, %adv_ball_y
-	print 1
-	waittimer 33
-	if %adv_ball_x > 860 goto *yakyu_homerun_end
-	goto *yakyu_homerun_loop
+  resettimer
+  add %adv_ball_x, 18
+  mov %adv_tmp, %adv_ball_vx / 10
+  sub %adv_ball_y, %adv_tmp
+  sub %adv_ball_vx, 2
+  amsp SP_BALL, %adv_ball_x, %adv_ball_y
+  print 1
+  waittimer 33
+  if %adv_ball_x > 860 goto *yakyu_homerun_end
+  goto *yakyu_homerun_loop
 
 *yakyu_homerun_end
-	lsp SP_TMP, ":s/50,50,1;#FFFFFFホームラン！", 250, 390
-	print E_NORMAL
-	delay 2000
-	csp SP_TMP
-	print E_NORMAL
-	goto *yakyu_main
+  lsp SP_TMP, ":s/50,50,1;#FFFFFFホームラン！", 250, 390
+  print E_NORMAL
+  delay 2000
+  csp SP_TMP
+  print E_NORMAL
+  goto *yakyu_main
 
 *yakyu_strike
-	mov %adv_tmp, -10
+  mov %adv_tmp, -10
 *yakyu_strike_loop
-	resettimer
-	amsp SP_BALL, %adv_ball_x, %adv_ball_y
-	print 1
-	waittimer 33
-	sub %adv_ball_x, %adv_ball_vx
-	if %adv_ball_x < %adv_tmp goto *yakyu_main
-	goto *yakyu_strike_loop
+  resettimer
+  amsp SP_BALL, %adv_ball_x, %adv_ball_y
+  print 1
+  waittimer 33
+  sub %adv_ball_x, %adv_ball_vx
+  if %adv_ball_x < %adv_tmp goto *yakyu_main
+  goto *yakyu_strike_loop
 
 *yakyu_strike2
-	mov %adv_tmp, -30
-	goto *yakyu_strike_loop
+  mov %adv_tmp, -30
+  goto *yakyu_strike_loop
 
 
 *yakyu_end
-	stop
-	csp SP_REIN01
-	csp SP_REIN02
-	csp SP_REIN03
-	csp SP_VITA01
-	csp SP_VITA02
-	csp SP_BALL
-	csp SP_ARROW
-	goto *title_menu
+  stop
+  csp SP_REIN01
+  csp SP_REIN02
+  csp SP_REIN03
+  csp SP_VITA01
+  csp SP_VITA02
+  csp SP_BALL
+  csp SP_ARROW
+  goto *title_menu
 
 
 
 *yakyu_norm
-	if %tmp == 1 gosub *yakyu_norm1
-	if %tmp == 2 gosub *yakyu_norm2
-	if %tmp == 3 gosub *yakyu_norm3
-	print E_NORMAL
-	delay 2000
-	csp SP_TMP1 : csp SP_TMP2
-	print E_NORMAL
-	return
+  if %tmp == 1 gosub *yakyu_norm1
+  if %tmp == 2 gosub *yakyu_norm2
+  if %tmp == 3 gosub *yakyu_norm3
+  print E_NORMAL
+  delay 2000
+  csp SP_TMP1 : csp SP_TMP2
+  print E_NORMAL
+  return
 
 *yakyu_norm1
-	lsp SP_TMP1, ":s/30,30,1;#FFFFFF球数　６", 200, 350
-	lsp SP_TMP2, ":s/30,30,1;#FFFFFF目標　安打２本以上", 200, 390
-	return
+  lsp SP_TMP1, ":s/30,30,1;#FFFFFF球数　６", 200, 350
+  lsp SP_TMP2, ":s/30,30,1;#FFFFFF目標　安打２本以上", 200, 390
+  return
 
 *yakyu_norm2
-	lsp SP_TMP1, ":s/30,30,1;#FFFFFF球数　６", 200, 350
-	lsp SP_TMP2, ":s/30,30,1;#FFFFFF目標　安打３本以上", 200, 390
-	return
+  lsp SP_TMP1, ":s/30,30,1;#FFFFFF球数　６", 200, 350
+  lsp SP_TMP2, ":s/30,30,1;#FFFFFF目標　安打３本以上", 200, 390
+  return
 
 *yakyu_norm3
-	lsp SP_TMP1, ":s/30,30,1;#FFFFFF球数　６", 200, 350
-	lsp SP_TMP2, ":s/30,30,1;#FFFFFF目標　本塁打３本以上", 200, 390
-	return
+  lsp SP_TMP1, ":s/30,30,1;#FFFFFF球数　６", 200, 350
+  lsp SP_TMP2, ":s/30,30,1;#FFFFFF目標　本塁打３本以上", 200, 390
+  return
 
 
 *yakyu_result1
-	gosub *yakyu_result
-	lsp SP_TMP, ":s/50,50,1;#FFFFFF失敗！", 250, 390
-	if %adv_tmp2 + %adv_tmp3 >= 2  lsp SP_TMP, ":s/50,50,1;#FFFFFF目標達成！", 250, 390
-	print E_NORMAL
-	delay 2000
-	csp SP_TMP
-	print E_NORMAL
-	goto *yakyu_l1;;;
+  gosub *yakyu_result
+  lsp SP_TMP, ":s/50,50,1;#FFFFFF失敗！", 250, 390
+  if %adv_tmp2 + %adv_tmp3 >= 2  lsp SP_TMP, ":s/50,50,1;#FFFFFF目標達成！", 250, 390
+  print E_NORMAL
+  delay 2000
+  csp SP_TMP
+  print E_NORMAL
+  goto *yakyu_l1;;;
 
 *yakyu_result2
-	gosub *yakyu_result
-	lsp SP_TMP, ":s/50,50,1;#FFFFFF失敗！", 250, 390
-	if %adv_tmp2 + %adv_tmp3 >= 3  lsp SP_TMP, ":s/50,50,1;#FFFFFF目標達成！", 250, 390
-	print E_NORMAL
-	delay 2000
-	csp SP_TMP
-	print E_NORMAL
-	goto *yakyu_l1;;;
+  gosub *yakyu_result
+  lsp SP_TMP, ":s/50,50,1;#FFFFFF失敗！", 250, 390
+  if %adv_tmp2 + %adv_tmp3 >= 3  lsp SP_TMP, ":s/50,50,1;#FFFFFF目標達成！", 250, 390
+  print E_NORMAL
+  delay 2000
+  csp SP_TMP
+  print E_NORMAL
+  goto *yakyu_l1;;;
 
 *yakyu_result3
-	gosub *yakyu_result
-	lsp SP_TMP, ":s/50,50,1;#FFFFFF失敗！", 200, 350
-	if %adv_tmp3 >= 3  lsp SP_TMP, ":s/50,50,1;#FFFFFF目標達成！", 200, 350
-	print E_NORMAL
-	delay 2000
-	csp SP_TMP
-	print E_NORMAL
-	goto *yakyu_l1;;;
+  gosub *yakyu_result
+  lsp SP_TMP, ":s/50,50,1;#FFFFFF失敗！", 200, 350
+  if %adv_tmp3 >= 3  lsp SP_TMP, ":s/50,50,1;#FFFFFF目標達成！", 200, 350
+  print E_NORMAL
+  delay 2000
+  csp SP_TMP
+  print E_NORMAL
+  goto *yakyu_l1;;;
 
 *yakyu_result
-	mov $stmp1, ":s/30,30,1;#FFFFFF安打　"
-	itoa2 $stmp, %adv_tmp2 + %adv_tmp3
-	add $stmp1, $stmp
-	mov $stmp2, ":s/30,30,1;#FFFFFF本塁打"
-	itoa2 $stmp, %adv_tmp3
-	add $stmp2, $stmp
-	lsp SP_TMP1, $stmp1, 200, 350
-	lsp SP_TMP2, $stmp2, 200, 390
-	print E_NORMAL
-	delay 2000
-	csp SP_TMP1 : csp SP_TMP2
-	print E_NORMAL
-	return
+  mov $stmp1, ":s/30,30,1;#FFFFFF安打　"
+  itoa2 $stmp, %adv_tmp2 + %adv_tmp3
+  add $stmp1, $stmp
+  mov $stmp2, ":s/30,30,1;#FFFFFF本塁打"
+  itoa2 $stmp, %adv_tmp3
+  add $stmp2, $stmp
+  lsp SP_TMP1, $stmp1, 200, 350
+  lsp SP_TMP2, $stmp2, 200, 390
+  print E_NORMAL
+  delay 2000
+  csp SP_TMP1 : csp SP_TMP2
+  print E_NORMAL
+  return
 
 *yakyu_help
-	amsp SP_ARROW, 405, 525
-	vsp SP_ARROW, 1
-	print 1
-	locate 0, 13
+  amsp SP_ARROW, 405, 525
+  vsp SP_ARROW, 1
+  print 1
+  locate 0, 13
 ＊ルール説明＊
 リインが投げたボールを、@/
-	amsp SP_ARROW, 115, 525
-	vsp SP_ARROW, 1
-	print 1
+  amsp SP_ARROW, 115, 525
+  vsp SP_ARROW, 1
+  print 1
 ヴィータが打ちます。@
 br
 以上。\
-	vsp SP_ARROW, 0 : print E_FAST
+  vsp SP_ARROW, 0 : print E_FAST
 locate 0, 13
 ＊操作方法＊
 左クリック　　　　スウィング@
 br
 それだけです。\
-	goto *yakyu_menu
+  goto *yakyu_menu
