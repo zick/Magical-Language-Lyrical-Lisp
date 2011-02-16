@@ -371,7 +371,50 @@ textclear
   print 1
   return
 
+*ex_init
+  mov %adv_rmode, 0         ;右クリック無効
+  bgm ms_ex
+  csp SP_R : csp SP_L
+  bg black, E_NORMAL
+  r_load ari_n
+  bg "img/blackboard.bmp", E_FAST
+  skipoff
+  mov %adv_tmp, 0
+  mov %save_flag, 0  ;セーブ不能
+*ex_init_env
+  gosub *create_new_env  ;自由にいじれるように新しい環境を作る
+  mov %arg0, %ret
+  mov %adv_tmp3, %arg0
+  gosub *push  ;GC対策
+  mov %arg1, %global_env
+  gosub *nconc
+  return
 
+*ex_rep
+  mov %gc_run, 0  ;GC起動回数を初期化
+  mov $sarg0, ""
+  textclear
+  gosub $problem_label
+  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
+  getret %ret
+  if %ret == 1 goto $tab_label  ;Tab
+  if $sarg0 == "" goto $ret_label
+  textclear
+!s0アリサ「計算中……」!sd
+  repaint
+  gosub *check_lr_parenthesis
+  if %ret != 0 gosub *parenthesis_error : goto $ret_label
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  gosub *push
+  mov %arg1, %adv_tmp3
+  gosub *eval
+  mov %arg0, %ret
+  gosub *push
+  gosub *lobject_to_string
+  textclear
+アリサ「結果は『$sret』ね」\
+  goto $suc_label
 
 
 ;;;;;;;;;;
@@ -1073,43 +1116,18 @@ stop
 アリサ「あと、入力は全て半角文字。Ｅｎｔｅｒキーを押したら結果が出るからね。@/
 変な式を打ち込まないように気をつけなさいよ♪」\
 
-  mov %adv_rmode, 0         ;右クリック無効
-  bgm ms_ex
-  csp SP_R : csp SP_L
-  bg black, E_NORMAL
-  r_load ari_n
-  bg "img/blackboard.bmp", E_FAST
-  skipoff
-  mov %adv_tmp, 0
-  mov %save_flag, 0  ;セーブ不能
-  gosub *create_new_env  ;自由にいじれるように新しい環境を作る
-  mov %arg0, %ret
-  mov %adv_tmp3, %arg0
-  gosub *push  ;GC対策
-  mov %arg1, %global_env
-  gosub *nconc
+  gosub *ex_init
 *ex01
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex01_problem"
+  mov $tab_label, "*ex01_end"
+  mov $ret_label, "*ex01"
+  mov $suc_label, "*ex01_check"
+  goto *ex_rep
+*ex01_problem
 !s0アリサ「気が済んだらＴａｂキーを押して終わってね」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex01_end  ;Tab
-  if $sarg0 == "" goto *ex01
-textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex01
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *lobject_to_string
-  textclear
-アリサ「結果は『$sret』ね」\
+  return
+*ex01_check
+  gosub *pop : gosub *pop
   inc %adv_tmp
   goto *ex01
 
@@ -1342,43 +1360,18 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
 持ち越しにするから、今はあまり深く考えたら駄目だからね！@/
 　あと、どうしても駄目だと思ったら#FFFF33Ｔａｂ#FFFFFFキーを押すといいことが起こるかもしれないわ」\
 
-  mov %adv_rmode, 0         ;右クリック無効
-  bgm ms_ex
-  csp SP_R : csp SP_L
-  bg black, E_NORMAL
-  r_load ari_n
-  bg "img/blackboard.bmp", E_FAST
-  skipoff
-  mov %adv_tmp, 0
-  mov %save_flag, 0  ;セーブ不能
+  gosub *ex_init
 *ex02
-  mov %gc_run, 0  ;GC起動回数を初期化
-  gosub *create_new_env  ;変な定義をしないように毎回環境を作り直す
-  mov %arg0, %ret
-  gosub *push  ;S(new env)
-  mov %adv_tmp3, %arg0
-  mov %arg1, %global_env
-  gosub *nconc
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex02_problem"
+  mov $tab_label, "*ex02_tab"
+  mov $ret_label, "*ex02"
+  mov $suc_label, "*ex02_check"
+  goto *ex_rep
+*ex02_problem
 !s0アリサ「まず、ｘの値を４と定義しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 gosub *pop : goto *ex02_tab  ;Tab
-  if $sarg0 == "" gosub *pop : goto *ex02
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex02
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *lobject_to_string
-  textclear
-アリサ「結果は『$sret』ね」\
+  return
+*ex02_check
+  gosub *pop : gosub *pop
   ;答え合わせ
   mov $sarg0, "x"
   gosub *create_symbol
@@ -1398,32 +1391,18 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   r_show ari_n
   inc %adv_tmp
   gosub *pop  ;new env<S()
-  goto *ex02
+  gosub *ex_init_env : goto *ex02
 
 *ex02_2  ;S(new env)
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex02_2_problem"
+  mov $tab_label, "*ex02_2_tab"
+  mov $ret_label, "*ex02_2"
+  mov $suc_label, "*ex02_2_check"
+  goto *ex_rep
+*ex02_2_problem
 !s0アリサ「次に、（ｘ＋３）＊４を計算しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex02_2_tab  ;Tab
-  if $sarg0 == "" goto *ex02_2
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex02_2
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  gosub *push  ;S(input, new env)
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *push  ;S(new object, input, new env)
-  gosub *lobject_to_string
-  textclear
-アリサ「結果は『$sret』ね」\
+  return
+*ex02_2_check
   gosub *pop  ;new object<S(input, new env)
   mov %arg0, %ret
   gosub *get_tag
@@ -1431,7 +1410,7 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   gosub *get_data
   mov %tmp2, %ret
   if %tmp1 == TAG_NUM && %tmp2 == 28 goto *ex02_3  ;この後xの値を変えてチェック
-    ;ここでxの再定義をしてくれるという素晴らしい人のために
+  ;ここでxの再定義をしてくれるという素晴らしい人のために
   mov $sarg0, "x"
   gosub *create_symbol
   mov %arg0, %ret
@@ -1461,10 +1440,10 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   gosub *pop  ;input<S(new env)
   gosub *pop  ;new env<S()
   inc %adv_tmp
-  goto *ex02
+  gosub *ex_init_env : goto *ex02
 
 *ex02_3  ;（ｘ＋３）＊４なのかチェック
-  mov $sarg0, "(define x 997)"  ;set!に直した方がいい
+  mov $sarg0, "(set! x 997)"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
@@ -1486,7 +1465,7 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   r_show ari_n
   gosub *pop  ;new env<S()
   inc %adv_tmp
-  goto *ex02
+  gosub *ex_init_env : goto *ex02
 
 
 
@@ -1804,50 +1783,23 @@ csel "補足説明を読む", *story02_condicil, "用語集を読む", *story02_glossary, "タ
   r_show ari_n
 アリサ「色々頭の中がごちゃごちゃしてきたと思うから、簡単な問題をやってみましょう」\
 
-  mov %adv_rmode, 0         ;右クリック無効
-  bgm ms_ex
-  csp SP_R : csp SP_L
-  bg black, E_NORMAL
-  r_load ari_n
-  bg "img/blackboard.bmp", E_FAST
-  skipoff
-  mov %adv_tmp, 0
-  mov %save_flag, 0  ;セーブ不能
-*ex03_prev
-  gosub *create_new_env  ;自由にいじれるように新しい環境を作る
-  mov %arg0, %ret
-  mov %adv_tmp3, %arg0
-  gosub *push  ;GC対策
-  mov %arg1, %global_env
-  gosub *nconc
+  gosub *ex_init
 *ex03
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex03_problem"
+  mov $tab_label, "*ex03_tab"
+  mov $ret_label, "*ex03"
+  mov $suc_label, "*ex03_check"
+  goto *ex_rep
+*ex03_problem
 !s0アリサ「結果が『#33FF33ｈａｙａｔｅ#FFFFFF』というシンボルになる式を評価しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex03_tab  ;Tab
-  if $sarg0 == "" goto *ex03
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex03
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *push     ;S(ret)
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
+  return
+*ex03_check
   mov $sarg0, "hayate"
   gosub *create_symbol
   mov %tmp, %ret
-  gosub *pop      ;ret<S()
-  if %tmp == %ret goto *ex03_2
+  gosub *pop      ;ret<S(input)
+  if %tmp == %ret gosub *pop : goto *ex03_2
+  gosub *pop
   textclear
   r_show ari_die
 アリサ「違うわ。やり直し！」\
@@ -1856,27 +1808,16 @@ csel "補足説明を読む", *story02_condicil, "用語集を読む", *story02_glossary, "タ
   goto *ex03
 
 *ex03_2
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex03_2_problem"
+  mov $tab_label, "*ex03_2_tab"
+  mov $ret_label, "*ex03_2"
+  mov $suc_label, "*ex03_2_check"
+  goto *ex_rep
+*ex03_2_problem
 !s0アリサ「変数ｆａｔｅの値を『ｎａｎｏｈａ』というシンボルとして定義しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex03_2_tab  ;Tab
-  if $sarg0 == "" goto *ex03_2
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex03_2
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
+  return
+*ex03_2_check
+  gosub *pop : gosub *pop
   mov $sarg0, "fate"
   gosub *create_symbol
   mov %arg0, %ret
@@ -1899,29 +1840,15 @@ csel "補足説明を読む", *story02_condicil, "用語集を読む", *story02_glossary, "タ
   goto *ex03_2
 
 *ex03_3
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex03_3_problem"
+  mov $tab_label, "*ex03_3_tab"
+  mov $ret_label, "*ex03_3"
+  mov $suc_label, "*ex03_3_check"
+  goto *ex_rep
+*ex03_3_problem
 !s0アリサ「変数ｆａｔｅを評価しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex03_3_tab  ;Tab
-  if $sarg0 == "" goto *ex03_3
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex03_3
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  gosub *push     ;S(input)
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *push     ;S(ret, input)
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
+  return
+*ex03_3_check
   ;;;定義の書き換えcheck;;;
   mov $sarg0, "fate"
   gosub *create_symbol
@@ -1962,7 +1889,7 @@ csel "補足説明を読む", *story02_condicil, "用語集を読む", *story02_glossary, "タ
   r_show ari_n
   inc %adv_tmp
   gosub *pop  ;new env
-  goto *ex03_prev
+  gosub *ex_init_env : goto *ex03
 
 
 *ex03_tab
@@ -2317,43 +2244,18 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
 #33FF33’（ｘ　ｙ）#FFFFFF
 はｘとｙはｑｕｏｔｅの影響で評価されずに、シンボルのまま残るから注意してね」\
 
-  mov %adv_rmode, 0         ;右クリック無効
-  bgm ms_ex
-  csp SP_R : csp SP_L
-  bg black, E_NORMAL
-  r_load ari_n
-  bg "img/blackboard.bmp", E_FAST
-  skipoff
-  mov %adv_tmp, 0
-  mov %save_flag, 0  ;セーブ不能
+  gosub *ex_init
 *ex04
-  mov %gc_run, 0  ;GC起動回数を初期化
-  gosub *create_new_env  ;変な定義をしないように毎回環境を作り直す
-  mov %arg0, %ret
-  gosub *push  ;S(new env)
-  mov %adv_tmp3, %arg0
-  mov %arg1, %global_env
-  gosub *nconc
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex04_problem"
+  mov $tab_label, "*ex04_tab"
+  mov $ret_label, "*ex04"
+  mov $suc_label, "*ex04_check"
+  goto *ex_rep
+*ex04_problem
 !s0アリサ「まず、ｘの値を（ａ　ｂ　ｃ）というリストと定義しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 gosub *pop : goto *ex04_tab  ;Tab
-  if $sarg0 == "" gosub *pop : goto *ex04
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex04
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *lobject_to_string
-  textclear
-アリサ「結果は『$sret』ね」\
+  return
+*ex04_check
+  gosub *pop : gosub *pop
   ;;(defien x '(a b c))の答え合わせ
   mov $sarg0, "x"
   gosub *create_symbol
@@ -2447,31 +2349,22 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   r_show ari_n
   inc %adv_tmp
   gosub *pop  ;new env<S()
-  goto *ex04
+  gosub ex_init_env : goto *ex04
 
 *ex04_2  ;S(A, new env)
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex04_2_problem"
+  mov $tab_label, "*ex04_2_tab"
+  mov $ret_label, "*ex04_2"
+  mov $suc_label, "*ex04_2_check"
+  goto *ex_rep
+*ex04_2_problem
 !s0アリサ「次に、ｘのＣＡＲを取り出しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex04_2_tab  ;Tab
-  if $sarg0 == "" goto *ex04_2
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex04_2
-  gosub *input_to_lobject
+  return
+*ex04_2_check
+  gosub *pop
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *push  ;S(new object, A, new env)
-  gosub *lobject_to_string
-  textclear
-アリサ「結果は『$sret』ね」\
+  gosub *pop
+  gosub *push ;S(new object, A, new env)
   ;;(car x)の答え合わせ
   gosub *pop  ;new object<S(A, new env)
   mov %arg0, %ret
@@ -2489,7 +2382,7 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   if %tmp2 == %tmp mov %arg0, %tmp1 : gosub *push : goto *ex04_3  ;S(A, new env)
   mov %arg0, %tmp1
   gosub *push  ;S(A, new env)
-    ;ここでxの再定義をしてくれるという素晴らしい人のために
+  ;ここでxの再定義をしてくれるという素晴らしい人のために
   ;(set-car!等は諦める方針で orz)
   mov $sarg0, "x"
   gosub *create_symbol
@@ -2516,31 +2409,22 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   r_show ari_n
   gosub *pop  ;new env<S()
   inc %adv_tmp
-  goto *ex04
+  gosub ex_init_env : goto *ex04
 
 *ex04_3  ;S(A, new env)
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex04_3_problem"
+  mov $tab_label, "*ex04_3_tab"
+  mov $ret_label, "*ex04_3"
+  mov $suc_label, "*ex04_3_check"
+  goto *ex_rep
+*ex04_3_problem
 !s0アリサ「次に、ｘのＣＤＲを取り出しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex04_3_tab  ;Tab
-  if $sarg0 == "" goto *ex04_3
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex04_3
-  gosub *input_to_lobject
+  return
+*ex04_3_check
+  gosub *pop
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *push  ;S(new object, A, new env)
-  gosub *lobject_to_string
-  textclear
-アリサ「結果は『$sret』ね」\
+  gosub *pop
+  gosub *push ;S(new object, A, new env)
   ;;(cdr x)の答え合わせ
   gosub *pop  ;new object<S(A, new env)
   mov %arg0, %ret
@@ -2558,7 +2442,7 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   if %tmp2 == %tmp goto *ex04_end  ;S(new env)
   mov %arg0, %tmp1
   gosub *push  ;S(A, new env)
-    ;ここでxの再定義をしてくれるという素晴らしい人のために
+  ;ここでxの再定義をしてくれるという素晴らしい人のために
   ;(set-car!等は諦める方針で orz)
   mov $sarg0, "x"
   gosub *create_symbol
@@ -2984,45 +2868,19 @@ csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タ
 ｃｄｒはリストの第一要素を抜き取ったリストを返す関数/
 と考えることもできるわ」\
 
-  mov %adv_rmode, 0         ;右クリック無効
-  bgm ms_ex
-  csp SP_R : csp SP_L
-  bg black, E_NORMAL
-  r_load ari_n
-  bg "img/blackboard.bmp", E_FAST
-  skipoff
-  mov %adv_tmp, 0
-  mov %save_flag, 0  ;セーブ不能
-*ex05_prev
-  gosub *create_new_env  ;自由にいじれるように新しい環境を作る
-  mov %arg0, %ret
-  mov %adv_tmp3, %arg0
-  gosub *push  ;GC対策
-  mov %arg1, %global_env
-  gosub *nconc
+  gosub *ex_init
 *ex05
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex05_problem"
+  mov $tab_label, "*ex05_tab"
+  mov $ret_label, "*ex05"
+  mov $suc_label, "*ex05_check"
+  goto *ex_rep
+*ex05_problem
 !s0アリサ「関数ｆを『引数の第二要素を返す関数』として定義しなさい。/
 ただし、引数は１つで、リストのみが来ると考えていいわ」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex05_tab  ;Tab
-  if $sarg0 == "" goto *ex05
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex05
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
+  return
+*ex05_check
+  gosub *pop : gosub *pop
   ;;;検証1
   mov $sarg0, "(f '(k l))"
   gosub *input_to_lobject
@@ -3068,28 +2926,19 @@ csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タ
   mov %arg0, %ret
   gosub *push     ;S(f)
 *ex05_2
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex05_2_problem"
+  mov $tab_label, "*ex05_2_tab"
+  mov $ret_label, "*ex05_2"
+  mov $suc_label, "*ex05_2_check"
+  goto *ex_rep
+*ex05_2_problem
 !s0アリサ「引数#33FF33’（ａ　ｂ　ｃ）#FFFFFFをつけてｆを呼び出しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex05_2_tab  ;Tab
-  if $sarg0 == "" goto *ex05_2
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex05_2
-  gosub *input_to_lobject
+  return
+*ex05_2_check
+  gosub *pop
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *push     ;S(ret, f)
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
+  gosub *pop
+  gosub *push
   mov $sarg0, "b"
   gosub *create_symbol
   mov %arg0, %ret
@@ -3465,45 +3314,19 @@ csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タ
 だから、ここでいったんセーブしておくことをお勧めするわ。@/
 あと、回答に自信がなかったらＴａｂキーを押してヒントを見た方がいいわね」\
 
-  mov %adv_rmode, 0         ;右クリック無効
-  bgm ms_ex
-  csp SP_R : csp SP_L
-  bg black, E_NORMAL
-  r_load ari_n
-  bg "img/blackboard.bmp", E_FAST
-  skipoff
-  mov %adv_tmp, 0
-  mov %save_flag, 0  ;セーブ不能
-*ex06_prev
-  gosub *create_new_env  ;自由にいじれるように新しい環境を作る
-  mov %arg0, %ret
-  mov %adv_tmp3, %arg0
-  gosub *push  ;GC対策
-  mov %arg1, %global_env
-  gosub *nconc
+  gosub *ex_init
 *ex06
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex06_problem"
+  mov $tab_label, "*ex06_tab"
+  mov $ret_label, "*ex06"
+  mov $suc_label, "*ex06_check"
+  goto *ex_rep
+*ex06_problem
 !s0アリサ「関数ｓを『引数としてｎを受け取ると、１＋２＋…＋ｎを返す関数』として定義しなさい。/
 ただし、引数は１つで、数のみが来ると考えていいわ」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex06_tab  ;Tab
-  if $sarg0 == "" goto *ex06
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex06
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
+  return
+*ex06_check
+  gosub *pop : gosub *pop
   ;;;検証1
   mov $sarg0, "(s 0)"
   gosub *input_to_lobject
@@ -3541,30 +3364,18 @@ csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タ
   mov %arg0, %ret
   gosub *push     ;S(s)
 *ex06_2
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex06_2_problem"
+  mov $tab_label, "*ex06_2_tab"
+  mov $ret_label, "*ex06_2"
+  mov $suc_label, "*ex06_2_check"
+  goto *ex_rep
+*ex06_2_problem
 !s0アリサ「引数#33FF33１０#FFFFFFをつけてｓを呼び出しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex06_2_tab  ;Tab
-  if $sarg0 == "" goto *ex06_2
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex06_2
-  gosub *input_to_lobject
+  return
+*ex06_2_check
+  gosub *pop      ;ret<S(input, s)
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *push     ;S(ret, s)
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
-  gosub *pop      ;ret<S(s)
-  mov %arg0, %ret
+  gosub *pop      ;input<S(s)
   gosub *get_data
   if %ret == 55 gosub *pop : goto *ex06_end
 ;;;sの再定義をcheck;;;
@@ -3944,48 +3755,22 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
 それから思い出して欲しいのが、ｃｄｒはリストの先頭の要素を取り出したリストを作る関数と考えられるということ。@/
 以上から、ｃｄｒは元のリストより要素が１つ少ないリストを作る関数とも考えられるの」\
 
-  mov %adv_rmode, 0         ;右クリック無効
-  bgm ms_ex
   csp SP_DGM0
-  csp SP_R : csp SP_L
-  bg black, E_NORMAL
-  r_load ari_n
-  bg "img/blackboard.bmp", E_FAST
-  skipoff
-  mov %adv_tmp, 0
-  mov %save_flag, 0  ;セーブ不能
-*ex07_prev
-  gosub *create_new_env  ;自由にいじれるように新しい環境を作る
-  mov %arg0, %ret
-  mov %adv_tmp3, %arg0
-  gosub *push  ;GC対策
-  mov %arg1, %global_env
-  gosub *nconc
+  gosub *ex_init
 *ex07
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
-!s0アリサ「関数ｌを『引数としてｘを受け取ると、ｘの要素の数を返す関数』として定義しなさい。/
+  mov $problem_label, "*ex07_problem"
+  mov $tab_label, "*ex07_tab"
+  mov $ret_label, "*ex07"
+  mov $suc_label, "*ex07_check"
+  goto *ex_rep
+*ex07_problem
+!s0アリサ「関数ｌｅｎを『引数としてｘを受け取ると、ｘの要素の数を返す関数』として定義しなさい。/
 ただし、引数は１つで、リストのみが来ると考えていいわ」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex07_tab  ;Tab
-  if $sarg0 == "" goto *ex07
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex07
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
+  return
+*ex07_check
+  gosub *pop : gosub *pop
   ;;;検証1
-  mov $sarg0, "(l '())"
+  mov $sarg0, "(len '())"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
@@ -3994,7 +3779,7 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   gosub *get_data
   if %ret != 0 goto *ex07_miss
   ;;;検証2
-  mov $sarg0, "(l '(1 2 3 4 5))"
+  mov $sarg0, "(len '(1 2 3 4 5))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
@@ -4011,7 +3796,7 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   goto *ex07
 
 *ex07_2_prev
-  mov $sarg0, "l"
+  mov $sarg0, "len"
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
@@ -4019,36 +3804,24 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
-  gosub *push     ;S(l)
+  gosub *push     ;S(len)
 *ex07_2
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
-!s0アリサ「引数#33FF33’（ａ　ｂ　ｃ）#FFFFFFをつけてｌを呼び出しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex07_2_tab  ;Tab
-  if $sarg0 == "" goto *ex07_2
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex07_2
-  gosub *input_to_lobject
+  mov $problem_label, "*ex07_2_problem"
+  mov $tab_label, "*ex07_2_tab"
+  mov $ret_label, "*ex07_2"
+  mov $suc_label, "*ex07_2_check"
+  goto *ex_rep
+*ex07_2_problem
+!s0アリサ「引数#33FF33’（ａ　ｂ　ｃ）#FFFFFFをつけてｌｅｎを呼び出しなさい」!sd
+  return
+*ex07_2_check
+  gosub *pop      ;ret<S(input, len)
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *push     ;S(ret, l)
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
-  gosub *pop      ;ret<S(l)
-  mov %arg0, %ret
+  gosub *pop      ;input<S(len)
   gosub *get_data
   if %ret == 3 gosub *pop : goto *ex07_end
-;;;sの再定義をcheck;;;
-  mov $sarg0, "l"
+;;;lenの再定義をcheck;;;
+  mov $sarg0, "len"
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
@@ -4056,10 +3829,10 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
-  gosub *pop      ;l<S()
+  gosub *pop      ;len<S()
   if %arg0 != %ret goto *ex07_2_miss
   mov %arg0, %ret
-  gosub *push     ;S(l)
+  gosub *push     ;S(len)
 ;;;end;;;
   textclear
   r_show ari_die
@@ -4506,47 +4279,19 @@ csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タ
   r_show ari_n
 アリサ「さて、そろそろ練習問題をやりましょうか」\
 
-
-
-  mov %adv_rmode, 0         ;右クリック無効
-  bgm ms_ex
-  csp SP_R : csp SP_L
-  bg black, E_NORMAL
-  r_load ari_n
-  bg "img/blackboard.bmp", E_FAST
-  skipoff
-  mov %adv_tmp, 0
-  mov %save_flag, 0  ;セーブ不能
-*ex08_prev
-  gosub *create_new_env  ;自由にいじれるように新しい環境を作る
-  mov %arg0, %ret
-  mov %adv_tmp3, %arg0
-  gosub *push  ;GC対策
-  mov %arg1, %global_env
-  gosub *nconc
+  gosub *ex_init
 *ex08
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex08_problem"
+  mov $tab_label, "*ex08_tab"
+  mov $ret_label, "*ex08"
+  mov $suc_label, "*ex08_check"
+  goto *ex_rep
+*ex08_problem
 !s0アリサ「関数ｆを『引数としてｘを受け取ると、”#33FF33引数を１つ取り、ｘとその和を返す関数#FFFFFF”を返す関数』として定義しなさい。/
 ただし、引数は１つで、数のみが来ると考えていいわ」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex08_tab  ;Tab
-  if $sarg0 == "" goto *ex08
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex08
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
+  return
+*ex08_check
+  gosub *pop : gosub *pop
   ;;;検証1
   mov $sarg0, "((f 9) 99)"
   gosub *input_to_lobject
@@ -4584,33 +4329,21 @@ csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タ
   mov %arg0, %ret
   gosub *push     ;S(f)
 *ex08_2
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex08_2_problem"
+  mov $tab_label, "*ex08_2_tab"
+  mov $ret_label, "*ex08_2"
+  mov $suc_label, "*ex08_2_check"
+  goto *ex_rep
+*ex08_2_problem
 !s0アリサ「#33FF33（ｆ　６）#FFFFFFが返す関数に引数#33FF33６６#FFFFFFをつけて呼び出しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex08_2_tab  ;Tab
-  if $sarg0 == "" goto *ex08_2
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex08_2
-  gosub *input_to_lobject
+  return
+*ex08_2_check
+  gosub *pop      ;ret<S(input, f)
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *push     ;S(ret, f)
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
-  gosub *pop      ;ret<S(f)
-  mov %arg0, %ret
+  gosub *pop      ;input<S(f)
   gosub *get_data
   if %ret == 72 gosub *pop : goto *ex08_end
-;;;sの再定義をcheck;;;
+;;;fの再定義をcheck;;;
   mov $sarg0, "f"
   gosub *create_symbol
   mov %arg0, %ret
@@ -5009,23 +4742,9 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
 アリサ「いまいち分からなかったら、さっきの階乗の関数をよーく見直す事。@/
 いい？　いまのうちにしっかり見直しておくのよ、練習問題の物凄いヒントだからね！」\
 
-  mov %adv_rmode, 0         ;右クリック無効
-  bgm ms_ex
-  csp SP_R : csp SP_L
-  bg black, E_NORMAL
-  r_load ari_n
-  bg "img/blackboard.bmp", E_FAST
-  skipoff
-  mov %adv_tmp, 0
-  mov %save_flag, 0  ;セーブ不能
+  gosub *ex_init
 *ex09_prev
-  gosub *create_new_env  ;自由にいじれるように新しい環境を作る
-  mov %arg0, %ret
-  mov %adv_tmp3, %arg0
-  gosub *push  ;GC対策
-  mov %arg1, %global_env
-  gosub *nconc
-  ;;;使う関数を先に定義
+  ;;定義済み関数
   mov $sarg0, "(define (s n) (si n 0))"
   gosub *input_to_lobject
   mov %arg0, %ret
@@ -5040,33 +4759,22 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   gosub *cdr
   mov %arg0, %ret
   gosub *push     ;S(s)
-  ;;;END
+  ;;
 *ex09
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex09_problem"
+  mov $tab_label, "*ex09_tab"
+  mov $ret_label, "*ex09"
+  mov $suc_label, "*ex09_check"
+  goto *ex_rep
+*ex09_problem
 !s0アリサ「#33FF33（ｓ　ｎ）#FFFFFFを評価すると１＋２＋…＋ｎが返るように#FFFF33関数ｓｉを#FFFFFF定義しなさい。/
 ただし、ｓは次のように定義されているわ
 #33FF33/
 （ｄｅｆｉｎｅ　（ｓ　ｎ）
 　（ｓｉ　ｎ　０））#FFFFFF」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex09_tab  ;Tab
-  if $sarg0 == "" goto *ex09
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex09
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
+  return
+*ex09_check
+  gosub *pop : gosub *pop
   ;;;検証1
   mov $sarg0, "(s 0)"
   gosub *input_to_lobject
@@ -5114,7 +4822,7 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   r_show ari_n
   inc %adv_tmp
   gosub *pop      ;adv_tmp3<S()
-  goto *ex09_prev
+  gosub *ex_init_env : goto *ex09_prev
 
 *ex09_2_prev
   mov $sarg0, "si"
@@ -5127,33 +4835,21 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   mov %arg0, %ret
   gosub *push     ;S(si)
 *ex09_2
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex09_2_problem"
+  mov $tab_label, "*ex09_2_tab"
+  mov $ret_label, "*ex09_2"
+  mov $suc_label, "*ex09_2_check"
+  goto *ex_rep
+*ex09_2_problem
 !s0アリサ「引数#33FF33１０#FFFFFFをつけて#FFFF33ｓ#FFFFFFを呼び出しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex09_2_tab  ;Tab
-  if $sarg0 == "" goto *ex09_2
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex09_2
-  gosub *input_to_lobject
+  return
+*ex09_2_check
+  gosub *pop      ;ret<S(input, si)
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *push     ;S(ret, si)
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
-  gosub *pop      ;ret<S(si)
-  mov %arg0, %ret
+  gosub *pop      ;input<S(si)
   gosub *get_data
   if %ret == 55 gosub *pop : goto *ex09_end
-;;;sの再定義をcheck;;;
+;;;siの再定義をcheck;;;
   mov $sarg0, "si"
   gosub *create_symbol
   mov %arg0, %ret
@@ -5183,7 +4879,7 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   r_show ari_n
   inc %adv_tmp
   gosub *pop      ;adv_tmp3<S()
-  goto *ex09_prev
+  gosub *ex_init_env : goto *ex09_prev
 
 
 
@@ -5564,43 +5260,18 @@ csel "補足説明を読む", *story09_condicil, "用語集を読む", *story09_glossary, "タ
 ただし、ＲＥＰＬを作る場合は、下手したら永遠に終われない関数定義をしてしまう恐れがあるから、@/
 今のうちにセーブをしておいた方がいいわよ」\
 
-  mov %adv_rmode, 0         ;右クリック無効
-  bgm ms_ex
-  csp SP_R : csp SP_L
-  bg black, E_NORMAL
-  r_load ari_n
-  bg "img/blackboard.bmp", E_FAST
-  skipoff
-  mov %adv_tmp, 0
-  mov %save_flag, 0  ;セーブ不能
-  gosub *create_new_env  ;自由にいじれるように新しい環境を作る
-  mov %arg0, %ret
-  mov %adv_tmp3, %arg0
-  gosub *push  ;GC対策
-  mov %arg1, %global_env
-  gosub *nconc
+  gosub *ex_init
 *ex10
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex10_problem"
+  mov $tab_label, "*ex10_end"
+  mov $ret_label, "*ex10"
+  mov $suc_label, "*ex10_check"
+  goto *ex_rep
+*ex10_problem
 !s0アリサ「気が済んだらＴａｂキーを押して終わってね」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex10_end  ;Tab
-  if $sarg0 == "" goto *ex10
-textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex10
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *lobject_to_string
-  textclear
-アリサ「結果は『$sret』ね」\
+  return
+*ex10_check
+  gosub *pop : gosub *pop
   inc %adv_tmp
   goto *ex10
 
@@ -5959,45 +5630,18 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
   r_show ari_n
 アリサ「それじゃあ、やってみましょうか」\
 
-
-  mov %adv_rmode, 0         ;右クリック無効
-  bgm ms_ex
-  csp SP_R : csp SP_L
-  bg black, E_NORMAL
-  r_load ari_n
-  bg "img/blackboard.bmp", E_FAST
-  skipoff
-  mov %adv_tmp, 0
-  mov %save_flag, 0  ;セーブ不能
-*ex11_prev
-  gosub *create_new_env  ;自由にいじれるように新しい環境を作る
-  mov %arg0, %ret
-  mov %adv_tmp3, %arg0
-  gosub *push  ;GC対策
-  mov %arg1, %global_env
-  gosub *nconc
+  gosub *ex_init
 *ex11
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex11_problem"
+  mov $tab_label, "*ex11_tab"
+  mov $ret_label, "*ex11"
+  mov $suc_label, "*ex11_check"
+  goto *ex_rep
+*ex11_problem
 !s0アリサ「関数ｍａｐ１を『引数を一つ取る関数』と『リスト』の２つの引数をとる、簡易版のｍａｐとして定義しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex11_tab  ;Tab
-  if $sarg0 == "" goto *ex11
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex11
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
+  return
+*ex11_check
+  gosub *pop : gosub *pop
   ;;;検証1
   mov $sarg0, "(map1 (lambda (x) (* x 2)) '(19))"
   gosub *input_to_lobject
@@ -6050,32 +5694,20 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
   mov %arg0, %ret
   gosub *push     ;S(map1)
 *ex11_2
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex11_2_problem"
+  mov $tab_label, "*ex11_2_tab"
+  mov $ret_label, "*ex11_2"
+  mov $suc_label, "*ex11_2_check"
+  goto *ex_rep
+*ex11_2_problem
 !s0アリサ「引数として、
 #33FF33（ｌａｍｂｄａ　（ｘ）　（＋　ｘ　１））#FFFFFFと、
 #33FF33’（１　２）#FFFFFFを付けてｍａｐ１を呼び出しなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex11_2_tab  ;Tab
-  if $sarg0 == "" goto *ex11_2
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex11_2
-  gosub *input_to_lobject
+  return
+*ex11_2_check
+  gosub *pop     ;ret<S(input, map1)
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *push     ;S(ret, map1)
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
-  gosub *pop      ;ret<S(map1)
-  mov %arg0, %ret
+  gosub *pop     ;input<S(map1)
   gosub *get_tag
   if %ret != TAG_CONS goto *ex11_2_miss_check
   gosub *push     ;S( (2 3)?, map1 )
@@ -6094,7 +5726,7 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
   gosub *get_data
   if %ret == 3  gosub *pop : goto *ex11_end
 *ex11_2_miss_check
-;;;sの再定義をcheck;;;
+;;;map1の再定義をcheck;;;
   mov $sarg0, "map1"
   gosub *create_symbol
   mov %arg0, %ret
@@ -6443,23 +6075,9 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
 それじゃあ、実際にやってもらおうかしら。@/
 難しいと思ったらＴａｂキーでヒントを見るといいわ」\
 
-  mov %adv_rmode, 0         ;右クリック無効
-  bgm ms_ex
-  csp SP_R : csp SP_L
-  bg black, E_NORMAL
-  r_load ari_n
-  bg "img/blackboard.bmp", E_FAST
-  skipoff
-  mov %adv_tmp, 0
-  mov %save_flag, 0  ;セーブ不能
+  gosub *ex_init
 *ex12_prev
-  gosub *create_new_env  ;自由にいじれるように新しい環境を作る
-  mov %arg0, %ret
-  mov %adv_tmp3, %arg0
-  gosub *push  ;GC対策
-  mov %arg1, %global_env
-  gosub *nconc
-;;定義済み関数
+  ;;定義済み関数
   mov $sarg0, "(begin (define (zero) '()) (define (inc x) (cons 'o x)) (define (dec x) (cdr x)) )"
   gosub *input_to_lobject
   mov %arg0, %ret
@@ -6475,31 +6093,20 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
   gosub *eval
-;;
+  ;;
 *ex12
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex12_problem"
+  mov $tab_label, "*ex12_tab"
+  mov $ret_label, "*ex12"
+  mov $suc_label, "*ex12_check"
+  goto *ex_rep
+*ex12_problem
 !s0アリサ「関数ｍｕｌｉを定義しなさい。/
 ただし、ｚｅｒｏ、ｉｎｃ、ｄｅｃ、ａｄｄ、ｍｕｌは既に定義されて、/
 ｍｕｌｉはｍｕｌの中から#33FF33（ｍｕｌｉ　ｘ　ｙ　（ｚｅｒｏ））#FFFFFFと呼ばれるわ」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex12_tab  ;Tab
-  if $sarg0 == "" goto *ex12
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex12
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
+  return
+*ex12_check
+  gosub *pop : gosub *pop
   ;;;検証1
   mov $sarg0, "(mul (inc (zero)) (zero))"
   gosub *input_to_lobject
@@ -6537,30 +6144,18 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   mov %arg0, %ret
   gosub *push     ;S(muli)
 *ex12_2
-  mov %gc_run, 0  ;GC起動回数を初期化
-  mov $sarg0, ""
-  textclear
+  mov $problem_label, "*ex12_2_problem"
+  mov $tab_label, "*ex12_2_tab"
+  mov $ret_label, "*ex12_2"
+  mov $suc_label, "*ex12_2_check"
+  goto *ex_rep
+*ex12_2_problem
 !s0アリサ「関数ｍｕｌを使って『２掛ける３』という団子数の計算をしなさい」!sd
-  textfield $sarg0, 30, 120, 770, 140, 10, 20, 0
-  getret %ret
-  if %ret == 1 goto *ex12_2_tab  ;Tab
-  if $sarg0 == "" goto *ex12_2
-  textclear
-!s0アリサ「計算中……」!sd
-  repaint
-  gosub *check_lr_parenthesis
-  if %ret != 0 gosub *parenthesis_error : goto *ex12_2
-  gosub *input_to_lobject
+  return
+*ex12_2_check
+  gosub *pop     ;ret<S(input, muli)
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
-  gosub *eval
-  mov %arg0, %ret
-  gosub *push     ;S(ret, muli)
-  gosub *lobject_to_string
-  textclear
-  アリサ「結果は『$sret』ね」\
-  gosub *pop      ;ret<S(muli)
-  mov %arg0, %ret
+  gosub *pop     ;input<S(muli)
   gosub *adv_length
   if %ret == 6 gosub *pop : goto *ex12_end
 ;;;muliの再定義をcheck;;;

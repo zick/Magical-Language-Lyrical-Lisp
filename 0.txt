@@ -247,6 +247,10 @@ nsa
   numalias sTAB, 20
   numalias sCR, 21
   numalias sLF, 22
+  numalias problem_label, 23
+  numalias tab_label, 24
+  numalias ret_label, 25
+  numalias suc_label, 26
 
   numalias sadv_label, 50
   numalias sadv_vol, 51
