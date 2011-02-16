@@ -194,8 +194,8 @@ nsa
 
   ;; Garbage collection
   numalias gc_count, 72 
-  numalias sfree_lst, 73
-  numalias sfree_lst_tail, 74
+  numalias symbol_lst, 73
+  ;numalias NOT_USED, 74
   numalias gc_run, 75
   numalias gc_limit, 76
   numalias gc_silent, 77
@@ -505,6 +505,7 @@ nsa
 ;;;;;;;;;;
 *car
   if %arg0 == %nil mov %ret, %nil : return
+*raw_car
   gosub *get_data
   mov %ret, %ret mod 8192  ; 2^13
   return
@@ -515,6 +516,7 @@ nsa
 ;;;;;;;;;;
 *cdr
   if %arg0 == %nil mov %ret, %nil : return
+*raw_cdr
   gosub *get_data
   div %ret, 8192  ; 2^13
   return
@@ -587,8 +589,7 @@ nsa
     mov %arg1, %i + 1
     gosub *set_data
   next
-  mov %sfree_lst, SYMBOL_SET_OVER
-  mov %sfree_lst_tail, SYMBOL_SET_OVER
+  mov %symbol_lst, MEM_OVER
   mov $sarg0, "nil"
   gosub *create_symbol
   mov %nil, %ret
@@ -744,12 +745,19 @@ if %gc_silent == 1 goto *gc_sl2
 ;;;;;;;;;;
 *gc_sweep
   mov %free_lst, MEM_OVER
+  mov %symbol_lst, MEM_OVER
   for %i=MEM to MEM_END  ; Find the first unused cell.
     mov %arg0, %i
     gosub *get_gc
     if %ret == 0 mov %free_lst, %i : break
     mov %arg1, 0
     gosub *set_gc
+    gosub *get_tag
+    if %ret != TAG_SYMBOL goto *gc_sweep_l0
+    mov %arg1, %symbol_lst
+    gosub *set_cdr
+    mov %symbol_lst, %i
+  *gc_sweep_l0
   next
   if %free_lst == MEM_OVER return  ; There is no unused cell.
   mov %gc_tmp, %free_lst  ; Keep the first unusd cell.
@@ -762,7 +770,15 @@ if %gc_silent == 1 goto *gc_sl2
     mov %arg1, %i
     gosub *reuse_cell
     mov %gc_tmp, %i
+    goto *gc_sweep_l2
   *gc_sweep_l1
+    mov %arg0, %i
+    gosub *get_tag
+    if %ret != TAG_SYMBOL goto *gc_sweep_l2
+    mov %arg1, %symbol_lst
+    gosub *set_cdr
+    mov %symbol_lst, %i
+  *gc_sweep_l2
     mov %arg0, %i
     mov %arg1, 0
     gosub *set_gc  ; Unmark
@@ -808,24 +824,32 @@ if %gc_silent == 1 goto *gc_sl2
 ;;;*create_symbol(str)
 ;;;;;;;;;;
 *create_symbol
-  for %i=MEM to MEM_END
-    mov %arg0, %i
-    gosub *get_tag
-    if %ret != TAG_SYMBOL goto *create_symbol_l1
-    gosub *get_data
-    if $sarg0 == $%ret mov %ret, %i : mov $sarg0, ")(" : break
-    *create_symbol_l1
-    next
-  if $sarg0 == ")(" return  ; ")(" means that the symbol was found.
+  mov %i, %symbol_lst
+*create_symbol_l1
+  if %i == MEM_OVER goto *create_symbol_l2
+  mov %arg0, %i
+  gosub *raw_car
+  if $sarg0 == $%ret mov %ret, %i : return
+  mov %arg0, %i
+  gosub *raw_cdr
+  mov %i, %ret
+  goto *create_symbol_l1
+*create_symbol_l2
   mov $%symbol_used, $sarg0
   gosub *next_cell
-  mov %arg0, %ret          ; new cell
-  mov %arg1, %symbol_used
-  gosub *set_data
+  mov %arg0, %ret
+  gosub *push
   mov %arg1, TAG_SYMBOL
   gosub *set_tag
-  mov %ret, %arg0
+  mov %arg1, %symbol_used
+  gosub *set_car
+  mov %tmp, %sp - 1
+  mov %arg0, %%tmp
+  mov %arg1, %symbol_lst
+  gosub *set_cdr
+  gosub *pop
   inc %symbol_used
+  mov %symbol_lst, %ret
   return
 
 
@@ -1265,7 +1289,7 @@ if %gc_silent == 1 goto *gc_sl2
   itoa $sarg0, %ret
   goto *lobject_to_string_l4
 *lobject_to_string_l3
-  gosub *get_data
+  gosub *raw_car
   mov $sarg0, $%ret
 *lobject_to_string_l4
   gosub *print_string
