@@ -3,7 +3,6 @@
 ;;;;;;;;;;
 *set_additional_func
   mov %adv_rmode, 0
-アリサ「ちょっとまってね……」
   mov $sarg0, "(define caar (lambda (x) (car (car x))))"
   gosub *input_to_lobject
   mov %arg0, %ret
