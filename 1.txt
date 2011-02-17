@@ -2349,7 +2349,7 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   r_show ari_n
   inc %adv_tmp
   gosub *pop  ;new env<S()
-  gosub ex_init_env : goto *ex04
+  gosub *ex_init_env : goto *ex04
 
 *ex04_2  ;S(A, new env)
   mov $problem_label, "*ex04_2_problem"
@@ -2409,7 +2409,7 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   r_show ari_n
   gosub *pop  ;new env<S()
   inc %adv_tmp
-  gosub ex_init_env : goto *ex04
+  gosub *ex_init_env : goto *ex04
 
 *ex04_3  ;S(A, new env)
   mov $problem_label, "*ex04_3_problem"
@@ -3878,7 +3878,7 @@ csel "続ける", *ex07_2, "ヒント", *ex07_2_hint,  "タイトルに戻る", *ex07_2_bye
 ｎが０――つまり、空リストの時は要素数は当然０になるわ。@/
 それ以外の時には要素数は、#33FF33（ａ２　ａ３…ａｎ）#FFFFFFの要素数に１を足したものになるわ。@/
 このリストは元のリストのＣＤＲを取ると作れるわよね。@/
-つまり、ｌの定義は、ｘが空リストなら#33FF33０#FFFFFF、@それ以外なら、#33FF33（＋　１　（ｌ　（ｃｄｒ　ｘ）））#FFFFFFと書けるわ。@/
+つまり、ｌｅｎの定義は、ｘが空リストなら#33FF33０#FFFFFF、@それ以外なら、#33FF33（＋　１　（ｌｅｎ　（ｃｄｒ　ｘ）））#FFFFFFと書けるわ。@/
 ｘが空リストかどうかは#33FF33ｎｕｌｌ？#FFFFFFを使うと確認できるわね。@/
 あとは、ｉｆかｃｏｎｄを使ってこれを式にするだけよ」\
   goto *ex07

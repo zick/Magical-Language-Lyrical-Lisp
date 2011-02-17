@@ -2,7 +2,6 @@
 ;;;*set_additional_func()
 ;;;;;;;;;;
 *set_additional_func
-  mov %adv_rmode, 0
   mov $sarg0, "(define caar (lambda (x) (car (car x))))"
   gosub *input_to_lobject
   mov %arg0, %ret
@@ -113,6 +112,7 @@ bgm ms_ex
   csvclose
 
   ;;Lisp側の準備
+  mov %adv_rmode, 0
   if %adv_additional == 0 gosub *set_additional_func
   gosub *create_new_env  ;自由にいじれるように新しい環境を作る
   mov %arg0, %ret
@@ -230,7 +230,6 @@ csel "立ち絵なし", *fm01_char_non, "アリサ", *fm01_char_arisa, "すずか", *fm01_c
 
 
 *fm01_say_goodbye
-  mov %adv_rmode, 1
   if %adv_char == 0 puttext "お疲れ様でした\"
   if %adv_char == 1 puttext "アリサ「おつかれさま」\"
   if %adv_char == 2 puttext "すずか「ばいば～い」\"
@@ -238,6 +237,7 @@ csel "立ち絵なし", *fm01_char_non, "アリサ", *fm01_char_arisa, "すずか", *fm01_c
   if %adv_char == 4 puttext "局員「了解しました！」\"
   if %adv_char == 5 puttext "局員「ひっ、ひぃぃぃーーー！」\"
   if %adv_char == 6 puttext "なのは「おわりなの」\"
+  mov %adv_rmode, 1
   return
 
 *fm01_say_tab
