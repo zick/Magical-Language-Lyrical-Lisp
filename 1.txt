@@ -550,7 +550,7 @@ delay 1500
 !sd
   gosub *mem_init
   mov %gc_limit, 3  ;一回の入力で3回GCが起こると、中断するか問い合わせる。
-  mov %adv_additional, 0
+  gosub *set_additional_func
   mov %save_flag, 1  ;セーブ可能
 textclear
   csp SP_TMP
@@ -5578,8 +5578,7 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
 受け取るリストの数が決まるってこと？」\
   r_show ari_n
 アリサ「そういうこと。でもまあ、/
-最初は引数を一つ取る関数の場合――#33FF33（ｍａｐ　関数　リスト）#FFFFFFという形だけ分かってたらいいわ。@/
-ちなみに、ＮＳｃＬｉｓｐｅｒではｍａｐはフリーモードでしか使えないから注意してね」\
+最初は引数を一つ取る関数の場合――#33FF33（ｍａｐ　関数　リスト）#FFFFFFという形だけ分かってたらいいわ。」\
   r_show suzur_n
 すずか「受け取るリストが一つと分かってたら、ＣＤＲを取りながら再帰したら書けそうだね」\
   r_show ari_exc

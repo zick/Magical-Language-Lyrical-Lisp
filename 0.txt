@@ -148,6 +148,7 @@ nsa
   numalias SYMBOL_SET, 100
   numalias SYMBOL_SET_END, 899
   numalias SYMBOL_SET_OVER, 900
+  numalias SYMBOL_SET_HALF_SIZE, 400
   numalias SSTACK, 900
   numalias SSTACK_OVER, 1000
   numalias TAG_CONS, 0
@@ -195,7 +196,7 @@ nsa
   ;; Garbage collection
   numalias gc_count, 72 
   numalias symbol_lst, 73
-  ;numalias NOT_USED, 74
+  numalias symbol_offset, 74
   numalias gc_run, 75
   numalias gc_limit, 76
   numalias gc_silent, 77
@@ -577,6 +578,7 @@ nsa
 
   mov %gc_run, 0
   mov %gc_limit, 0
+  mov %symbol_offset, 0
   mov %symbol_used, SYMBOL_SET
   mov %sp, STACK
   mov %ssp, SSTACK
@@ -645,22 +647,7 @@ nsa
   inc %gc_run
   if %gc_run >= %gc_limit goto *gclimit
 *gc_l1
-  gosub *push       ; S(arg0)
-  mov %arg0, %arg1
-  gosub *push       ; S(arg1, arg0)
-  mov %arg0, %arg2
-  gosub *push       ; S(arg2, arg1, arg0)
-  mov %arg0, %arg3
-  gosub *push       ; S(arg3, arg2, arg1, arg0)
-  mov %arg0, %tmp
-  gosub *push       ; S(tmp, arg3, arg2, arg1, arg0)
-  mov %arg0, %tmp1
-  gosub *push       ; S(tmp1, tmp, arg3, arg2, arg1, arg0)
-  mov %arg0, %tmp2
-  gosub *push       ; S(tmp2, tmp1, tmp, arg3, arg2, arg1, arg0)
-  mov %arg0, %tmp3
-  gosub *push       ; S(tmp3, tmp2, tmp1, tmp, arg3, arg2, arg1, arg0)
-
+  gosub *push_registers
   mov %gc_count, 0
   textclear
 if %gc_silent == 1 goto *gc_sl1
@@ -674,22 +661,7 @@ if %gc_silent == 1 goto *gc_sl2
   mov %gc_count, %gc_count - MEM
   Ç`ÇñÇÅÇâÇåÇÅÇÇÇåÇÖÅF%gc_count
 *gc_sl2
-  gosub *pop        ; tmp3 < S(tmp2, tmp1, tmp, arg3, arg2, arg1, arg0)
-  mov %tmp3, %ret
-  gosub *pop        ; tmp2 < S(tmp1, tmp, arg3, arg2, arg1, arg0)
-  mov %tmp2, %ret
-  gosub *pop        ; tmp1 < S(tmp, arg3, arg2, arg1, arg0)
-  mov %tmp1, %ret
-  gosub *pop        ; tmp < S(arg3, arg2, arg1, arg0)
-  mov %tmp, %ret
-  gosub *pop        ; arg3 < S(arg2, arg1, arg0)
-  mov %arg3, %ret
-  gosub *pop        ; arg2 < S(arg1, arg0)
-  mov %arg2, %ret
-  gosub *pop        ; arg1 < S(arg0)
-  mov %arg1, %ret
-  gosub *pop        ; arg0 < S()
-  mov %arg0, %ret
+  gosub *pop_registers
   return
 
 
@@ -789,6 +761,91 @@ if %gc_silent == 1 goto *gc_sl2
   return
 
 
+*push_registers
+  gosub *push       ; S(arg0)
+  mov %arg0, %arg1
+  gosub *push       ; S(arg1, arg0)
+  mov %arg0, %arg2
+  gosub *push       ; S(arg2, arg1, arg0)
+  mov %arg0, %arg3
+  gosub *push       ; S(arg3, arg2, arg1, arg0)
+  mov %arg0, %tmp
+  gosub *push       ; S(tmp, arg3, arg2, arg1, arg0)
+  mov %arg0, %tmp1
+  gosub *push       ; S(tmp1, tmp, arg3, arg2, arg1, arg0)
+  mov %arg0, %tmp2
+  gosub *push       ; S(tmp2, tmp1, tmp, arg3, arg2, arg1, arg0)
+  mov %arg0, %tmp3
+  gosub *push       ; S(tmp3, tmp2, tmp1, tmp, arg3, arg2, arg1, arg0)
+  return
+
+
+*pop_registers
+  gosub *pop        ; tmp3 < S(tmp2, tmp1, tmp, arg3, arg2, arg1, arg0)
+  mov %tmp3, %ret
+  gosub *pop        ; tmp2 < S(tmp1, tmp, arg3, arg2, arg1, arg0)
+  mov %tmp2, %ret
+  gosub *pop        ; tmp1 < S(tmp, arg3, arg2, arg1, arg0)
+  mov %tmp1, %ret
+  gosub *pop        ; tmp < S(arg3, arg2, arg1, arg0)
+  mov %tmp, %ret
+  gosub *pop        ; arg3 < S(arg2, arg1, arg0)
+  mov %arg3, %ret
+  gosub *pop        ; arg2 < S(arg1, arg0)
+  mov %arg2, %ret
+  gosub *pop        ; arg1 < S(arg0)
+  mov %arg1, %ret
+  gosub *pop        ; arg0 < S()
+  mov %arg0, %ret
+  return
+
+
+;;;;;;;;;;
+;;;*symbol_gc
+;;;  This subroutine does not keep %ret.
+;;;  This subroutine does not keep %i.
+;;;;;;;;;;
+*symbol_gc
+  gosub *push_registers
+  mov %gc_count, 0
+  textclear
+if %gc_silent == 1 goto *symbol_gc_sl1
+  ÇrÇôÇçÇÇÇèÇåÅ@ÇfÇbÇâÇéÇáÅEÅEÅE
+*symbol_gc_sl1
+  mov %tmp, SYMBOL_SET_HALF_SIZE
+  add %symbol_offset, %tmp
+  mul %tmp, 2
+  mov %symbol_offset, %symbol_offset mod %tmp
+  mov %symbol_used, SYMBOL_SET + %symbol_offset
+  mov %i, %symbol_lst
+*symbol_gc_l1
+  if %i == MEM_OVER goto *symbol_gc_l2
+  mov %arg0, %i
+  gosub *raw_car
+  mov $%symbol_used, $%ret
+  mov %arg0, %i
+  mov %arg1, %symbol_used
+  gosub *set_car
+  inc %symbol_used
+  mov %tmp, %symbol_used - SYMBOL_SET
+  sub %tmp, %symbol_offset
+  if %tmp >= SYMBOL_SET_HALF_SIZE mesbox "ÉÅÉÇÉäïsë´", "Error" : end
+  mov %arg0, %i
+  gosub *raw_cdr
+  mov %i, %ret
+  inc %gc_count
+  goto *symbol_gc_l1
+*symbol_gc_l2
+if %gc_silent == 1 goto *symbol_gc_sl2
+  mov %tmp, SYMBOL_SET_HALF_SIZE
+  ÇtÇìÇÖÇÑÅF%gc_count
+  mov %gc_count, %tmp - %gc_count
+  Ç`ÇñÇÅÇâÇåÇÅÇÇÇåÇÖÅF%gc_count
+*symbol_gc_sl2
+  gosub *pop_registers
+  return
+
+
 ;;;;;;;;;;
 ;;;*create_cons()
 ;;;;;;;;;;
@@ -850,6 +907,9 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *pop
   inc %symbol_used
   mov %symbol_lst, %ret
+  mov %tmp, %symbol_used - SYMBOL_SET
+  sub %tmp, %symbol_offset
+  if %tmp >= SYMBOL_SET_HALF_SIZE  gosub *gc : gosub *symbol_gc
   return
 
 
