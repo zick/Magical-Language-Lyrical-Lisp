@@ -351,6 +351,7 @@ nsa
   numalias lf_set, 10
   numalias lf_letrec, 11
   numalias lf_letstar, 12
+  numalias lf_time, 13
 
   defaultspeed 50,15,5
   caption "Magical Language Lyrical Lisp"
@@ -643,8 +644,8 @@ nsa
 ;;;  This subroutine does not keep %i because GC does not occurs in for-loop.
 ;;;;;;;;;;
 *gc
-  if %gc_limit == 0 goto *gc_l1
   inc %gc_run
+  if %gc_limit == 0 goto *gc_l1
   if %gc_run >= %gc_limit goto *gclimit
 *gc_l1
   gosub *push_registers
@@ -2310,6 +2311,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == lf_set goto *fsubr_func_set
   if %ret == lf_letrec goto *fsubr_func_letrec
   if %ret == lf_letstar goto *fsubr_func_letstar
+  if %ret == lf_time goto *fsubr_func_time
   goto *fsubr_func_error
 *fsubr_func_error
   mov %ret, %nil
@@ -2842,6 +2844,29 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 *fsubr_func_or_l3
   mov %ret, %sharp_f
+  return
+
+
+*fsubr_func_time
+  mov %arg0, %gc_run
+  gosub *push
+  gettimer %arg0
+  gosub *push
+  mov %arg0, %arg1
+  gosub *car  ; CAR(arg) => expr
+  mov %arg0, %ret
+  mov %arg1, %arg2
+  gosub *eval
+  mov %tmp, %ret
+  gettimer %tmp1
+  gosub *pop
+  sub %tmp1, %ret
+  mov %tmp2, %gc_run
+  gosub *pop
+  sub %tmp2, %ret
+ÇîÇâÇçÇÖÅF%tmp1ÇçÇì
+ÇfÇbÅF%tmp2\
+  mov %ret, %tmp
   return
 
 
@@ -3440,6 +3465,10 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, lf_letstar
   mov $sarg0, "let*"
   gosub *add_fsubr_to_env  ; letstar
+  mov %arg0, %global_env
+  mov %arg1, lf_time
+  mov $sarg0, "time"
+  gosub *add_fsubr_to_env  ; time
   mov $sarg0, "(define equal? (lambda (x y) (or (eq? x y)(and (pair? x)"
   mov $sarg0, $sarg0 + "(pair? y) (equal? (car x) (car y))"
   mov $sarg0, $sarg0 + "(equal? (cdr x) (cdr y))))))""
