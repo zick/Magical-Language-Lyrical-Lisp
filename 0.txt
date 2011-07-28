@@ -1,4 +1,4 @@
-;mode800,value4095
+;mode800,value4000
 
 ;;;;;;;;;;
 ;;; Variables and Stack:
