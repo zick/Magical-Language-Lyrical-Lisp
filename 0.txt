@@ -1034,6 +1034,17 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *set_cdr
   return
 
+;;;;;;;;;;
+;;;*popn_and_error(error, n)
+;;;;;;;;;;
+*popn_and_error
+  if %arg1 > 0 gosub *pop : dec %arg1 : goto *popn_and_error
+  mov %ret, %arg0
+  return
+*pop2_and_error
+  mov %arg1, 2
+  goto *popn_and_error
+
 
 ;;;;;;;;;;
 ;;;*next_token(str)
@@ -1517,7 +1528,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %arg1
   mov %arg1, %arg2
   gosub *evlis       ; Evlis(arg, env)
-  mov %arg0, %ret : gosub *get_tag : if %ret == TAG_ERROR goto *apply_error1
+  mov %arg0, %ret : gosub *get_tag : if %ret == TAG_ERROR goto *pop2_and_error
   mov %arg1, %arg0
   gosub *pop         ; env < S(fn)
   mov %arg2, %ret
@@ -1529,12 +1540,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == TAG_FSUBR goto *fsubr_func
   if %ret == TAG_EXPR goto *expr_call
   if %ret == TAG_FEXPR goto *fexpr_call
-  goto *apply_error2
-*apply_error1        ; S(env, fn)
-  mov %sp, %sp - 2   ; ... < S()
-  mov %ret, %arg0
-  return
-*apply_error2
+  goto *apply_error
+*apply_error
   gosub *lobject_to_string
   mov $sarg0, $sret + "‚ÍŠÖ”‚Å‚Í‚ ‚è‚Ü‚¹‚ñ"
   goto *create_error  ; tail call
@@ -1625,7 +1632,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %tmp1 ; arg0 = CAR(arg)
   gosub *eval      ; Eval(CAR(arg), env) => object
   mov %arg0, %ret
-  gosub *get_tag : if %ret == TAG_ERROR goto *evlis_error
+  gosub *get_tag : if %ret == TAG_ERROR mov %arg1, 4 : goto *popn_and_error
   gosub *push      ; S(object, env, arg, current)
   gosub *create_cons
   mov %arg0, %ret  ; new cons
@@ -1674,10 +1681,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *cdr       ; CDR(root)
   return           ; %ret = CDR(root)
-*evlis_error       ; S(env, arg, current, rot)
-  mov %sp, %sp - 4 ; ... < S()
-  mov %ret, %arg0
-  return
 
 
 ;;;;;;;;;;
@@ -2409,6 +2412,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %tmp
   gosub *eval          ; Eval(CAR(arg), env) => object
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR goto *pop2_and_error
   gosub *pop           ; env < S(arg)
   mov %tmp, %ret
   gosub *pop           ; arg < S()
@@ -2456,7 +2460,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %arg0
   mov %arg0, %tmp
   gosub *eval         ; Eval(CAR(CAR(arg)), env)
-  if %ret != %sharp_f goto *fsubr_func_cond_l2
+  mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR : goto *pop2_and_error
+  if %arg0 != %sharp_f goto *fsubr_func_cond_l2
   gosub *pop          ; env < S(arg)
   mov %arg0, %ret
   gosub *pop          ; arg < S()
@@ -2539,7 +2545,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push         ; S(sym, env)
   mov %arg0, %tmp
   gosub *eval         ; (val, env)
-  mov %arg2, %ret
+  mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR goto *pop2_and_error
+  mov %arg2, %arg0
 *fsubr_func_define_l1
   gosub *pop          ; sym < S(env)
   mov %arg0, %ret
@@ -2548,7 +2556,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push         ; S(sym)
   mov %arg1, %arg0
   mov %arg0, %tmp
-        ; TODO: We should protect built-in functions/variables from user.
+  ; TODO: We should protect built-in functions/variables from user.
   if %arg1 == %quote gosub *pop : mov %ret, %nil : return
   gosub *add_bind_to_env
   gosub *pop
@@ -2630,7 +2638,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push         ; S(sym, env)
   mov %arg0, %tmp
   gosub *eval         ; (val, env) => object
-  mov %tmp, %ret
+  mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR goto *pop2_and_error
+  mov %tmp, %arg0
   gosub *pop          ; sym < S(env)
   mov %tmp1, %ret
   gosub *pop          ; env < S()
@@ -2658,6 +2668,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push         ; S(env, arg)
   mov %arg0, %arg1
   gosub *car          ; CAR(arg) => argument
+  if %ret == %nil goto *fsubr_func_let_null_env
   mov %arg0, %ret
   gosub *push         ; S(argument, env, arg)
   gosub *let_arg_split1  ; namelist
@@ -2679,7 +2690,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push         ; S(namelist, env, arg)
   mov %arg0, %tmp     ; arg0 = vallist
   gosub *evlis
-  mov %arg1, %ret
+  mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR mov %arg1, 3 : goto *popn_and_error
+  mov %arg1, %arg0
   gosub *pop          ; namelist < S(env, arg)
   mov %arg0, %ret
   gosub *pop          ; env < S(arg)
@@ -2696,6 +2709,13 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg2, %ret
   goto *fsubr_func_begin  ; tail call
   return
+*fsubr_func_let_null_env ; S(env, arg)
+  gosub *pop          ; env < S(arg)
+  mov %arg2, %ret
+  gosub *pop          ; arg < S()
+  mov %arg1, %ret
+  goto *fsubr_func_begin  ; tail call
+  return
 
 *fsubr_func_letrec
   mov %arg0, %arg1
@@ -2705,6 +2725,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %tmp, %sp - 2   ; =arg
   mov %arg0, %%tmp
   gosub *car          ; CAR(arg) => argument
+  if %ret == %nil goto *fsubr_func_let_null_env
   mov %arg0, %ret
   gosub *push         ; S(argument, env, arg)
   gosub *let_arg_split1  ; namelist
@@ -2730,6 +2751,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   sub %sp, 2          ; < S(arg)
   gosub *letrec_bind
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR mov %arg1, 1 : goto *popn_and_error
   gosub *push         ; S(new env, arg)
   mov %tmp, %sp - 2   ; =arg
   mov %arg0, %%tmp
@@ -2749,6 +2771,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %tmp, %sp - 2   ; =arg
   mov %arg0, %%tmp
   gosub *car          ; CAR(arg) => argument
+  if %ret == %nil goto *fsubr_func_let_null_env
   mov %arg0, %ret
   gosub *push         ; S(argument, env, arg)
   gosub *let_arg_split1  ; namelist
@@ -2765,6 +2788,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *letstar_bind
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR mov %arg1, 1 : goto *popn_and_error
   gosub *push         ; S(new env, arg)
   mov %tmp, %sp - 2   ; =arg
   mov %arg0, %%tmp
@@ -2792,7 +2816,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %arg0
   mov %arg0, %tmp
   gosub *eval
-  if %ret != %sharp_f goto *fsubr_func_if_l1
+  mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR goto *pop2_and_error
+  if %arg0 != %sharp_f goto *fsubr_func_if_l1
   gosub *pop          ; env < S(arg)
   mov %arg0, %ret
   gosub *pop          ; arg < S()
@@ -2824,7 +2850,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   goto *eval  ; tail call
 
 *fsubr_func_and
-  mov %ret, %nil
+  mov %ret, %sharp_t
 *fsubr_func_and_l1  ;(arg1 = arg, arg2 = env, ret = result)
   if %arg1 == %nil goto *fsubr_func_and_l3
   mov %arg0, %arg1
@@ -2840,8 +2866,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %arg0
   mov %arg0, %tmp
   gosub *eval         ; Eval(expr, env) => object
-  if %ret == %sharp_f goto *fsubr_func_and_l2
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR goto *pop2_and_error
+  if %arg0 == %sharp_f goto *fsubr_func_and_l2
   gosub *pop          ; env < S(arg)
   mov %tmp, %ret
   gosub *pop          ; arg < S()
@@ -2865,7 +2892,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 *fsubr_func_or
-  mov %ret, %nil
+  mov %ret, %sharp_f
 *fsubr_func_or_l1  ; (%arg1 = arg, %arg2 = env, %ret = result)
   if %arg1 == %nil goto *fsubr_func_or_l3
   mov %arg0, %arg1
@@ -2881,8 +2908,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %arg0
   mov %arg0, %tmp
   gosub *eval         ; Eval(expr, env) => object
-  if %ret != %sharp_f goto *fsubr_func_or_l2
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR goto *pop2_and_error
+  if %arg0 != %sharp_f goto *fsubr_func_or_l2
   gosub *pop          ; env < S(arg)
   mov %tmp, %ret
   gosub *pop          ; arg < S()
@@ -2897,10 +2925,10 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg2, %ret
   gosub *pop          ; object < S()
   goto *fsubr_func_or_l1
-*fsubr_func_or_l2  ; (ret = object, S(env, arg))
-  mov %tmp, %ret
-  gosub *pop         ; env < S(arg)
-  gosub *pop         ; arg < S()
+*fsubr_func_or_l2     ; (arg0 = object, S(env, arg))
+  mov %tmp, %arg0
+  gosub *pop          ; env < S(arg)
+  gosub *pop          ; arg < S()
   mov %ret, %tmp
   return
 *fsubr_func_or_l3
@@ -3162,6 +3190,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %%tmp
   gosub *eval        ; eval(val, env)
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR : mov %arg1, 3 : goto *popn_and_error
   gosub *push        ; S(new object, vallist, namelist, env)
   mov %tmp, %sp - 3  ; =namelist
   mov %arg0, %%tmp
@@ -3217,6 +3246,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %%tmp
   gosub *eval        ;eval(val, env)
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR : mov %arg1, 3 : goto *popn_and_error
   gosub *push        ; S(new object, new env, vallist, namelist)
   mov %tmp, %sp - 4  ; =namelist
   mov %arg0, %%tmp
