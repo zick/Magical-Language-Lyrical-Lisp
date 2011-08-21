@@ -687,6 +687,7 @@ if %gc_silent == 1 goto *gc_sl2
   if %ret == TAG_CONS goto *gc_mark_lobject_l1
   if %ret == TAG_EXPR goto *gc_mark_lobject_l1
   if %ret == TAG_FEXPR goto *gc_mark_lobject_l1
+  if %ret == TAG_ERROR goto *gc_mark_lobject_l1
   ; Does not mark if the object is not cons.
   return
 *gc_mark_lobject_l1
