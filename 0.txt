@@ -22,6 +22,7 @@
 ;;;   CAR part of symbols points to the string which is the symbol name.
 ;;;   All symbols are chained by their CDR part.
 ;;;   EXPR and FEXPR are represented with lists such as (env arg . body).
+;;;   Errors are represented with lists such as (error-message-symbol).
 ;;;
 ;;; ATTENTION:
 ;;;   Do not allocate new cons cell in for-loop.
@@ -164,6 +165,7 @@ nsa
   numalias TAG_EXPR, 5
   numalias TAG_FEXPR, 6
   numalias TAG_FREE, 7
+  numalias TAG_ERROR, 8
   numalias MAX_NUMBER, 16777215          ; 2^24 - 1
   numalias MIN_NUMBER, -16777216         ; - 2^24
   numalias UNSIGNED_MAX_PLUS1, 33554432  ; 2^25
@@ -341,6 +343,7 @@ nsa
   numalias lf_null, 23
   numalias lf_read, 24
   numalias lf_write, 25
+  numalias lf_error, 26
 
   ; FSUBR
   numalias lf_quote, 0
@@ -1013,6 +1016,26 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
+;;;*create_error(str)
+;;;;;;;;;;
+*create_error
+  gosub *create_symbol
+  mov %arg0, %ret
+  gosub *push       ; S(symbol)
+  gosub *next_cell
+  mov %arg0, %ret
+  mov %arg1, TAG_ERROR
+  gosub *set_tag
+  gosub *pop        ; symbol < S()
+  mov %arg1, %ret
+  gosub *set_car
+  mov %arg0, %ret
+  mov %arg1, %nil
+  gosub *set_cdr
+  return
+
+
+;;;;;;;;;;
 ;;;*next_token(str)
 ;;sret : Substring
 ;;ret  : The number of characters which were read
@@ -1339,27 +1362,37 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 ;;;;;;;;;;
 *lobject_to_string
   gosub *get_tag
-  if %ret == TAG_SUBR goto *lobject_to_string_l1
-  if %ret == TAG_FSUBR goto *lobject_to_string_l1
-  if %ret == TAG_EXPR goto *lobject_to_string_l1
-  if %ret == TAG_FEXPR goto *lobject_to_string_l1
-  if %ret == TAG_NUM  goto *lobject_to_string_l2
-  if %ret == TAG_SYMBOL goto *lobject_to_string_l3
+  if %ret == TAG_SUBR goto *lobject_to_string_proc
+  if %ret == TAG_FSUBR goto *lobject_to_string_proc
+  if %ret == TAG_EXPR goto *lobject_to_string_proc
+  if %ret == TAG_FEXPR goto *lobject_to_string_proc
+  if %ret == TAG_NUM  goto *lobject_to_string_num
+  if %ret == TAG_SYMBOL goto *lobject_to_string_sym
+  if %ret == TAG_ERROR goto *lobject_to_string_err
   if %ret == TAG_CONS gosub *cons_to_string : return
   return
-*lobject_to_string_l1
+*lobject_to_string_proc
   mov $sarg0, "”ƒ‚‚’‚‚ƒ‚…‚„‚•‚’‚…„"
-  goto *lobject_to_string_l4
-*lobject_to_string_l2
-  gosub *get_num_data
-  itoa $sarg0, %ret
-  goto *lobject_to_string_l4
-*lobject_to_string_l3
-  gosub *raw_car
-  mov $sarg0, $%ret
-*lobject_to_string_l4
   gosub *print_string
   return
+*lobject_to_string_num
+  gosub *get_num_data
+  itoa $sarg0, %ret
+  gosub *print_string
+  return
+*lobject_to_string_sym
+  mov $sarg0, ""
+*lobject_to_string_sym_l1
+  gosub *raw_car
+  mov $sarg0, $sarg0 +  $%ret
+  gosub *print_string
+  return
+*lobject_to_string_err
+  mov $sarg0, "‚d‚’‚’‚‚’F"
+  gosub *raw_car
+  mov %arg0, %ret
+  goto *lobject_to_string_sym_l1
+
 
 ;;;;;;;;;;
 ;;;*print_string(str)
@@ -1433,6 +1466,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 *eval
   gosub *get_tag
   if %ret == TAG_NUM mov %ret, %arg0 : return
+  if %ret == TAG_ERROR mov %ret, %arg0 : return
   if %ret == TAG_SYMBOL gosub *assoc : mov %arg0, %ret : gosub *cdr : return
 
   ; Assume obj is a cons
@@ -1483,7 +1517,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %arg1
   mov %arg1, %arg2
   gosub *evlis       ; Evlis(arg, env)
-  mov %arg1, %ret
+  mov %arg0, %ret : gosub *get_tag : if %ret == TAG_ERROR goto *apply_error1
+  mov %arg1, %arg0
   gosub *pop         ; env < S(fn)
   mov %arg2, %ret
   gosub *pop         ; fn < S()
@@ -1494,7 +1529,15 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == TAG_FSUBR goto *fsubr_func
   if %ret == TAG_EXPR goto *expr_call
   if %ret == TAG_FEXPR goto *fexpr_call
-  mov %ret, %nil     ;Error
+  goto *apply_error2
+*apply_error1        ; S(env, fn)
+  mov %sp, %sp - 2   ; ... < S()
+  mov %ret, %arg0
+  return
+*apply_error2
+  gosub *lobject_to_string
+  mov $sarg0, $sret + "‚ÍŠÖ”‚Å‚Í‚ ‚è‚Ü‚¹‚ñ"
+  goto *create_error  ; tail call
   return
 
 
@@ -1582,6 +1625,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %tmp1 ; arg0 = CAR(arg)
   gosub *eval      ; Eval(CAR(arg), env) => object
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR goto *evlis_error
   gosub *push      ; S(object, env, arg, current)
   gosub *create_cons
   mov %arg0, %ret  ; new cons
@@ -1630,6 +1674,10 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *cdr       ; CDR(root)
   return           ; %ret = CDR(root)
+*evlis_error       ; S(env, arg, current, rot)
+  mov %sp, %sp - 4 ; ... < S()
+  mov %ret, %arg0
+  return
 
 
 ;;;;;;;;;;
@@ -1844,9 +1892,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == lf_null goto *subr_func_null
   if %ret == lf_read goto *subr_func_read
   if %ret == lf_write goto *subr_func_write
-  goto *subr_func_error
-*subr_func_err
-  mov %ret, %nil
+  if %ret == lf_error goto *subr_func_error
+  mov $sarg0, "Invalid-SUBR"
+  goto *subr_func_error  ; tail call
   return
 
 *subr_func_car
@@ -2297,6 +2345,15 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop
   return
 
+*subr_func_error
+  mov %arg0, %arg1
+  gosub *car
+  mov %arg0, %ret
+  gosub *lobject_to_string
+  mov $sarg0, $sret
+  goto *create_error  ; tail call
+  return
+
 
 ;;;;;;;;;;
 ;;;*fsubr_func(fn, arg, env)
@@ -2317,9 +2374,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == lf_letrec goto *fsubr_func_letrec
   if %ret == lf_letstar goto *fsubr_func_letstar
   if %ret == lf_time goto *fsubr_func_time
-  goto *fsubr_func_error
-*fsubr_func_error
-  mov %ret, %nil
+  mov $sarg0, "Invalid-FSUBR"
+  goto *subr_func_error  ; tail call
   return
 
 *fsubr_func_quote
@@ -3417,6 +3473,10 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, lf_write
   mov $sarg0, "write"
   gosub *add_subr_to_env  ; write
+  mov %arg0, %global_env
+  mov %arg1, lf_error
+  mov $sarg0, "error"
+  gosub *add_subr_to_env  ; error
   ;;FSUBR
   mov %arg0, %global_env
   mov %arg1, lf_quote
