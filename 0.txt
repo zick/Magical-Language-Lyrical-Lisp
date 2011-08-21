@@ -16,6 +16,11 @@
 ;;;     T: Tag     (5 bits)
 ;;;     G: GC Mark (1 bit)
 ;;;     (MSB must be 0 because we use arithmetic ops instead of binary ops.)
+;;;   CAR of cons cells occupies the low 13 bits of Data part.
+;;;   CDR of cons cells occupies the remaining bits of Data part.
+;;;   Symbols are also partitioned into CAR and CDR.
+;;;   CAR part of symbols points to the string which is the symbol name.
+;;;   All symbols are chained by their CDR part.
 ;;;   EXPR and FEXPR are represented with lists such as (env arg . body).
 ;;;
 ;;; ATTENTION:
@@ -702,7 +707,7 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *gc_mark_lobject
   if %sp == STACK return  ; Stack is empty.
   for %i = STACK to %sp-1
-                ; Stack may contain non-pointer values.
+    ; Stack may contain non-pointer values.
     ; Do conservative GC.
     if %%i < MEM goto *gc_mark_l1
     if %%i > MEM_END goto *gc_mark_l1
