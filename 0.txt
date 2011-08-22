@@ -1507,9 +1507,24 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *get_tag
   if %ret == TAG_NUM mov %ret, %arg0 : return
   if %ret == TAG_ERROR mov %ret, %arg0 : return
-  if %ret == TAG_SYMBOL gosub *assoc : mov %arg0, %ret : gosub *cdr : return
-
-  ; Assume obj is a cons
+  if %ret == TAG_SYMBOL goto *eval_variable
+  goto *eval_compound  ; Assume obj is a cons
+*eval_variable
+  gosub *push       ; S(obj)
+  gosub *assoc
+  if %ret == %nil goto *eval_variable_error
+  mov %arg0, %ret   ; %arg0 = (var . val)
+  gosub *pop        ; obj < S()
+  gosub *cdr        ; %ret = val
+  return
+*eval_variable_error
+  gosub *pop        ; obj < S()
+  mov %arg0, %ret
+  gosub *lobject_to_string
+  mov $sarg0, $sret + "‚Í–¢‘©”›‚Å‚·"
+  goto *create_error; tail call
+  return
+*eval_compound
   gosub *push       ; S(obj)
   mov %tmp, %arg0
   mov %arg0, %arg1
