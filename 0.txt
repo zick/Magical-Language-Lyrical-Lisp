@@ -1045,6 +1045,16 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 *pop2_and_error
   mov %arg1, 2
   goto *popn_and_error
+*popn_and_invstx
+  mov %arg0, %arg1
+  gosub *push         ; S(n)
+  gosub *invalid_syntax
+  gosub *pop          ; n < S()
+  mov %arg1, %ret
+  goto *popn_and_error
+*pop2_and_invstx
+  mov %arg1, 2
+  goto *popn_and_invstx
 
 
 ;;;;;;;;;;
@@ -1059,6 +1069,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   goto *set_error_to_arg0  ; tail call
 *too_many_arg0
   mov $sarg0, "Too-many-arguments"
+  goto *set_error_to_arg0  ; tail call
+*invalid_syntax
+  mov $sarg0, "Invalid-syntax"
   goto *set_error_to_arg0  ; tail call
 
 
@@ -1550,12 +1563,13 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg2, %ret
   gosub *pop         ; fn < S()
   mov %arg0, %ret
-*apply_l2
+*apply_l2  ; apply-primitive enters here
   gosub *get_tag
   if %ret == TAG_SUBR goto *subr_func
   if %ret == TAG_FSUBR goto *fsubr_func
   if %ret == TAG_EXPR goto *expr_call
   if %ret == TAG_FEXPR goto *fexpr_call
+  if %ret == TAG_ERROR mov %ret, %arg0 : return
   goto *apply_error
 *apply_error
   gosub *lobject_to_string
@@ -2474,6 +2488,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *fsubr_func_quote
   mov %arg0, %arg1
+  mov %arg1, 1 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car  ; CAR(arg)
   return
 
@@ -2543,6 +2559,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %tmp
   gosub *car          ; CAR(arg)
   mov %arg0, %ret
+  gosub *get_tag : if %ret != TAG_CONS goto *pop2_and_invstx
   gosub *car          ; CAR(CAR(arg))
   mov %tmp, %ret
   gosub *pop          ; env < S(arg)
@@ -2582,12 +2599,15 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 *fsubr_func_lambda
+  if %arg1 == %nil gosub *too_few_arg0 : mov %ret, %arg0 : return
   mov %arg0, %arg2
   gosub *push        ; S(env)
   mov %arg0, %arg1
   gosub *push        ; S(arg, env)
   gosub *car         ; CAR(arg) => argument
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_CONS && %ret != TAG_SYMBOL goto *pop2_and_invstx
   gosub *pop         ; arg < S(env)
   mov %tmp, %ret
   gosub *push        ; S(argument, env)
@@ -2622,6 +2642,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %tmp1, %ret
   gosub *push         ; S(sym, env)
   mov %arg0, %tmp1
+  mov %arg1, 2 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR goto *pop2_and_error
   gosub *cdr          ; CDR(arg)
   mov %arg0, %ret
   gosub *car          ; CADR(arg) => val
@@ -2692,6 +2714,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push        ; S(sym, env)
   gosub *fsubr_func_lambda
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR goto *pop2_and_error
   gosub *pop         ; sym < S(env)
   mov %tmp, %ret
   gosub *push        ; S(val, env)
@@ -2708,6 +2731,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %arg2
   gosub *push         ; S(env)
   mov %arg0, %arg1
+  mov %arg1, 2 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR gosub *pop : mov %ret, %arg0 : return
   gosub *push         ; S(arg, env)
   gosub *car          ; CAR(arg) => sym
   mov %arg0, %ret
@@ -2753,6 +2778,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 *fsubr_func_let
+  if %arg1 == %nil gosub *too_few_arg0 : mov %ret, %arg0 : return
   mov %arg0, %arg1
   gosub *push         ; S(arg)
   mov %arg0, %arg2
@@ -2761,9 +2787,12 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *car          ; CAR(arg) => argument
   if %ret == %nil goto *fsubr_func_let_null_env
   mov %arg0, %ret
+  gosub *get_tag : if %ret != TAG_CONS goto *pop2_and_invstx
   gosub *push         ; S(argument, env, arg)
   gosub *let_arg_split1  ; namelist
-  mov %tmp, %ret
+  mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR mov %arg1, 3 : goto *popn_and_error
+  mov %tmp, %arg0
   gosub *pop          ; argument < S(env, arg)
   mov %tmp1, %ret
   mov %arg0, %tmp
@@ -2809,6 +2838,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 *fsubr_func_letrec
+  if %arg1 == %nil gosub *too_few_arg0 : mov %ret, %arg0 : return
   mov %arg0, %arg1
   gosub *push         ; S(arg)
   mov %arg0, %arg2
@@ -2818,9 +2848,11 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *car          ; CAR(arg) => argument
   if %ret == %nil goto *fsubr_func_let_null_env
   mov %arg0, %ret
+  gosub *get_tag : if %ret != TAG_CONS goto *pop2_and_invstx
   gosub *push         ; S(argument, env, arg)
   gosub *let_arg_split1  ; namelist
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR mov %arg1, 3 : goto *popn_and_error
   gosub *push         ; S(namelist, argument, env, arg)
   mov %tmp ,%sp - 2   ; =argument
   mov %arg0, %%tmp
@@ -2855,6 +2887,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 *fsubr_func_letstar
+  if %arg1 == %nil gosub *too_few_arg0 : mov %ret, %arg0 : return
   mov %arg0, %arg1
   gosub *push         ; S(arg)
   mov %arg0, %arg2
@@ -2864,9 +2897,11 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *car          ; CAR(arg) => argument
   if %ret == %nil goto *fsubr_func_let_null_env
   mov %arg0, %ret
+  gosub *get_tag : if %ret != TAG_CONS goto *pop2_and_invstx
   gosub *push         ; S(argument, env, arg)
   gosub *let_arg_split1  ; namelist
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR mov %arg1, 3 : goto *popn_and_error
   gosub *push         ; S(namelist, argument, env, arg)
   mov %tmp ,%sp - 2   ; =argument
   mov %arg0, %%tmp
@@ -2892,6 +2927,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 *fsubr_func_if
+  ; TODO: check too-many-arguments
+  if %arg1 == %nil gosub *too_few_arg0 : mov %ret, %arg0 : return
   mov %arg0, %arg1
   mov %arg1, %arg2
   gosub *push         ; S(arg)
@@ -2917,6 +2954,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push         ; S(env)
   mov %arg0, %tmp
   gosub *cdr          ; CDR(arg)
+  if %ret == %nil gosub *pop : gosub *too_few_arg0 : mov %ret, %arg0 : return
   mov %arg0, %ret
   gosub *cdr          ; CDDR(arg)
   mov %arg0, %ret
@@ -2933,6 +2971,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push         ; S(env)
   mov %arg0, %tmp
   gosub *cdr          ; CDR(arg)
+  if %ret == %nil gosub *pop : gosub *too_few_arg0 : mov %ret, %arg0 : return
   mov %arg0, %ret
   gosub *car          ; CADR(arg)
   mov %arg0, %ret
@@ -3071,6 +3110,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %tmp1
   gosub *car          ; pair
   mov %arg0, %ret
+  gosub *get_tag : if %ret != TAG_CONS mov %arg1, 3 : goto *popn_and_invstx
   gosub *car          ; name
   mov %arg0, %ret
   gosub *push         ; S(name, current, arglist, root)
