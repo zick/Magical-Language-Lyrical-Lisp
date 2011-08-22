@@ -1048,6 +1048,21 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
+;;;*set_error_to_arg0(str)
+;;;;;;;;;;
+*set_error_to_arg0
+  gosub *create_error
+  mov %arg0, %ret
+  return
+*too_few_arg0
+  mov $sarg0, "Too-few-arguments"
+  goto *set_error_to_arg0  ; tail call
+*too_many_arg0
+  mov $sarg0, "Too-many-arguments"
+  goto *set_error_to_arg0  ; tail call
+
+
+;;;;;;;;;;
 ;;;*next_token(str)
 ;;sret : Substring
 ;;ret  : The number of characters which were read
@@ -1559,6 +1574,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %tmp
   gosub *create_expr_env  ; (arg, fn)
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR mov %arg1, 1 : goto *popn_and_error
   gosub *pop           ; fn < S(ret)
   mov %tmp, %ret
   gosub *push          ; S(new env)
@@ -1748,6 +1764,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop             ; farg < S(arg, env, fn)
   mov %tmp1, %ret
   gosub *pop             ; arg < S(env, fn)
+  if %ret == %nil gosub *too_few_arg0 : goto *pop2_and_error
   mov %tmp2, %ret
   mov %arg0, %tmp1
   gosub *push            ; S(farg, env, fn)
@@ -1789,6 +1806,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   goto *create_expr_env_l1
 *create_expr_env_l2  ; (tmp1 = farg, S(arg, env, fn))
   gosub *pop             ; arg < S(env, fn)
+  if %ret != %nil gosub *too_many_arg0 : goto *pop2_and_error
   gosub *pop             ; env < S(fn)
   mov %arg0, %ret
   gosub *pop             ; fn < S()
@@ -1814,8 +1832,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *push            ; S(env, fn)
   gosub *add_bind_to_env
-  mov %arg0, 0           ; dummy (label l2 discards it)
-  gosub *push            ; S(0(arg), env, fn)
+  mov %arg0, %nil        ; remaining arguments
+  gosub *push            ; S(nil(arg), env, fn)
   goto *create_expr_env_l2
 
 
@@ -1861,8 +1879,29 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *pop            ; fn < S()
   mov %arg1, %ret
-  goto *create_expr_env  ; tail call
+  goto *create_expr_env ; tail call
   return
+
+
+;;;;;;;;;;
+;;;*check_arguments_length(arg, n)
+;;;;;;;;;;
+*check_arguments_length
+  gosub *push           ; S(arg)
+*check_arguments_length_l1
+  if %arg1 == 0 goto *check_argument_length_end
+  if %arg0 == %nil goto *check_argument_length_few
+  gosub *cdr
+  mov %arg0, %ret
+  dec %arg1
+  goto *check_arguments_length_l1
+*check_argument_length_few
+  gosub *pop            ; arg < S()
+  goto *too_few_arg0    ; tail call
+*check_argument_length_end
+  gosub *pop            ; arg < S()
+  if %arg0 == %nil mov %arg0, %ret : return
+  goto *too_many_arg0   ; tail call
 
 
 ;;;;;;;;;;
@@ -1903,6 +1942,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_car
   mov %arg0, %arg1
+  mov %arg1, 1 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car        ; CAR(arg)
   mov %arg0, %ret
   gosub *get_tag
@@ -1912,6 +1953,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_cdr
   mov %arg0, %arg1
+  mov %arg1, 1 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car        ; CAR(arg)
   mov %arg0, %ret
   gosub *get_tag
@@ -1921,6 +1964,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_cons
   mov %arg0, %arg1
+  mov %arg1, 2 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *push        ; S(arg)
   gosub *car
   mov %tmp, %ret     ; tmp = CAR(arg)
@@ -1951,6 +1996,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_eq
   mov %arg0, %arg1
+  mov %arg1, 2 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *push       ; S(arg)
   gosub *car
   mov %tmp, %ret    ; tmp = CAR(arg)
@@ -1985,6 +2032,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_atom
   mov %arg0, %arg1
+  mov %arg1, 1 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car
   mov %arg0, %ret
   gosub *get_tag
@@ -2021,6 +2070,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_sub
   mov %arg0, %arg1
+  mov %arg1, 2 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
@@ -2072,6 +2123,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_div
   mov %arg0, %arg1
+  mov %arg1, 2 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
@@ -2095,6 +2148,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_mod
   mov %arg0, %arg1
+  mov %arg1, 2 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
@@ -2118,6 +2173,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_gt
   mov %arg0, %arg1
+  mov %arg1, 2 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
@@ -2141,6 +2198,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_ge
   mov %arg0, %arg1
+  mov %arg1, 2 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
@@ -2164,6 +2223,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_ls
   mov %arg0, %arg1
+  mov %arg1, 2 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
@@ -2187,6 +2248,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_le
   mov %arg0, %arg1
+  mov %arg1, 2 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
@@ -2210,6 +2273,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_set_car
   mov %arg0, %arg1
+  mov %arg1, 2 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
@@ -2231,6 +2296,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_set_cdr
   mov %arg0, %arg1
+  mov %arg1, 2 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
@@ -2252,6 +2319,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_eval
   mov %arg0, %arg1
+  mov %arg1, 1 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car  ; CAR(arg) => expr
   mov %arg0, %ret
   mov %arg1, %global_env
@@ -2261,6 +2330,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %arg2
   gosub *push         ; S(env)
   mov %arg0, %arg1
+  mov %arg1, 2 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR gosub *pop : mov %ret, %arg0 : return
   gosub *push         ; S(arg, env)
   gosub *car          ; CAR(arg) => fn
   mov %arg0, %ret
@@ -2276,10 +2347,12 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *pop          ; env < S()
   mov %arg2, %ret
-  goto *apply  ; tail call
+  goto *apply_l2      ; tail call
 
 *subr_func_booleanp
   mov %arg0, %arg1
+  mov %arg1, 1 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car
   if %ret != %sharp_t && %ret != %sharp_f : mov %ret, %sharp_f : return
   mov %ret, %sharp_t
@@ -2287,6 +2360,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_pairp
   mov %arg0, %arg1
+  mov %arg1, 1 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car
   mov %arg0, %ret
   gosub *get_tag
@@ -2296,6 +2371,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_symbolp
   mov %arg0, %arg1
+  mov %arg1, 1 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car
   mov %arg0, %ret
   gosub *get_tag
@@ -2305,6 +2382,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_numberp
   mov %arg0, %arg1
+  mov %arg1, 1 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car
   mov %arg0, %ret
   gosub *get_tag
@@ -2314,6 +2393,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_procedurep
   mov %arg0, %arg1
+  mov %arg1, 1 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car
   mov %arg0, %ret
   gosub *get_tag
@@ -2327,6 +2408,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_null
   mov %arg0, %arg1
+  mov %arg1, 1 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car
   mov %arg0, %ret
   mov %ret, %sharp_f
@@ -2334,6 +2417,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 *subr_func_read
+  mov %arg0, %arg1
+  mov %arg1, 0 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *read_from_console
   mov $sarg0, $sret
   gosub *input_to_lobject
@@ -2341,6 +2427,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_write
   mov %arg0, %arg1
+  mov %arg1, 1 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car
   mov %arg0, %ret
   gosub *push
@@ -2351,6 +2439,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 *subr_func_error
   mov %arg0, %arg1
+  mov %arg1, 1 : gosub *check_arguments_length
+  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car
   mov %arg0, %ret
   gosub *lobject_to_string
