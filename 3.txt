@@ -123,6 +123,8 @@ bgm ms_ex
   mov %gc_limit, 0
 *fm01
   mov %gc_run, 0  ;GC‹N“®‰ñ”‚ğ‰Šú‰»
+  mov %current_proc, %nil
+  mov %current_env, %adv_tmp3
   mov $sarg0, ""
   textclear
   gosub *fm01_say_tab

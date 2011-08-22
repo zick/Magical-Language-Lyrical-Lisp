@@ -109,6 +109,8 @@
   gosub *nconc
 *free_eval_loop
   mov %gc_run, 0  ;GC起動回数を初期化
+  mov %current_proc, %nil
+  mov %current_env, %adv_tmp3
   mov $sarg0, ""
   lsp SP_RC_1, ":s/14,14,1;#FFFFFFＴａｂキーでゲームに戻ります", 40, 100
   print 1
@@ -392,6 +394,8 @@ textclear
 
 *ex_rep
   mov %gc_run, 0  ;GC起動回数を初期化
+  mov %current_proc, %nil
+  mov %current_env, %adv_tmp3
   mov $sarg0, ""
   textclear
   gosub $problem_label
