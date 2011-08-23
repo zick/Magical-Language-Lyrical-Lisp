@@ -111,6 +111,7 @@
   mov %gc_run, 0  ;GC起動回数を初期化
   mov %current_proc, %nil
   mov %current_env, %adv_tmp3
+  mov %adv_error, 0
   mov $sarg0, ""
   lsp SP_RC_1, ":s/14,14,1;#FFFFFFＴａｂキーでゲームに戻ります", 40, 100
   print 1
@@ -128,12 +129,15 @@
   mov %arg1, %adv_tmp3
   gosub *eval
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR mov %adv_error, 1
   gosub *lobject_to_string
   ;;改行表示処理
   mov $stmp1, ":s/14,14,1;#FFFFFF"
   mov $stmp2, ":s/14,14,1;#FFFFFF"
   mov $stmp3, ":s/14,14,1;#FFFFFF"
+  if %adv_error == 1 goto *free_eval_l0
   mov $sret, "結果は『" + $sret + "』です"
+*free_eval_l0
   len %tmp, $sret
   if %tmp <= 80 mov $stmp, ":s/14,14,1;#FFFFFF"+$sret : goto *free_eval_l1
   ;;2行目突入
@@ -396,6 +400,7 @@ textclear
   mov %gc_run, 0  ;GC起動回数を初期化
   mov %current_proc, %nil
   mov %current_env, %adv_tmp3
+  mov %adv_error, 0
   mov $sarg0, ""
   textclear
   gosub $problem_label
@@ -414,10 +419,16 @@ textclear
   mov %arg1, %adv_tmp3
   gosub *eval
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR mov %adv_error, 1
   gosub *push
   gosub *lobject_to_string
   textclear
+  if %adv_error == 1 goto *ex_rep_error
 アリサ「結果は『$sret』ね」\
+  goto $suc_label
+*ex_rep_error
+アリサ「プログラムに誤りがあるわ」
+#33FF33$sret#FFFFFF\
   goto $suc_label
 
 

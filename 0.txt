@@ -212,6 +212,11 @@ nsa
   numalias current_proc, 78
   numalias current_env, 79
 
+  ;; Error messages
+  stralias str_too_few_arguments, "Too-few-arguments"
+  stralias str_too_many_arguments, "Too-many-arguments"
+  stralias str_invalid_syntax, "Invalid-syntax"
+
   ; Variables for the game
   numalias save_flag, 0
   numalias adv_tmp, 1
@@ -245,6 +250,7 @@ nsa
   numalias adv_vol, 29
   numalias adv_rmode, 30
   numalias adv_num_loss, 31
+  numalias adv_error, 32
 
   ; Aliases for string variables
   numalias sarg0, 10
@@ -1090,13 +1096,13 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   return
 *too_few_arg0
-  mov $sarg0, "Too-few-arguments"
+  mov $sarg0, str_too_few_arguments
   goto *set_error_to_arg0  ; tail call
 *too_many_arg0
-  mov $sarg0, "Too-many-arguments"
+  mov $sarg0, str_too_many_arguments
   goto *set_error_to_arg0  ; tail call
 *invalid_syntax
-  mov $sarg0, "Invalid-syntax"
+  mov $sarg0, str_invalid_syntax
   goto *set_error_to_arg0  ; tail call
 
 
@@ -1454,28 +1460,42 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *print_string
   return
 *lobject_to_string_sym
-  mov $sarg0, ""
-*lobject_to_string_sym_l1
   gosub *raw_car
-  mov $sarg0, $sarg0 +  $%ret
+  mov $sarg0, $%ret
   gosub *print_string
   return
 *lobject_to_string_err
-  mov $sarg0, "Ｅｒｒｏｒ："
   gosub *push         ; S(obj)
-  gosub *raw_car      ; error message
-  mov %arg0, %ret
-  gosub *lobject_to_string_sym_l1
-  mov $sarg0, $sret
-  gosub *spush
-  gosub *pop          ; obj < S()
-  mov %arg0, %ret
   gosub *raw_cdr      ; error location
   mov %arg0, %ret
   gosub *lobject_to_string
-  mov $stmp, $sret
-  gosub *spop
-  mov $sret, $sret + "　ａｔ　" + $stmp
+  mov $sarg0, $sret
+  gosub *spush        ; location
+  gosub *pop          ; obj < S()
+  mov %arg0, %ret
+  gosub *raw_car      ; error message (symbol)
+  mov %arg0, %ret
+  gosub *raw_car      ; error message (string)
+  mov $sarg0, $%ret
+  if $sarg0 == str_too_few_arguments goto *lobject_to_string_err_few
+  if $sarg0 == str_too_many_arguments goto *lobject_to_string_err_many
+  if $sarg0 == str_invalid_syntax goto *lobject_to_string_err_inv
+  gosub *print_string
+  mov $stmp, $sret    ; message
+  gosub *spop         ; location
+  mov $sret, "エラー：" + $sret + "において、" + $stmp
+  return
+*lobject_to_string_err_few
+  gosub *spop         ; location
+  mov $sret, "エラー：" + $sret + "に与える引数が少なすぎます"
+  return
+*lobject_to_string_err_many
+  gosub *spop         ; location
+  mov $sret, "エラー：" + $sret + "に与える引数が多すぎます"
+  return
+*lobject_to_string_err_inv
+  gosub *spop         ; location
+  mov $sret, "エラー：" + $sret + "の使い方が間違っています"
   return
 
 

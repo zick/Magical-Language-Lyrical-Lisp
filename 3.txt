@@ -125,6 +125,7 @@ bgm ms_ex
   mov %gc_run, 0  ;GC起動回数を初期化
   mov %current_proc, %nil
   mov %current_env, %adv_tmp3
+  mov %adv_error, 0
   mov $sarg0, ""
   textclear
   gosub *fm01_say_tab
@@ -143,6 +144,7 @@ repaint
   mov %arg1, %adv_tmp3
   gosub *eval
   mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR mov %adv_error, 1
   gosub *lobject_to_string
   textclear
   gosub *fm01_say_result
@@ -272,25 +274,59 @@ csel "立ち絵なし", *fm01_char_non, "アリサ", *fm01_char_arisa, "すずか", *fm01_c
   if %adv_char == 6 goto *fm01_say_result6
 
 *fm01_say_result0
+  if %adv_error == 1 goto *fm01_say_result0_error
 『$sret』@
   return
+*fm01_say_result0_error
+#33FF33$sret#FFFFFF@
+  return
 *fm01_say_result1
+  if %adv_error == 1 goto *fm01_say_result1_error
 アリサ「結果は『$sret』ね」@
   return
+*fm01_say_result1_error
+アリサ「プログラムに誤りがあるわ」
+#33FF33$sret#FFFFFF@
+  return
 *fm01_say_result2
+  if %adv_error == 1 goto *fm01_say_result2_error
 すずか「結果は『$sret』だよ」@
   return
+*fm01_say_result2_error
+すずか「プログラムに誤りがあるよ」
+#33FF33$sret#FFFFFF@
+  return
 *fm01_say_result3
+  if %adv_error == 1 goto *fm01_say_result3_error
 鮫島「結果は『$sret』でございます」@
   return
+*fm01_say_result3_error
+鮫島「プログラムに誤りがございます」
+#33FF33$sret#FFFFFF@
+  return
 *fm01_say_result4
+  if %adv_error == 1 goto *fm01_say_result4_error
 局員「結果は『$sret』です！」@
   return
+*fm01_say_result4_error
+局員「プログラムに誤りがあります！」
+#33FF33$sret#FFFFFF@
+  return
 *fm01_say_result5
+  if %adv_error == 1 goto *fm01_say_result5_error
 局員「結果は『$sret』だ！」@
   return
+*fm01_say_result5_error
+局員「プログラムに誤りがあるぞ！」
+#33FF33$sret#FFFFFF@
+  return
 *fm01_say_result6
+  if %adv_error == 1 goto *fm01_say_result6_error
 なのは「結果は『$sret』なの」@
+  return
+*fm01_say_result6_error
+なのは「プログラムに誤りがあるの」
+#33FF33$sret#FFFFFF@
   return
 
 *fm01_say_parenthesis_error
