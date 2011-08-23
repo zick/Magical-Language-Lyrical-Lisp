@@ -1070,6 +1070,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %arg1 > 0 gosub *pop : dec %arg1 : goto *popn_and_error
   mov %ret, %arg0
   return
+*pop1_and_error
+  mov %arg1, 1
+  goto *popn_and_error
 *pop2_and_error
   mov %arg1, 2
   goto *popn_and_error
@@ -1104,6 +1107,23 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 *invalid_syntax
   mov $sarg0, str_invalid_syntax
   goto *set_error_to_arg0  ; tail call
+
+;;;;;;;;;;
+;;;*set_type_error_to_arg0(type_str, val)
+;;;;;;;;;;
+*set_type_error_to_arg0
+  gosub *spush
+  gosub *lobject_to_string
+  mov $stmp, $sret
+  gosub *spop
+  mov $sarg0, $stmp + "ÇÕ" + $sret + "Ç≈ÇÕÇ†ÇËÇ‹ÇπÇÒ"
+  goto *set_error_to_arg0  ; tail call
+*cons_required
+  mov $sarg0, "ÉRÉìÉX"
+  goto *set_type_error_to_arg0
+*number_required
+  mov $sarg0, "êî"
+  goto *set_type_error_to_arg0
 
 
 ;;;;;;;;;;
@@ -2082,9 +2102,10 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, 1 : gosub *check_arguments_length
   gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car        ; CAR(arg)
+  if %ret == %nil return
   mov %arg0, %ret
   gosub *get_tag
-  if %ret != TAG_CONS mov %ret, %nil : return
+  if %ret != TAG_CONS gosub *cons_required : mov %ret, %arg0 : return
   gosub *car        ; CAR(CAR(arg))
   return
 
@@ -2093,9 +2114,10 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, 1 : gosub *check_arguments_length
   gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *car        ; CAR(arg)
+  if %ret == %nil return
   mov %arg0, %ret
   gosub *get_tag
-  if %ret != TAG_CONS mov %ret, %nil : return
+  if %ret != TAG_CONS gosub *cons_required : mov %ret, %arg0 : return
   gosub *cdr        ; CDR(CAR(arg))
   return
 
@@ -2187,6 +2209,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push     ; S(arg, result)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop2_and_error
   gosub *get_num_data
   mov %tmp, %ret
   gosub *pop      ; arg < S(result)
@@ -2212,6 +2236,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
   gosub *get_num_data
   mov %arg0, %ret
   gosub *pop      ; arg < S()
@@ -2222,6 +2248,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *car      ; CADR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
   gosub *get_num_data
   mov %tmp, %ret
   gosub *pop      ; result < S()
@@ -2240,6 +2268,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push     ; S(arg, result)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop2_and_error
   gosub *get_num_data
   mov %tmp, %ret
   gosub *pop      ; arg < S(result)
@@ -2265,6 +2295,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
   gosub *get_num_data
   mov %arg0, %ret
   gosub *pop      ; arg < S()
@@ -2275,6 +2307,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *car      ; CADR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
   gosub *get_num_data
   mov %tmp, %ret
   gosub *pop      ; result < S()
@@ -2290,6 +2324,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
   gosub *get_num_data
   mov %arg0, %ret
   gosub *pop      ; arg < S()
@@ -2300,6 +2336,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *car      ; CADR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
   gosub *get_num_data
   mov %tmp, %ret
   gosub *pop      ; result < S()
@@ -2315,6 +2353,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
   gosub *get_num_data
   mov %arg0, %ret
   gosub *pop      ; arg < S()
@@ -2325,6 +2365,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *car      ; CADR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
   gosub *get_num_data
   mov %tmp, %ret  ; y = tmp
   gosub *pop      ; x < S()
@@ -2340,6 +2382,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
   gosub *get_num_data
   mov %arg0, %ret
   gosub *pop      ; arg < S()
@@ -2350,6 +2394,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *car      ; CADR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
   gosub *get_num_data
   mov %tmp, %ret  ; y = tmp
   gosub *pop      ; x < S()
@@ -2365,6 +2411,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
   gosub *get_num_data
   mov %arg0, %ret
   gosub *pop      ; arg < S()
@@ -2375,6 +2423,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *car      ; CADR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
   gosub *get_num_data
   mov %tmp, %ret  ; y = tmp
   gosub *pop      ; x < S()
@@ -2390,6 +2440,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
   gosub *get_num_data
   mov %arg0, %ret
   gosub *pop      ; arg < S()
@@ -2400,6 +2452,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *car      ; CADR(arg)
   mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
   gosub *get_num_data
   mov %tmp, %ret  ; y = tmp
   gosub *pop      ; x < S()
@@ -2415,7 +2469,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
-  mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_CONS gosub *cons_required : goto *pop1_and_error
   gosub *pop      ; arg < S()
   mov %tmp, %ret
   gosub *push     ; S(CAR(arg))
@@ -2438,7 +2493,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push     ; S(arg)
   gosub *car      ; CAR(arg)
   mov %arg0, %ret
-  mov %arg0, %ret
+  gosub *get_tag
+  if %ret != TAG_CONS gosub *cons_required : goto *pop1_and_error
   gosub *pop      ; arg < S()
   mov %tmp, %ret
   gosub *push     ; S(CAR(arg))
@@ -2958,7 +3014,11 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   goto *fsubr_func_begin  ; tail call
   return
 *fsubr_func_let_null_env ; S(env, arg)
+  gosub *create_new_env
+  mov %arg0, %ret
   gosub *pop          ; env < S(arg)
+  mov %arg1, %ret
+  gosub *nconc
   mov %arg2, %ret
   gosub *pop          ; arg < S()
   mov %arg1, %ret
