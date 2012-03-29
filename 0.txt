@@ -1701,6 +1701,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %%tmp   ; %arg0 = fn
   gosub *get_tag
   if %ret == TAG_SUBR goto *subr_func
+  if %ret == TAG_EXPR goto *expr_call
   gosub *move_from_stack_to_list  ; side effect: S(env, fn)
   mov %arg1, %ret    ; %arg1 = arg
   gosub *pop         ; env < S(fn)
@@ -1713,9 +1714,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %tmp1, %current_env
   mov %current_proc, %arg0
   mov %current_env, %arg2
-  if %ret == TAG_SUBR goto *subr_func
   if %ret == TAG_FSUBR goto *fsubr_func
-  if %ret == TAG_EXPR goto *expr_call
   if %ret == TAG_FEXPR goto *fexpr_call
   if %ret == TAG_ERROR mov %ret, %arg0 : return
   goto *apply_error
@@ -1729,26 +1728,25 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*expr_call(*fn, *arg, *env)
+;;;*expr_call(fn, env)
 ;;;;;;;;;;
-*expr_call
-  gosub *push          ; S(fn)
-  mov %tmp, %arg0
-  mov %arg0, %arg1
-  mov %arg1, %tmp
-  gosub *create_expr_env  ; (arg, fn)
-  mov %arg0, %ret
-  gosub *get_tag : if %ret == TAG_ERROR mov %arg1, 1 : goto *popn_and_error
-  gosub *pop           ; fn < S(ret)
-  mov %tmp, %ret
+*expr_call  ; S(len, Args, ..., env, fn)
+  mov %current_proc, %arg0
+  mov %current_env, %arg1
+  gosub *create_expr_env_using_stack  ; side effect: S(env, fn)
+  mov %arg0, %ret      ; %arg0 = new env
+  gosub *get_tag : if %ret == TAG_ERROR mov %arg1, 2 : goto *popn_and_error
+  gosub *pop           ; env < S(fn)
+  gosub *pop           ; fn < S()
+  mov %tmp, %ret       ; %tmp = fn
   gosub *push          ; S(new env)
-  mov %arg0, %tmp
+  mov %arg0, %tmp      ; %arg0 = fn
   gosub *cdr           ; CDR(fn)
-  mov %arg0, %ret
+  mov %arg0, %ret      ; %arg0 = CDR(fn)
   gosub *cdr           ; CDDR(fn) => form
-  mov %arg1, %ret
+  mov %arg1, %ret      ; %arg1 = form
   gosub *pop           ; new env < S()
-  mov %arg2, %ret
+  mov %arg2, %ret      ; %arg2 = new env
   goto *fsubr_func_begin  ; tail call
   return
 
@@ -1997,6 +1995,153 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *set_cdr  ; new cons2 = ((dummy . dummy))
   gosub *pop      ; new cons2 < S()
   return          ; ret = new cons2
+
+
+;;;;;;;;;;
+;;;*create_expr_env_using_stack(fn)
+;;;;;;;;;;
+*create_expr_env_using_stack  ; S(len, Args, ...)
+  mov %arg1, %arg0       ; %arg1 = fn
+  gosub *pop             ; len < S(Args, ...)
+  mov %arg0, %ret        ; %arg0 = len
+  gosub *push            ; S(len, Args)
+  mov %arg2, %arg0       ; %arg2 = len
+  mov %arg0, %arg1       ; %arg0 = fn
+  gosub *push            ; S(fn, len, Args, ...)
+  mov %arg0, %arg2       ; %arg0 = len
+  gosub *push            ; S(len, fn, len, Args, ...)
+  mov %arg0, %arg1       ; %arg0 = fn
+  gosub *cdr             ; CDR(fn)
+  mov %arg0, %ret
+  gosub *car             ; CADR(fn) => farg
+  mov %arg0, %ret
+  gosub *push            ; S(farg, len, fn, len, Args, ...)
+  gosub *create_new_env
+  mov %arg0, %ret        ; %arg0 = env
+  gosub *pop             ; farg < S(len, fn, len, Args, ...)
+  mov %tmp1, %ret        ; %tmp1 = farg
+  gosub *pop             ; len < S(fn, len, Args, ...)
+  mov %tmp2, %ret        ; %tmp2 = len
+  gosub *push            ; S(env, fn, len, Args, ...)
+  mov %arg0, %tmp2       ; %arg0 = len
+  gosub *push            ; S(len, env, fn, len, Args, ...)
+*create_expr_env_using_stack_l1  ; %tmp1 = farg, S(idx, env, fn, len, Args)
+  if %tmp1 == %nil goto *create_expr_env_using_stack_nil
+  mov %arg0, %tmp1       ; %arg0 = farg
+  gosub *push            ; S(farg, idx, env, fn, len, Args, ...)
+  gosub *get_tag         ; TAG(farg)
+  if %ret == TAG_SYMBOL goto *create_expr_env_using_stack_rest
+  gosub *car             ; CAR(farg)
+  mov %tmp, %ret         ; %tmp = CAR(farg)
+  gosub *pop             ; farg < S(idx, env, fn, len, Args, ...)
+  mov %tmp1, %ret        ; %tmp1 = farg
+  gosub *pop             ; idx < S(env, fn, len, Args, ...)
+  if %ret == 0 goto *create_expr_env_using_stack_few
+  mov %tmp2, %ret        ; %tmp2 = idx
+  mov %arg0, %tmp1       ; %arg0 = farg
+  gosub *push            ; S(farg, env, fn, len, Args, ...)
+  mov %arg0, %tmp        ; %arg0 = CAR(farg)
+  gosub *push            ; S(CAR(farg), farg, env, fn, len, Args, ...)
+  mov %tmp1, %tmp2       ; %tmp1 = idx
+  mov %tmp2, %sp - 5
+  mov %tmp2, %tmp2 - %tmp1
+  mov %arg2, %%tmp2      ; %arg2 = Arg
+  gosub *pop             ; CAR(farg) < S(farg, env, fn, len, Args, ...)
+  mov %arg1, %ret        ; %arg1 = CAR(farg)
+  gosub *pop             ; farg < S(env, fn, len, Args, ...)
+  mov %tmp2, %ret        ; %tmp2 = farg
+  gosub *pop             ; env < S(fn, len, Args, ...)
+  mov %arg0, %ret        ; %arg0 = env
+  gosub *push            ; S(env, fn, len, Args, ...)
+  mov %tmp3, %arg0       ; %tmp3 = env
+  mov %arg0, %tmp1       ; %arg0 = idx
+  gosub *push            ; S(idx, env, fn)
+  mov %arg0, %tmp2       ; %arg0 = farg
+  gosub *push            ; S(farg, idx, env, fn, len, Args, ...)
+  mov %arg0, %tmp3       ; %arg0 = env
+  gosub *add_bind_to_env ; (env, CAR(farg), Arg)
+  gosub *pop             ; farg < S(idx, env, fn, len, Args, ...)
+  mov %arg0, %ret        ; %arg0 = farg
+  gosub *cdr             ; CDR(farg)
+  mov %tmp1, %ret        ; %tmp1 = CDR(farg)
+  gosub *pop             ; idx < S(env, fn, len, Args, ...)
+  mov %arg0, %ret        ; %arg0 = idx
+  dec %arg0              ; idx--
+  gosub *push            ; S(idx, env, fn, len, Args, ...)
+  goto *create_expr_env_using_stack_l1
+*create_expr_env_using_stack_nil  ; %tmp1 = farg, S(idx, env, fn, len, Args)
+  gosub *pop             ; idx < S(env, fn, len, Args, ...)
+  if %ret != 0 goto *create_expr_env_using_stack_many
+  gosub *pop             ; env < S(fn, len, Args, ...)
+  mov %arg0, %ret        ; %arg0 = env
+  gosub *pop             ; fn < S(len, Args, ...)
+  mov %tmp, %ret         ; %tmp = fn
+  gosub *push            ; S(env, len, Args, ...)
+  mov %arg0, %tmp        ; %arg0 = fn
+  gosub *car             ; CAR(fn) => cls_env
+  mov %arg1, %ret        ; %arg1 = cls_env
+  gosub *pop             ; env < S(len, Args, ...)
+  mov %arg0, %ret        ; %arg0 = env
+  gosub *push            ; S(env, len, Args, ...)
+  gosub *nconc           ; Nconc(env, cls_env)
+  gosub *pop             ; env < S(len, Args, ...)
+  mov %arg0, %ret        ; %arg0 = env
+  gosub *pop             ; len < S(Args, ...)
+  sub %sp, %ret          ; S()
+  mov %ret, %arg0        ; %ret = env
+  return
+*create_expr_env_using_stack_rest  ; S(farg, idx, env, fn, len, Args, ...)
+  gosub *pop             ; farg < S(idx, env, fn, len, Args, ...)
+  mov %arg0, %ret        ; %arg0 = farg
+  gosub *pop             ; idx < S(env, fn, len, Args, ...)
+  mov %arg2, %ret        ; %arg2 = idx
+  gosub *push            ; S(farg, env, fn, len, Args, ...)
+  mov %arg0, %nil
+  gosub *push            ; S(nil, farg, env, fn, len, Args, ...)
+  mov %arg3, 0           ; %arg3 = count = 0
+*create_expr_env_using_stack_rest_l1  ; %arg2 = idx, %arg3 = count
+  if %arg2 == %arg3 goto *create_expr_env_using_stack_rest_l2
+  inc %arg3              ; count++
+  gosub *create_cons
+  mov %arg0, %ret        ; %arg0 = cons
+  gosub *push            ; S(cons, head, farg, env, fn, len, Args, ...)
+  mov %tmp2, %sp - 6
+  mov %tmp2, %tmp2 - %arg3
+  mov %arg1, %%tmp2      ; %arg1 = Arg
+  gosub *set_car         ; cons = (Arg . ?)
+  gosub *pop             ; cons < S(head, farg, env, fn, len, Args, ...)
+  mov %arg0, %ret        ; %arg0 = cons
+  gosub *pop             ; head < S(farg, env, fn, len, Args, ...)
+  mov %arg1, %ret        ; %arg1 = head
+  gosub *push            ; S(cons, farg, env, fn, len, Args, ...)
+  gosub *set_cdr         ; cons = (Arg . head)
+  goto *create_expr_env_using_stack_rest_l1
+*create_expr_env_using_stack_rest_l2
+  gosub *pop             ; cons < S(farg, env, fn, len, Args, ...)
+  mov %arg2, %ret        ; %arg2 = cons
+  gosub *pop             ; farg < S(env, fn, len, Args, ...)
+  mov %arg1, %ret        ; %arg1 = farg
+  gosub *pop             ; env < S(fn, len, Args, ...)
+  mov %arg0, %ret        ; %arg0 = env
+  gosub *push            ; S(env, fn, len, Args, ...)
+  gosub *add_bind_to_env ; (env, farg, cons)
+  mov %arg0, 0           ; %arg0 = 0
+  gosub *push            ; S(0, env, fn, len, Args, ...)
+  goto *create_expr_env_using_stack_nil
+*create_expr_env_using_stack_few  ; S(env, fn, len, Args, ...)
+  gosub *pop             ; env < S(fn, len, Args, ...)
+  gosub *pop             ; fn < S(len, Args, ...)
+  gosub *too_few_arg0    ; %arg0 = error
+  gosub *pop             ; len < S(Args, ...)
+  mov %arg1, %ret        ; %arg1 = len
+  goto *popn_and_error  ; tail call
+*create_expr_env_using_stack_many  ; S(env, fn, len, Args, ...)
+  gosub *pop             ; env < S(fn, len, Args, ...)
+  gosub *pop             ; fn < S(len, Args, ...)
+  gosub *too_many_arg0   ; %arg0 = error
+  gosub *pop             ; len < S(Args, ...)
+  mov %arg1, %ret        ; %arg1 = len
+  goto *popn_and_error  ; tail call
 
 
 ;;;;;;;;;;
