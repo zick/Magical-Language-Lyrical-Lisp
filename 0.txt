@@ -1679,23 +1679,35 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 ;;;;;;;;;;
 *apply
   gosub *get_tag
-  if %ret == TAG_SUBR goto *apply_l1
-  if %ret == TAG_EXPR goto *apply_l1
+  if %ret == TAG_SUBR goto *apply_eval_arg
+  if %ret == TAG_EXPR goto *apply_eval_arg
   goto *apply_l2
-*apply_l1  ; Evaluate arguments
+*apply_eval_arg  ; Evaluate arguments and push to stack
   gosub *push        ; S(fn)
   mov %arg0, %arg2
   gosub *push        ; S(env, fn)
   mov %arg0, %arg1
   mov %arg1, %arg2
-  gosub *evlis       ; Evlis(arg, env)
-  mov %arg0, %ret : gosub *get_tag : if %ret == TAG_ERROR goto *pop2_and_error
-  mov %arg1, %arg0
-  gosub *pop         ; env < S(fn)
-  mov %arg2, %ret
-  gosub *pop         ; fn < S()
+  gosub *evstack     ; Evstack(arg, env) => side effect: S(len, ..., env, fn)
   mov %arg0, %ret
-*apply_l2  ; apply-primitive enters here
+  gosub *get_tag
+  if %ret == TAG_ERROR mov %ret, %arg0 : return
+*apply_from_apply_primitive  ; S(len, ..., env, fn)
+  mov %tmp, %sp - 1
+  mov %tmp, %tmp - %%tmp
+  dec %tmp
+  mov %arg1, %%tmp   ; %arg1 = env
+  dec %tmp
+  mov %arg0, %%tmp   ; %arg0 = fn
+  gosub *get_tag
+  if %ret == TAG_SUBR goto *subr_func
+  gosub *move_from_stack_to_list  ; side effect: S(env, fn)
+  mov %arg1, %ret    ; %arg1 = arg
+  gosub *pop         ; env < S(fn)
+  mov %arg2, %ret    ; %arg2 = env
+  gosub *pop         ; fn < S()
+  mov %arg0, %ret    ; %arg0 = fn
+*apply_l2
   gosub *get_tag
   mov %arg3, %current_proc
   mov %tmp1, %current_env
@@ -1855,6 +1867,107 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *cdr       ; CDR(root)
   return           ; %ret = CDR(root)
+
+
+;;;;;;;;;;
+;;;*evstack(*arg, *env)
+;;;;;;;;;;
+*evstack
+  mov %arg2, 0
+*evstack_l1        ; (%arg0=arg, %arg1=env, %arg2=len)
+  if %arg0 == %nil goto *evstack_exit
+  gosub *push      ; S(arg, ...)
+  mov %tmp1, %arg0
+  mov %arg0, %arg1
+  gosub *push      ; S(env, arg, ...)
+  mov %arg0, %arg2
+  gosub *push      ; S(len, env, arg, ...)
+  mov %arg0, %current_proc
+  gosub *push      ; S(proc, len, env, arg, ...)
+  mov %arg0, %tmp1 ; %arg0 = arg
+  gosub *car       ; CAR(arg)
+  mov %arg0, %ret  ; %arg0 = CAR(arg)
+  gosub *eval      ; Eval(CAR(arg), env) => object
+  mov %arg0, %ret
+  gosub *get_tag : if %ret == TAG_ERROR goto *evstack_error
+  mov %tmp, %arg0  ; %tmp = object
+  gosub *pop       ; proc < S(len, env, arg, ...)
+  mov %current_proc, %ret
+  gosub *pop       ; len < S(env, arg, ...)
+  mov %arg2, %ret  ; %arg2 = len
+  gosub *pop       ; env < S(arg, ...)
+  mov %arg1, %ret  ; %arg1 = env
+  gosub *pop       ; arg < S(...)
+  mov %arg0, %tmp  ; %arg0 = object
+  gosub *push      ; S(object, ...)
+  mov %arg0, %ret  ; %arg0 = arg
+  gosub *cdr       ; CDR(arg)
+  mov %arg0, %ret  ; %arg0 = CDR(arg)
+  inc %arg2        ; %arg2++
+  goto *evstack_l1
+*evstack_error     ; %arg0 = error, S(proc, len, env, arg, ...)
+  gosub *pop       ; proc < S(len, env, arg, ...)
+  gosub *pop       ; len < S(env, arg, ...)
+  mov %arg1, %ret + 2
+  goto *popn_and_error
+*evstack_exit      ; %arg2 = len
+  mov %arg0, %arg2
+  gosub *push      ; S(len, ...)
+  mov %ret, %sharp_t
+  return
+
+
+;;;;;;;;;;
+;;;*move_from_stack_to_list()
+;;;;;;;;;;
+*move_from_stack_to_list  ; S(len, Args, ...)
+  gosub *pop       ; len < S(Args, ...)
+  mov %arg2, %ret  ; %arg2 = len
+  mov %arg0, %nil
+  gosub *push      ; S(nil, Args, ...)
+*move_from_stack_to_list_l1  ; %arg2 = len, S(head, Args, ...)
+  if %arg2 == 0 goto *move_from_stack_to_list_exit
+  gosub *create_cons
+  mov %arg0, %ret  ; %arg0 = new cons
+  gosub *pop       ; head < S(Args, ...)
+  mov %arg1, %ret  ; %arg1 = head
+  gosub *push      ; S(new cons, Args, ...)
+  gosub *set_cdr   ; SetCdr(new cons, head)
+  gosub *pop       ; new cons < S(Args, ...)
+  mov %arg0, %ret  ; %arg0 = new cons
+  gosub *pop       ; Arg0 < S(Args, ...)
+  mov %arg1, %ret  ; %arg1 = Arg0
+  gosub *push      ; S(new cons, Args, ...)
+  gosub *set_car   ; SetCar(new cons, Arg0)
+  dec %arg2
+  goto *move_from_stack_to_list_l1
+*move_from_stack_to_list_exit  ; S(head)
+  goto *pop  ; tail call
+
+
+;;;;;;;;;;
+;;;*move_from_list_to_stack(list)
+;;;;;;;;;;
+*move_from_list_to_stack
+  mov %arg2, 0
+*move_from_list_to_stack_l1  ; %arg0 = list, S(...)
+  if %arg0 == %nil goto *move_from_list_to_stack_exit
+  gosub *push      ; S(list, ...)
+  gosub *car       ; CAR(list)
+  mov %tmp, %ret   ; %tmp = CAR(list)
+  gosub *pop       ; list < S(...)
+  mov %arg1, %ret  ; %arg1 = list
+  mov %arg0, %tmp  ; %arg0 = CAR(list)
+  gosub *push      ; S(CAR(list), ...)
+  mov %arg0, %arg1 ; %arg0 = list
+  gosub *cdr       ; CDR(list)
+  mov %arg0, %ret  ; %arg0 = CDR(list)
+  inc %arg2
+  goto *move_from_list_to_stack_l1
+*move_from_list_to_stack_exit
+  mov %arg0, %arg2
+  gosub *push      ; S(len, ...)
+  return
 
 
 ;;;;;;;;;;
@@ -2062,138 +2175,123 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*subr_func(fn, arg, env)
+;;;*wrong_stack_arguments(farg, aarg)
 ;;;;;;;;;;
-*subr_func
+*wrong_stack_arguments
+  sub %sp, %arg1        ; S()
+  if %arg0 > %arg1 goto *wrong_stack_arguments_few
+  gosub *too_many_arg0
+  goto *wrong_stack_arguments_exit
+*wrong_stack_arguments_few
+  gosub *too_few_arg0
+*wrong_stack_arguments_exit
+  mov %ret, %arg0
+  return
+
+
+;;;;;;;;;;
+;;;*subr_func(fn, env)
+;;;;;;;;;;
+*subr_func  ; S(env, fn)
+  mov %current_proc, %arg0
+  mov %current_env, %arg1
   gosub *get_data
-  if %ret == lf_car goto *subr_func_car
-  if %ret == lf_cdr goto *subr_func_cdr
-  if %ret == lf_cons goto *subr_func_cons
-  if %ret == lf_eq goto *subr_func_eq
-  if %ret == lf_atom goto *subr_func_atom
-  if %ret == lf_add goto *subr_func_add
-  if %ret == lf_sub goto *subr_func_sub
-  if %ret == lf_mul goto *subr_func_mul
-  if %ret == lf_div goto *subr_func_div
-  if %ret == lf_mod goto *subr_func_mod
-  if %ret == lf_gt goto *subr_func_gt
-  if %ret == lf_ge goto *subr_func_ge
-  if %ret == lf_ls goto *subr_func_ls
-  if %ret == lf_le goto *subr_func_le
-  if %ret == lf_set_car goto *subr_func_set_car
-  if %ret == lf_set_cdr goto *subr_func_set_cdr
-  if %ret == lf_eval goto *subr_func_eval
-  if %ret == lf_apply_primitive goto *subr_func_apply_primitive
-  if %ret == lf_booleanp goto *subr_func_booleanp
-  if %ret == lf_pairp goto *subr_func_pairp
-  if %ret == lf_symbolp goto *subr_func_symbolp
-  if %ret == lf_numberp goto *subr_func_numberp
-  if %ret == lf_procedurep goto *subr_func_procedurep
-  if %ret == lf_null goto *subr_func_null
-  if %ret == lf_read goto *subr_func_read
-  if %ret == lf_write goto *subr_func_write
-  if %ret == lf_error goto *subr_func_error
+  if %ret == lf_car gosub *subr_func_car : goto *subr_func_exit
+  if %ret == lf_cdr gosub *subr_func_cdr : goto *subr_func_exit
+  if %ret == lf_cons gosub *subr_func_cons : goto *subr_func_exit
+  if %ret == lf_eq gosub *subr_func_eq : goto *subr_func_exit
+  if %ret == lf_atom gosub *subr_func_atom : goto *subr_func_exit
+  if %ret == lf_add gosub *subr_func_add : goto *subr_func_exit
+  if %ret == lf_sub gosub *subr_func_sub : goto *subr_func_exit
+  if %ret == lf_mul gosub *subr_func_mul : goto *subr_func_exit
+  if %ret == lf_div gosub *subr_func_div : goto *subr_func_exit
+  if %ret == lf_mod gosub *subr_func_mod : goto *subr_func_exit
+  if %ret == lf_gt gosub *subr_func_gt : goto *subr_func_exit
+  if %ret == lf_ge gosub *subr_func_ge : goto *subr_func_exit
+  if %ret == lf_ls gosub *subr_func_ls : goto *subr_func_exit
+  if %ret == lf_le gosub *subr_func_le : goto *subr_func_exit
+  if %ret == lf_set_car gosub *subr_func_set_car : goto *subr_func_exit
+  if %ret == lf_set_cdr gosub *subr_func_set_cdr : goto *subr_func_exit
+  if %ret == lf_eval gosub *subr_func_eval : goto *subr_func_exit
+  if %ret == lf_apply_primitive goto *subr_func_apply_primitive  ; Use GOTO
+  if %ret == lf_booleanp gosub *subr_func_booleanp : goto *subr_func_exit
+  if %ret == lf_pairp gosub *subr_func_pairp : goto *subr_func_exit
+  if %ret == lf_symbolp gosub *subr_func_symbolp : goto *subr_func_exit
+  if %ret == lf_numberp gosub *subr_func_numberp : goto *subr_func_exit
+  if %ret == lf_procedurep gosub *subr_func_procedurep : goto *subr_func_exit
+  if %ret == lf_null gosub *subr_func_null : goto *subr_func_exit
+  if %ret == lf_read gosub *subr_func_read : goto *subr_func_exit
+  if %ret == lf_write gosub *subr_func_write : goto *subr_func_exit
+  if %ret == lf_error gosub *subr_func_error : goto *subr_func_exit
   mov $sarg0, "Invalid-SUBR"
-  goto *subr_func_error  ; tail call
+  gosub *create_error
+*subr_func_exit
+  sub %sp, 2         ; S()
   return
 
 *subr_func_car
-  mov %arg0, %arg1
-  mov %arg1, 1 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *car        ; CAR(arg)
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 1 : mov %arg0, 1 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg0 < S()
   if %ret == %nil return
   mov %arg0, %ret
   gosub *get_tag
   if %ret != TAG_CONS gosub *cons_required : mov %ret, %arg0 : return
-  gosub *car        ; CAR(CAR(arg))
+  gosub *car        ; CAR(Arg0)
   return
 
 *subr_func_cdr
-  mov %arg0, %arg1
-  mov %arg1, 1 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *car        ; CAR(arg)
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 1 : mov %arg0, 1 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; arg0 < S()
   if %ret == %nil return
   mov %arg0, %ret
   gosub *get_tag
   if %ret != TAG_CONS gosub *cons_required : mov %ret, %arg0 : return
-  gosub *cdr        ; CDR(CAR(arg))
+  gosub *cdr        ; CDR(Arg0)
   return
 
 *subr_func_cons
-  mov %arg0, %arg1
-  mov %arg1, 2 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *push        ; S(arg)
-  gosub *car
-  mov %tmp, %ret     ; tmp = CAR(arg)
-  gosub *pop         ; arg < S()
-  mov %tmp1, %ret    ; tmp1 = arg
-  mov %arg0, %tmp
-  gosub *push        ; S(CAR(arg))
-  mov %arg0, %tmp1
-  gosub *cdr         ; CDR(arg)
-  mov %arg0, %ret
-  gosub *car         ; CAR(CDR(arg))
-  mov %arg0, %ret
-  gosub *push        ; S(CADR(arg), CAR(arg))
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 2 : mov %arg0, 2 : mov %arg1, %ret : goto *wrong_stack_arguments
   gosub *create_cons
-  mov %arg0, %ret    ; arg0 = new cons
-  gosub *pop         ; CADR(arg) < S(CAR(arg))
-  mov %arg1, %ret
-  gosub *push        ; S(new cons, CAR(arg))
-  gosub *set_cdr     ; new cons = (? . CADR(arg))
-  gosub *pop         ; new cons < S(CAR(arg))
-  mov %arg0, %ret
-  gosub *pop         ; CAR(arg) < S()
-  mov %arg1, %ret
+  mov %arg0, %ret    ; %arg0 = new cons
+  gosub *pop         ; Arg1 < S(Arg0)
+  mov %arg1, %ret    ; %arg1 = Arg1
+  gosub *push        ; S(new cons, Arg0)
+  gosub *set_cdr     ; new cons = (? . Arg1)
+  gosub *pop         ; new cons < S(Arg0)
+  mov %arg0, %ret    ; %arg0 = new cons
+  gosub *pop         ; Arg0 < S()
+  mov %arg1, %ret    ; %arg1 = Arg0
   gosub *push        ; S(new cons)
-  gosub *set_car     ; new cons = (CAR(arg) . CADR(arg))
-  gosub *pop         ; new cons < S()
-  return             ; ret = new cons
+  gosub *set_car     ; new cons = (Arg0 . Arg1)
+  gosub *pop
+  return
 
 *subr_func_eq
-  mov %arg0, %arg1
-  mov %arg1, 2 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *push       ; S(arg)
-  gosub *car
-  mov %tmp, %ret    ; tmp = CAR(arg)
-  gosub *pop        ; arg < S()
-  mov %tmp1, %ret   ; tmp1 = arg
-  mov %arg0, %tmp
-  gosub *push       ; S(CAR(arg))
-  mov %arg0, %tmp1
-  gosub *cdr
-  mov %arg0, %ret
-  gosub *car
-  mov %arg0, %ret   ; arg0 = CADR(arg)
-  gosub *pop        ; CAR(arg) < S()
-  mov %arg1, %ret   ; arg1 = CAR(arg)
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 2 : mov %arg0, 2 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg1 < S(Arg0)
+  mov %arg1, %ret   ; %arg1 = Arg1
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   if %arg0 == %arg1 mov %ret, %sharp_t : return
   gosub *get_tag
-  mov %arg3, %ret   ; arg3 = TAG(CADR(arg))
-  gosub *get_data
-  mov %arg2, %ret   ; arg2 = DATA(CADR(arg))
-  mov %arg0, %arg1
+  if %ret != TAG_NUM mov %ret, %sharp_f : return
+  mov %arg2, %arg0  ; %arg2 = Arg0
+  mov %arg0, %arg1  ; %arg0 = Arg1
   gosub *get_tag
-  mov %arg1, %ret   ; %arg1 = TAG(CAR(arg))
-  gosub *get_data
-  mov %arg0, %ret   ; %arg0 = DATA(CAR(arg))
-  if %arg3 == TAG_NUM && %arg1 == TAG_NUM goto *subr_func_eq_l1
-  goto *subr_func_eq_l2
-*subr_func_eq_l1
-  if %arg2 == %arg0 mov %ret, %sharp_t : return
-*subr_func_eq_l2
+  if %ret != TAG_NUM mov %ret, %sharp_f : return
+  mov %arg0, %arg2  ; %arg0 = Arg0
+  if %%arg0 == %%arg1 mov %ret, %sharp_t : return
   mov %ret, %sharp_f
   return
 
 *subr_func_atom
-  mov %arg0, %arg1
-  mov %arg1, 1 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *car
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 1 : mov %arg0, 1 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg0 < S()
   mov %arg0, %ret
   gosub *get_tag
   if %ret != TAG_CONS mov %ret, %sharp_t : return
@@ -2201,395 +2299,286 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 *subr_func_add
-  mov %arg0, 0    ; result
-  gosub *push     ; S(result)
-  mov %arg0, %arg1
-*subr_func_add_l1  ; (arg0 = arg, S(result)
-  if %arg0 == %nil goto *subr_func_add_l2
-  gosub *push     ; S(arg, result)
-  gosub *car      ; CAR(arg)
+  mov %arg2, 0    ; result
+  gosub *pop      ; len < S(Args, ...)
+  mov %arg1, %ret ; %arg1 = len
+*subr_func_add_l1 ; (arg1 = len, arg2 = result)
+  if %arg1 == 0 goto *subr_func_add_exit
+  gosub *pop
+  dec %arg1
   mov %arg0, %ret
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop2_and_error
+  if %ret != TAG_NUM goto *subr_func_add_error
   gosub *get_num_data
-  mov %tmp, %ret
-  gosub *pop      ; arg < S(result)
-  mov %tmp1, %ret
-  gosub *pop      ; result < S()
-  mov %arg0, %ret
-  mov %arg0, %arg0 + %tmp
-  gosub *push     ; S(result)
-  mov %arg0, %tmp1
-  gosub *cdr      ; CDR(arg)
-  mov %arg0, %ret
+  add %arg2, %ret
   goto *subr_func_add_l1
-*subr_func_add_l2
-  gosub *pop     ; result < S()
-  mov %arg0, %ret
+*subr_func_add_error
+  sub %sp, %arg1    ; S()
+  gosub *number_required
+  mov %ret, %arg0
+  return
+*subr_func_add_exit
+  mov %arg0, %arg2
   goto *create_num  ; tail call
   return
 
 *subr_func_sub
-  mov %arg0, %arg1
-  mov %arg1, 2 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *push     ; S(arg)
-  gosub *car      ; CAR(arg)
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 2 : mov %arg0, 2 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg1 < S(Arg0)
+  mov %arg1, %ret   ; %arg1 = Arg1
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
+  if %ret != TAG_NUM gosub *number_required : mov %ret, %arg0 : return
   gosub *get_num_data
-  mov %arg0, %ret
-  gosub *pop      ; arg < S()
-  mov %tmp, %ret
-  gosub *push     ; S(result)
-  mov %arg0, %tmp
-  gosub *cdr      ; CDR(arg)
-  mov %arg0, %ret
-  gosub *car      ; CADR(arg)
-  mov %arg0, %ret
+  mov %arg2, %ret   ; %arg2 = NUM0
+  mov %arg0, %arg1  ; %arg0 = Arg1
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
+  if %ret != TAG_NUM gosub *number_required : mov %ret, %arg0 : return
   gosub *get_num_data
-  mov %tmp, %ret
-  gosub *pop      ; result < S()
-  mov %arg0, %ret
-  mov %arg0, %arg0 - %tmp
-*subr_func_sub_l1
+  mov %arg0, %arg2 - %ret
   goto *create_num  ; tail call
   return
 
 *subr_func_mul
-  mov %arg0, 1    ; result
-  gosub *push     ; S(result)
-  mov %arg0, %arg1
-*subr_func_mul_l1  ; (arg0 = arg, S(result)
-  if %arg0 == %nil goto *subr_func_mul_l2
-  gosub *push     ; S(arg, result)
-  gosub *car      ; CAR(arg)
+  mov %arg2, 1    ; result
+  gosub *pop      ; len < S(Args, ...)
+  mov %arg1, %ret ; %arg1 = len
+*subr_func_mul_l1 ; (arg1 = len, arg2 = result)
+  if %arg1 == 0 goto *subr_func_mul_exit
+  gosub *pop
+  dec %arg1
   mov %arg0, %ret
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop2_and_error
+  if %ret != TAG_NUM goto *subr_func_mul_error
   gosub *get_num_data
-  mov %tmp, %ret
-  gosub *pop      ; arg < S(result)
-  mov %tmp1, %ret
-  gosub *pop      ; result < S()
-  mov %arg0, %ret
-  mov %arg0, %arg0 * %tmp
-  gosub *push     ; S(result)
-  mov %arg0, %tmp1
-  gosub *cdr      ; CDR(arg)
-  mov %arg0, %ret
+  mul %arg2, %ret
   goto *subr_func_mul_l1
-*subr_func_mul_l2
-  gosub *pop     ; result < S()
-  mov %arg0, %ret
+*subr_func_mul_error
+  sub %sp, %arg1    ; S()
+  gosub *number_required
+  mov %ret, %arg0
+  return
+*subr_func_mul_exit
+  mov %arg0, %arg2
   goto *create_num  ; tail call
   return
 
 *subr_func_div
-  mov %arg0, %arg1
-  mov %arg1, 2 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *push     ; S(arg)
-  gosub *car      ; CAR(arg)
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 2 : mov %arg0, 2 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg1 < S(Arg0)
+  mov %arg1, %ret   ; %arg1 = Arg1
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
+  if %ret != TAG_NUM gosub *number_required : mov %ret, %arg0 : return
   gosub *get_num_data
-  mov %arg0, %ret
-  gosub *pop      ; arg < S()
-  mov %tmp, %ret
-  gosub *push     ; S(result)
-  mov %arg0, %tmp
-  gosub *cdr      ; CDR(arg)
-  mov %arg0, %ret
-  gosub *car      ; CADR(arg)
-  mov %arg0, %ret
+  mov %arg2, %ret   ; %arg2 = NUM0
+  mov %arg0, %arg1  ; %arg0 = Arg1
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
+  if %ret != TAG_NUM gosub *number_required : mov %ret, %arg0 : return
   gosub *get_num_data
-  mov %tmp, %ret
-  gosub *pop      ; result < S()
-  mov %arg0, %ret
-  div %arg0, %tmp
+  mov %arg0, %arg2 / %ret
   goto *create_num  ; tail call
   return
 
 *subr_func_mod
-  mov %arg0, %arg1
-  mov %arg1, 2 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *push     ; S(arg)
-  gosub *car      ; CAR(arg)
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 2 : mov %arg0, 2 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg1 < S(Arg0)
+  mov %arg1, %ret   ; %arg1 = Arg1
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
+  if %ret != TAG_NUM gosub *number_required : mov %ret, %arg0 : return
   gosub *get_num_data
-  mov %arg0, %ret
-  gosub *pop      ; arg < S()
-  mov %tmp, %ret
-  gosub *push     ; S(result)
-  mov %arg0, %tmp
-  gosub *cdr      ; CDR(arg)
-  mov %arg0, %ret
-  gosub *car      ; CADR(arg)
-  mov %arg0, %ret
+  mov %arg2, %ret   ; %arg2 = NUM0
+  mov %arg0, %arg1  ; %arg0 = Arg1
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
+  if %ret != TAG_NUM gosub *number_required : mov %ret, %arg0 : return
   gosub *get_num_data
-  mov %tmp, %ret
-  gosub *pop      ; result < S()
-  mov %arg0, %ret
-  mov %arg0, %arg0 mod %tmp
+  mov %arg0, %arg2 mod %ret
   goto *create_num  ; tail call
   return
 
 *subr_func_gt
-  mov %arg0, %arg1
-  mov %arg1, 2 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *push     ; S(arg)
-  gosub *car      ; CAR(arg)
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 2 : mov %arg0, 2 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg1 < S(Arg0)
+  mov %arg1, %ret   ; %arg1 = Arg1
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
+  if %ret != TAG_NUM gosub *number_required : mov %ret, %arg0 : return
   gosub *get_num_data
-  mov %arg0, %ret
-  gosub *pop      ; arg < S()
-  mov %tmp, %ret
-  gosub *push     ; S(x)
-  mov %arg0, %tmp
-  gosub *cdr      ; CDR(arg)
-  mov %arg0, %ret
-  gosub *car      ; CADR(arg)
-  mov %arg0, %ret
+  mov %arg2, %ret   ; %arg2 = NUM0
+  mov %arg0, %arg1  ; %arg0 = Arg1
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
+  if %ret != TAG_NUM gosub *number_required : mov %ret, %arg0 : return
   gosub *get_num_data
-  mov %tmp, %ret  ; y = tmp
-  gosub *pop      ; x < S()
-  mov %arg0, %ret
+  mov %tmp, %ret    ; %tmp = NUM1
   mov %ret, %sharp_f
-  if %arg0 > %tmp mov %ret, %sharp_t
+  if %arg2 > %tmp mov %ret, %sharp_t
   return
 
 *subr_func_ge
-  mov %arg0, %arg1
-  mov %arg1, 2 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *push     ; S(arg)
-  gosub *car      ; CAR(arg)
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 2 : mov %arg0, 2 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg1 < S(Arg0)
+  mov %arg1, %ret   ; %arg1 = Arg1
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
+  if %ret != TAG_NUM gosub *number_required : mov %ret, %arg0 : return
   gosub *get_num_data
-  mov %arg0, %ret
-  gosub *pop      ; arg < S()
-  mov %tmp, %ret
-  gosub *push     ; S(x)
-  mov %arg0, %tmp
-  gosub *cdr      ; CDR(arg)
-  mov %arg0, %ret
-  gosub *car      ; CADR(arg)
-  mov %arg0, %ret
+  mov %arg2, %ret   ; %arg2 = NUM0
+  mov %arg0, %arg1  ; %arg0 = Arg1
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
+  if %ret != TAG_NUM gosub *number_required : mov %ret, %arg0 : return
   gosub *get_num_data
-  mov %tmp, %ret  ; y = tmp
-  gosub *pop      ; x < S()
-  mov %arg0, %ret
+  mov %tmp, %ret    ; %tmp = NUM1
   mov %ret, %sharp_f
-  if %arg0 >= %tmp mov %ret, %sharp_t
+  if %arg2 >= %tmp mov %ret, %sharp_t
   return
 
 *subr_func_ls
-  mov %arg0, %arg1
-  mov %arg1, 2 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *push     ; S(arg)
-  gosub *car      ; CAR(arg)
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 2 : mov %arg0, 2 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg1 < S(Arg0)
+  mov %arg1, %ret   ; %arg1 = Arg1
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
+  if %ret != TAG_NUM gosub *number_required : mov %ret, %arg0 : return
   gosub *get_num_data
-  mov %arg0, %ret
-  gosub *pop      ; arg < S()
-  mov %tmp, %ret
-  gosub *push     ; S(x)
-  mov %arg0, %tmp
-  gosub *cdr      ; CDR(arg)
-  mov %arg0, %ret
-  gosub *car      ; CADR(arg)
-  mov %arg0, %ret
+  mov %arg2, %ret   ; %arg2 = NUM0
+  mov %arg0, %arg1  ; %arg0 = Arg1
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
+  if %ret != TAG_NUM gosub *number_required : mov %ret, %arg0 : return
   gosub *get_num_data
-  mov %tmp, %ret  ; y = tmp
-  gosub *pop      ; x < S()
-  mov %arg0, %ret
+  mov %tmp, %ret    ; %tmp = NUM1
   mov %ret, %sharp_f
-  if %arg0 < %tmp mov %ret, %sharp_t
+  if %arg2 < %tmp mov %ret, %sharp_t
   return
 
 *subr_func_le
-  mov %arg0, %arg1
-  mov %arg1, 2 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *push     ; S(arg)
-  gosub *car      ; CAR(arg)
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 2 : mov %arg0, 2 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg1 < S(Arg0)
+  mov %arg1, %ret   ; %arg1 = Arg1
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
+  if %ret != TAG_NUM gosub *number_required : mov %ret, %arg0 : return
   gosub *get_num_data
-  mov %arg0, %ret
-  gosub *pop      ; arg < S()
-  mov %tmp, %ret
-  gosub *push     ; S(x)
-  mov %arg0, %tmp
-  gosub *cdr      ; CDR(arg)
-  mov %arg0, %ret
-  gosub *car      ; CADR(arg)
-  mov %arg0, %ret
+  mov %arg2, %ret   ; %arg2 = NUM0
+  mov %arg0, %arg1  ; %arg0 = Arg1
   gosub *get_tag
-  if %ret != TAG_NUM gosub *number_required : goto *pop1_and_error
+  if %ret != TAG_NUM gosub *number_required : mov %ret, %arg0 : return
   gosub *get_num_data
-  mov %tmp, %ret  ; y = tmp
-  gosub *pop      ; x < S()
-  mov %arg0, %ret
+  mov %tmp, %ret    ; %tmp = NUM1
   mov %ret, %sharp_f
-  if %arg0 <= %tmp mov %ret, %sharp_t
+  if %arg2 <= %tmp mov %ret, %sharp_t
   return
 
 *subr_func_set_car
-  mov %arg0, %arg1
-  mov %arg1, 2 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *push     ; S(arg)
-  gosub *car      ; CAR(arg)
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 2 : mov %arg0, 2 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg1 < S(Arg0)
+  mov %arg1, %ret   ; %arg1 = Arg1
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *get_tag
-  if %ret != TAG_CONS gosub *cons_required : goto *pop1_and_error
-  gosub *pop      ; arg < S()
-  mov %tmp, %ret
-  gosub *push     ; S(CAR(arg))
-  mov %arg0, %tmp
-  gosub *cdr      ; CDR(arg)
-  mov %arg0, %ret
-  gosub *car      ; CADR(arg)
-  mov %arg1, %ret
-  gosub *pop      ; CAR(arg) < S()
-  mov %arg0, %ret
-  gosub *push     ; S(CAR(arg))
+  if %ret != TAG_CONS gosub *cons_required : mov %ret, %arg0 : return
+  gosub *push       ; S(Arg0)
   gosub *set_car
-  gosub *pop      ; CAR(arg) < S()
+  gosub *pop        ; Arg0 < S()
   return
 
 *subr_func_set_cdr
-  mov %arg0, %arg1
-  mov %arg1, 2 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *push     ; S(arg)
-  gosub *car      ; CAR(arg)
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 2 : mov %arg0, 2 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg1 < S(Arg0)
+  mov %arg1, %ret   ; %arg1 = Arg1
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *get_tag
-  if %ret != TAG_CONS gosub *cons_required : goto *pop1_and_error
-  gosub *pop      ; arg < S()
-  mov %tmp, %ret
-  gosub *push     ; S(CAR(arg))
-  mov %arg0, %tmp
-  gosub *cdr      ; CDR(arg)
-  mov %arg0, %ret
-  gosub *car      ; CADR(arg)
-  mov %arg1, %ret
-  gosub *pop      ; CAR(arg) < S()
-  mov %arg0, %ret
-  gosub *push     ; S(CAR(arg))
+  if %ret != TAG_CONS gosub *cons_required : mov %ret, %arg0 : return
+  gosub *push       ; S(Arg0)
   gosub *set_cdr
-  gosub *pop      ; CAR(arg) < S()
+  gosub *pop        ; Arg0 < S()
   return
 
 *subr_func_eval
-  mov %arg0, %arg1
-  mov %arg1, 1 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *car  ; CAR(arg) => expr
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 1 : mov %arg0, 1 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg0 < S()
   mov %arg0, %ret
   mov %arg1, %global_env
   goto *eval  ; tail call
 
-*subr_func_apply_primitive
+*subr_func_apply_primitive  ; S(len, Arg1, Arg0, env, fn)
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 2 : mov %arg0, 2 : mov %arg1, %ret : goto *wrong_stack_arguments
+  mov %arg2, %arg1  ; %arg2 = env
+  gosub *pop        ; Arg1 < S(Arg0, env, fn)
+  mov %arg1, %ret   ; %arg1 = Arg1 = arguments
+  gosub *pop        ; Arg0 < S(env, fn)
+  mov %arg0, %ret   ; %arg0 = Arg0 = fn1
+  sub %sp, 2        ; S()
+  gosub *push       ; S(fn1)
   mov %arg0, %arg2
-  gosub *push         ; S(env)
-  mov %arg0, %arg1
-  mov %arg1, 2 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR gosub *pop : mov %ret, %arg0 : return
-  gosub *push         ; S(arg, env)
-  gosub *car          ; CAR(arg) => fn
-  mov %arg0, %ret
-  gosub *pop          ; arg < S(env)
-  mov %tmp, %ret
-  gosub *push         ; S(fn, env)
-  mov %arg0, %tmp
-  gosub *cdr
-  mov %arg0, %ret
-  gosub *car          ; CADR(arg) => argument
-  mov %arg1, %ret
-  gosub *pop          ; fn < S(env)
-  mov %arg0, %ret
-  gosub *pop          ; env < S()
-  mov %arg2, %ret
-  goto *apply_l2      ; tail call
+  gosub *push       ; S(env, fn1)
+  mov %arg0, %arg1  ; %arg0 = arguments
+  gosub *move_from_list_to_stack
+  goto *apply_from_apply_primitive  ; tail call
 
 *subr_func_booleanp
-  mov %arg0, %arg1
-  mov %arg1, 1 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *car
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 1 : mov %arg0, 1 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   if %ret != %sharp_t && %ret != %sharp_f : mov %ret, %sharp_f : return
   mov %ret, %sharp_t
   return
 
 *subr_func_pairp
-  mov %arg0, %arg1
-  mov %arg1, 1 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *car
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 1 : mov %arg0, 1 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *get_tag
   if %ret == TAG_CONS mov %ret, %sharp_t : return
   mov %ret, %sharp_f
   return
 
 *subr_func_symbolp
-  mov %arg0, %arg1
-  mov %arg1, 1 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *car
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 1 : mov %arg0, 1 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *get_tag
   if %ret == TAG_SYMBOL mov %ret, %sharp_t : return
   mov %ret, %sharp_f
   return
 
 *subr_func_numberp
-  mov %arg0, %arg1
-  mov %arg1, 1 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *car
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 1 : mov %arg0, 1 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *get_tag
   if %ret == TAG_NUM mov %ret, %sharp_t : return
   mov %ret, %sharp_f
   return
 
 *subr_func_procedurep
-  mov %arg0, %arg1
-  mov %arg1, 1 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *car
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 1 : mov %arg0, 1 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *get_tag
   if %ret != TAG_EXPR && %ret != TAG_FSUBR goto *subr_func_procedurep_l1
   goto *subr_func_procedurep_l2
@@ -2600,30 +2589,27 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 *subr_func_null
-  mov %arg0, %arg1
-  mov %arg1, 1 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *car
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 1 : mov %arg0, 1 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   mov %ret, %sharp_f
   if %arg0 == %nil mov %ret, %sharp_t
   return
 
 *subr_func_read
-  mov %arg0, %arg1
-  mov %arg1, 0 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 0 : mov %arg0, 0 : mov %arg1, %ret : goto *wrong_stack_arguments
   gosub *read_from_console
   mov $sarg0, $sret
   gosub *input_to_lobject
   return
 
 *subr_func_write
-  mov %arg0, %arg1
-  mov %arg1, 1 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *car
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 1 : mov %arg0, 1 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *push
   gosub *lobject_to_string
   $sret@\
@@ -2631,11 +2617,10 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 *subr_func_error
-  mov %arg0, %arg1
-  mov %arg1, 1 : gosub *check_arguments_length
-  gosub *get_tag : if %ret == TAG_ERROR mov %ret, %arg0 : return
-  gosub *car
-  mov %arg0, %ret
+  gosub *pop        ; len < S(Args, ...)
+  if %ret != 1 : mov %arg0, 1 : mov %arg1, %ret : goto *wrong_stack_arguments
+  gosub *pop        ; Arg0 < S()
+  mov %arg0, %ret   ; %arg0 = Arg0
   gosub *lobject_to_string
   mov $sarg0, $sret
   goto *create_error  ; tail call
