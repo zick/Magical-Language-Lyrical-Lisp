@@ -198,7 +198,7 @@ nsa
   numalias global_env, 68
   numalias sharp_t, 69
   numalias sharp_f, 70
-  numalias dummy, 71
+  numalias __unused__, 71
 
   ;; Garbage collection
   numalias gc_count, 72 
@@ -623,9 +623,6 @@ nsa
   mov $sarg0, "Åîf"
   gosub *create_symbol
   mov %sharp_f, %ret
-  mov $sarg0, "dummy"
-  gosub *create_symbol
-  mov %dummy, %ret
   gosub *set_global_env
   mov %current_proc, %nil
   mov %current_env, %global_env
@@ -1047,7 +1044,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %current_proc == %nil goto *create_error_toplevel
   mov %arg0, %current_proc
   mov %arg1, %current_env
-  gosub *rassoc
+  gosub *find_val
   if %ret == %nil mov %arg1, %current_proc : goto *create_error_l1
   mov %arg0, %ret
   gosub *car
@@ -1534,7 +1531,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 ;;;*assoc(*key, *lst)
 ;;;;;;;;;;
 *assoc
-  if %arg1 == %nil  : mov %ret, %nil : return
+  if %arg1 == %nil mov %ret, %nil : return
   gosub *push       ; key
   mov %arg0, %arg1
   gosub *push       ; lst
@@ -1561,7 +1558,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 ;;;*rassoc(*key, *lst)
 ;;;;;;;;;;
 *rassoc
-  if %arg1 == %nil  : mov %ret, %nil : return
+  if %arg1 == %nil mov %ret, %nil : return
   gosub *push       ; key
   mov %arg0, %arg1
   gosub *push       ; lst
@@ -1580,8 +1577,70 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %ret   ; CDR(lst)
   gosub *pop        ; key
   mov %arg0, %ret
-  goto *rassoc       ; tail recursion
+  goto *rassoc      ; tail recursion
   return
+
+
+;;;;;;;;;;
+;;;*find_var(var, env)
+;;;;;;;;;;
+*find_var
+  if %arg1 == %nil mov %ret, %nil : return
+  mov %tmp, %arg0   ; %tmp = var
+  mov %arg0, %arg1  ; %arg0 = env
+  gosub *push       ; S(env)
+  mov %arg0, %tmp   ; %arg0 = var
+  gosub *push       ; S(var, env)
+  mov %arg0, %arg1  ; %arg0 = env
+  gosub *car        ; CAR(env)
+  mov %arg1, %ret   ; %arg1 = CAR(env)
+  gosub *pop        ; var < S(env)
+  mov %arg0, %ret   ; %arg0 = var
+  gosub *push       ; S(var, env)
+  gosub *assoc      ; assoc(var, CAR(env))
+  if %ret != %nil sub %sp, 2 : return
+  gosub *pop        ; var < S(env)
+  mov %arg0, %ret   ; %arg0 = var
+  gosub *pop        ; env < S()
+  mov %tmp, %ret    ; %tmp = env
+  gosub *push       ; S(var)
+  mov %arg0, %tmp   ; %arg0 = env
+  gosub *cdr        ; CDR(env)
+  mov %arg1, %ret   ; %ret1 = CDR(env)
+  gosub *pop        ; var < S()
+  mov %arg0, %ret   ; %ret0 = var
+  goto *find_var
+
+
+;;;;;;;;;;
+;;;*find_val(val, env)
+;;;;;;;;;;
+*find_val
+  if %arg1 == %nil mov %ret, %nil : return
+  mov %tmp, %arg0   ; %tmp = val
+  mov %arg0, %arg1  ; %arg0 = env
+  gosub *push       ; S(env)
+  mov %arg0, %tmp   ; %arg0 = val
+  gosub *push       ; S(val, env)
+  mov %arg0, %arg1  ; %arg0 = env
+  gosub *car        ; CAR(env)
+  mov %arg1, %ret   ; %arg1 = CAR(env)
+  gosub *pop        ; val < S(env)
+  mov %arg0, %ret   ; %arg0 = val
+  gosub *push       ; S(val, env)
+  gosub *rassoc     ; rassoc(val, CAR(env))
+  if %ret != %nil return
+  gosub *pop        ; val < S(env)
+  mov %arg0, %ret   ; %arg0 = val
+  gosub *pop        ; env < S()
+  mov %tmp, %ret    ; %tmp = env
+  gosub *push       ; S(val)
+  mov %arg0, %tmp   ; %arg0 = env
+  gosub *cdr        ; CDR(env)
+  mov %arg1, %ret   ; %ret1 = CDR(env)
+  gosub *pop        ; var < S()
+  mov %arg0, %ret   ; %ret0 = val
+  goto *find_val
 
 
 ;;;;;;;;;;
@@ -1623,7 +1682,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   goto *eval_compound  ; Assume obj is a cons
 *eval_variable
   gosub *push       ; S(obj)
-  gosub *assoc
+  gosub *find_var
   if %ret == %nil goto *eval_variable_error
   mov %arg0, %ret   ; %arg0 = (var . val)
   gosub *pop        ; obj < S()
@@ -1975,26 +2034,15 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *create_cons
   mov %arg0, %ret
   gosub *push     ; S(new cons)
-  mov %arg1, %dummy
-  gosub *set_car  ; new cons = (dummy . ?)
+  mov %arg1, %nil
+  gosub *set_car  ; new cons = (nil . ?)
   gosub *pop      ; new cons < S()
   mov %arg0, %ret
   gosub *push     ; S(new cons)
-  mov %arg1, %dummy
-  gosub *set_cdr  ; new cons = (dummy . dummy)
-  gosub *create_cons
-  mov %arg0, %ret
-  gosub *pop      ; new cons < S()
-  mov %arg1, %ret
-  gosub *push     ; S(new cons2)
-  gosub *set_car  ; new cons2 = ((dummy . dummy) . ?)
-  gosub *pop      ; new cons2 < S()
-  mov %arg0, %ret
-  gosub *push     ; S(new cons2)
   mov %arg1, %nil
-  gosub *set_cdr  ; new cons2 = ((dummy . dummy))
-  gosub *pop      ; new cons2 < S()
-  return          ; ret = new cons2
+  gosub *set_cdr  ; new cons = (nil . nil)
+  gosub *pop      ; new cons < S()
+  return
 
 
 ;;;;;;;;;;
@@ -3078,7 +3126,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %tmp
   gosub *push         ; S(object)
   mov %arg0, %tmp1
-  gosub *assoc        ; Assoc(sym, env)
+  gosub *find_var     ; find_var(sym, env)
   if %ret == %nil goto *fsubr_func_set_l1
   mov %arg0, %ret
   gosub *pop          ; object < S()
@@ -3754,55 +3802,50 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 ;;;;;;;;;;
 *add_bind_to_env
   gosub *push       ; S(env)
-  mov %arg0, %arg1
+  mov %arg0, %arg1  ; %arg0 = sym
   gosub *push       ; S(sym, env)
-  mov %arg0, %arg2
+  mov %arg0, %arg2  ; %arg0 = val
   gosub *push       ; S(val, sym, env)
   gosub *create_cons
-  mov %tmp, %arg0   ; %arg0 = new cons
+  mov %arg0, %ret   ; %arg0 = pair
   gosub *pop        ; val < S(sym, env)
-  mov %arg1, %ret
-  gosub *push       ; S(new cons, sym, env)
-  gosub *set_cdr    ; new cons = (? . val)
-  gosub *pop        ; new cons < S(sym, env)
-  mov %arg0, %ret
+  mov %arg1, %ret   ; %arg1 = val
+  gosub *push       ; S(pair, sym, env)
+  gosub *set_cdr    ; pair = (? . val)
+  gosub *pop        ; pair < S(sym, env)
+  mov %arg0, %ret   ; %arg0 = pair
   gosub *pop        ; sym < S(env)
-  mov %arg1, %ret
-  gosub *push       ; S(new cons, env)
-  gosub *set_car    ; new cons = (name . val)
-  gosub *pop        ; new cons < S(env)
-  mov %arg0, %ret
-  gosub *pop        ; env < S()
-  mov %arg1, %ret
-  gosub *push       ; S(new cons)
-  mov %arg0, %arg1
-  gosub *push       ; S(env, new cons)
-  gosub *cdr
-  mov %arg0, %ret   ; %arg0 = CDR(env)
-  gosub *push       ; S(CDR(env), env, new cons)
+  mov %arg1, %ret   ; %arg1 = sym
+  gosub *push       ; S(pair, env)
+  gosub *set_car    ; pair = (sym . val)
   gosub *create_cons
-  mov %arg0, %ret   ; arg0 = new cons2
-  gosub *pop        ; CDR(env) < S(env, new cons)
-  mov %arg1, %ret
-  gosub *push       ; S(new cons2, env, new cons)
-  gosub *set_cdr    ; new cons2 = (? . CDR(env))
-  gosub *pop        ; new cons2 < S(env, new cons)
-  mov %tmp, %ret
-  gosub *pop        ; env < S(new cons)
-  mov %arg0, %ret
-  gosub *pop        ; new cons < S()
-  mov %arg1, %ret
+  mov %arg0, %ret   ; %arg0 = new cons
+  gosub *pop        ; pair < S(env)
+  mov %arg1, %ret   ; %arg1 = pair
+  gosub *push       ; S(new cons, env)
+  gosub *set_car    ; new_cons = (pair . ?)
+  gosub *pop        ; new_cons < S(env)
+  mov %arg1, %ret   ; %arg1 = new_cons
+  gosub *pop        ; env < S()
+  mov %arg0, %ret   ; %arg0 = env
   gosub *push       ; S(env)
-  mov %arg0, %tmp
-  gosub *push       ; S(new cons2, env)
-  gosub *set_car    ; new cons2 = (new cons . CDR(env))
-  gosub *pop        ; new cons2 < S(env)
-  mov %arg1, %ret
-  gosub *pop        ;env < S()
-  mov %arg0, %ret
-  gosub *push       ;S(env)
-  gosub *set_cdr    ;env = (... new cons ...)
-  gosub *pop        ;env < S()
+  mov %tmp, %arg0   ; %tmp = env
+  mov %arg0, %arg1  ; %arg0 = new_cons
+  gosub *push       ; S(new_cons, env)
+  mov %arg0, %tmp   ; %arg0 = env
+  gosub *car        ; CAR(env) = the first alist in env
+  mov %arg1, %ret   ; %arg1 = CAR(env)
+  gosub *pop        ; new_cons < S(env)
+  mov %arg0, %ret   ; %arg0 = new_cons
+  gosub *push       ; S(new_cons, env)
+  gosub *set_cdr    ; new_cons = (pair . CAR(env))
+  gosub *pop        ; new_cons < S(env)
+  mov %arg1, %ret   ; %arg1 = new_cons
+  gosub *pop        ; env < S()
+  mov %arg0, %ret   ; %arg0 = env
+  gosub *push       ; S(env)
+  gosub *set_car    ; env = ((pair . CAR(env)) . CDR(env))
+  gosub *pop        ; env < S()
   return
 
 
@@ -3862,8 +3905,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 ;;;*set_global_env()
 ;;;;;;;;;;
 *set_global_env
-  mov $sarg0, "((dummy . dummy) (Åîf . Åîf) (Åît . Åît)"
-  mov $sarg0, $sarg0 + "(nil . nil) (else . Åît))"
+  mov $sarg0, "(((Åîf . Åîf) (Åît . Åît)"
+  mov $sarg0, $sarg0 + "(nil . nil) (else . Åît)))"
   gosub *input_to_lobject
   mov %global_env, %ret
   mov %arg0, %global_env
@@ -3984,6 +4027,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, lf_quote
   mov $sarg0, "quote"
   gosub *add_fsubr_to_env  ; quote
+
   mov %arg0, %global_env
   mov %arg1, lf_begin
   mov $sarg0, "begin"
