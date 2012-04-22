@@ -410,6 +410,7 @@ nsa
 
 ;;;;;;;;;;
 ;;;*push(val)
+;;; modifies: %sp
 ;;;;;;;;;;
 *push
   if %sp >= STACK_OVER mesbox "スタックオーバフロー", "Error" : end
@@ -420,6 +421,7 @@ nsa
 
 ;;;;;;;;;;
 ;;;*pop()
+;;; modifies: %ret, %sp
 ;;;;;;;;;;
 *pop
   if %sp <= STACK mesbox "Popできません", "Error" : end
@@ -430,6 +432,7 @@ nsa
 
 ;;;;;;;;;;
 ;;;*spush(val)
+;;; modifies: %ssp
 ;;;;;;;;;;
 *spush
   if %ssp >= STACK_OVER mesbox "スタックオーバフロー", "Error" : end
@@ -440,6 +443,7 @@ nsa
 
 ;;;;;;;;;;
 ;;;*spop()
+;;; modifies: $sret, %ssp
 ;;;;;;;;;;
 *spop
   if %ssp <= SSTACK mesbox "Popできません" "Error" : end
@@ -449,7 +453,8 @@ nsa
 
 
 ;;;;;;;;;;
-;;;*get_gc(*obj)
+;;;*get_gc(obj)
+;;; modifies: %ret
 ;;;;;;;;;;
 *get_gc
   mov %ret, %%arg0 mod 2
@@ -457,7 +462,8 @@ nsa
 
 
 ;;;;;;;;;;
-;;;*set_gc(*obj, flag)
+;;;*set_gc(obj, flag)
+;;; modifies: %tmp
 ;;;;;;;;;;
 *set_gc
   mov %tmp, %%arg0
@@ -468,7 +474,8 @@ nsa
 
 
 ;;;;;;;;;;
-;;;*get_tag(*obj)
+;;;*get_tag(obj)
+;;; modifies: %tmp, %ret
 ;;;;;;;;;;
 *get_tag
   mov %tmp, %%arg0
@@ -479,7 +486,8 @@ nsa
 
 
 ;;;;;;;;;;
-;;;*set_tag(*obj, tag)
+;;;*set_tag(obj, tag)
+;;; modifies: %tmp, %tmp1, %tmp2, %tmp3
 ;;;;;;;;;;
 *set_tag
   mov %tmp, %%arg0
@@ -493,13 +501,18 @@ nsa
 
 
 ;;;;;;;;;;
-;;;*get_data(*obj)
+;;;*get_data(obj)
+;;; modifies: %ret
 ;;;;;;;;;;
 *get_data
   mov %ret, %%arg0
   div %ret, 64
   return
 
+;;;;;;;;;;
+;;;*get_num_data(num)
+;;; modifies: %ret
+;;;;;;;;;;
 *get_num_data
   gosub *get_data
   if %ret <= MAX_NUMBER return
@@ -510,7 +523,8 @@ nsa
 
 
 ;;;;;;;;;;
-;;;*set_data(*obj, data)
+;;;*set_data(obj, data)
+;;; modifies: %tmp, %tmp1, %tmp2
 ;;;;;;;;;;
 *set_data
   mov %tmp, %%arg0
@@ -521,7 +535,7 @@ nsa
 
 
 ;;;;;;;;;;
-;;;*car(*obj)
+;;;*car(obj)
 ;;;;;;;;;;
 *car
   if %arg0 == %nil mov %ret, %nil : return
@@ -532,7 +546,7 @@ nsa
 
 
 ;;;;;;;;;;
-;;;*cdr(*obj)
+;;;*cdr(obj)
 ;;;;;;;;;;
 *cdr
   if %arg0 == %nil mov %ret, %nil : return
@@ -543,7 +557,7 @@ nsa
 
 
 ;;;;;;;;;;
-;;;*set_car(*obj0, *obj1)
+;;;*set_car(obj0, obj1)
 ;;;;;;;;;;
 *set_car
   gosub *push             ; S(obj0)
@@ -565,7 +579,7 @@ nsa
 
 
 ;;;;;;;;;;
-;;;*set_cdr(*obj0, *obj1)
+;;;*set_cdr(obj0, obj1)
 ;;;;;;;;;;
 *set_cdr
   gosub *push               ; S(obj0)
@@ -646,7 +660,7 @@ nsa
 
 
 ;;;;;;;;;;
-;;;*reuse_cell(*obj, i)
+;;;*reuse_cell(obj, i)
 ;;;;;;;;;;
 *reuse_cell
   gosub *set_data
@@ -656,7 +670,7 @@ nsa
 
 
 ;;;;;;;;;;
-;;;*gc
+;;;*gc()
 ;;;  This subroutine does not keep %ret because GC occurs in consing.
 ;;;  This subroutine does not keep %i because GC does not occurs in for-loop.
 ;;;;;;;;;;
@@ -684,7 +698,7 @@ if %gc_silent == 1 goto *gc_sl2
 
 
 ;;;;;;;;;;
-;;;*gc_mark_lobject(*obj)
+;;;*gc_mark_lobject(obj)
 ;;;;;;;;;;
 *gc_mark_lobject
   gosub *get_gc
@@ -820,7 +834,7 @@ if %gc_silent == 1 goto *gc_sl2
 
 
 ;;;;;;;;;;
-;;;*symbol_gc
+;;;*symbol_gc()
 ;;;  This subroutine does not keep %ret.
 ;;;  This subroutine does not keep %i.
 ;;;;;;;;;;
@@ -1403,7 +1417,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*cons_to_string(*obj)
+;;;*cons_to_string(obj)
 ;;sret : Translated string
 ;;;;;;;;;;
 *cons_to_string
@@ -1445,7 +1459,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*lobject_to_string(*obj)
+;;;*lobject_to_string(obj)
 ;;sret : Translated string
 ;;;;;;;;;;
 *lobject_to_string
@@ -1528,7 +1542,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*assoc(*key, *lst)
+;;;*assoc(key, lst)
 ;;;;;;;;;;
 *assoc
   if %arg1 == %nil mov %ret, %nil : return
@@ -1555,7 +1569,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*rassoc(*key, *lst)
+;;;*rassoc(key, lst)
 ;;;;;;;;;;
 *rassoc
   if %arg1 == %nil mov %ret, %nil : return
@@ -1644,7 +1658,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*nconc(*lst, *obj)
+;;;*nconc(lst, obj)
 ;;;;;;;;;;
 *nconc
   gosub *push      ; S(lst) = root
@@ -1672,7 +1686,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*eval(*obj, *env)
+;;;*eval(obj, env)
 ;;;;;;;;;;
 *eval
   gosub *get_tag
@@ -1734,7 +1748,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*apply(*fn, *arg, *env)
+;;;*apply(fn, arg, env)
 ;;;;;;;;;;
 *apply
   gosub *get_tag
@@ -1811,7 +1825,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*fexpr_call(*fn, *arg, *env)
+;;;*fexpr_call(fn, arg, env)
 ;;;;;;;;;;
 *fexpr_call
   gosub *push          ; S(fn)
@@ -1835,7 +1849,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*evlis(*arg, *env)
+;;;*evlis(arg, env)
 ;;;;;;;;;;
 *evlis
   gosub *push       ; S(arg)
@@ -1927,7 +1941,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*evstack(*arg, *env)
+;;;*evstack(arg, env)
 ;;;;;;;;;;
 *evstack
   mov %arg2, 0
@@ -4027,7 +4041,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, lf_quote
   mov $sarg0, "quote"
   gosub *add_fsubr_to_env  ; quote
-
   mov %arg0, %global_env
   mov %arg1, lf_begin
   mov $sarg0, "begin"
