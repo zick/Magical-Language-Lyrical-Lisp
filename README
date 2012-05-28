@@ -36,3 +36,9 @@ int main() {
 % gcc -o a a.c
 % cat *.txt | tr -d \\r | ./a > nscript.dat
 
+
+== License
+
+Unless otherwise noted, the Magical Language Lyrical Lisp source files are
+distributed under the BSD-style license found in the LICENSE file.
+
