@@ -154,7 +154,7 @@
   if %tmp <= 80 mov $stmp2, ":s/14,14,1;#FFFFFF"+$sret : goto *free_eval_l1
   ;;4s–Ú“Ë“ü
   mid $stmp2, $sret, 0, 80
-  mid $sret, $sret, 80, %tmp-80
+  mid $sret, $sret, 80, 80
   mov $stmp2, ":s/14,14,1;#FFFFFF"+$stmp2
   mov $stmp3, ":s/14,14,1;#FFFFFF"+$sret
 *free_eval_l1
