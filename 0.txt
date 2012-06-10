@@ -1643,7 +1643,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret   ; %arg0 = val
   gosub *push       ; S(val, env)
   gosub *rassoc     ; rassoc(val, CAR(env))
-  if %ret != %nil return
+  if %ret != %nil sub %sp, 2 : return
   gosub *pop        ; val < S(env)
   mov %arg0, %ret   ; %arg0 = val
   gosub *pop        ; env < S()
