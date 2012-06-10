@@ -30,7 +30,7 @@
 ;;; Memo:
 ;;;   ";value" must be written at the first line.
 ;;;   "Global variables" in NScripter are 0 if we do not call "globalon".
-;;;   We should call "mem_init" after load (?) 
+;;;   We should call "mem_init" after load (?)
 ;;;;;;;;;;
 
 
@@ -201,7 +201,7 @@ nsa
   numalias __unused__, 71
 
   ;; Garbage collection
-  numalias gc_count, 72 
+  numalias gc_count, 72
   numalias symbol_lst, 73
   numalias symbol_offset, 74
   numalias gc_run, 75
@@ -2366,16 +2366,16 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 *check_arguments_length
   gosub *push           ; S(arg)
 *check_arguments_length_l1
-  if %arg1 == 0 goto *check_argument_length_end
-  if %arg0 == %nil goto *check_argument_length_few
+  if %arg1 == 0 goto *check_arguments_length_end
+  if %arg0 == %nil goto *check_arguments_length_few
   gosub *cdr
   mov %arg0, %ret
   dec %arg1
   goto *check_arguments_length_l1
-*check_argument_length_few
+*check_arguments_length_few
   gosub *pop            ; arg < S()
   goto *too_few_arg0    ; tail call
-*check_argument_length_end
+*check_arguments_length_end
   gosub *pop            ; arg < S()
   if %arg0 == %nil mov %arg0, %ret : return
   goto *too_many_arg0   ; tail call
@@ -3643,9 +3643,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *push       ; S(vallist, env)
   mov %tmp3, %arg0
-  mov %arg0, %tmp2  
+  mov %arg0, %tmp2
   gosub *push       ; S(new env, vallist, env)
-  mov %arg0, %tmp1  
+  mov %arg0, %tmp1
   gosub *push       ; S(namelist, new env, vallist, env)
   mov %arg0, %tmp
   gosub *push       ; S(name, namelist, new env, vallist, env)
