@@ -1390,7 +1390,7 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -1428,7 +1428,7 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -1835,7 +1835,7 @@ csel "補足説明を読む", *story02_condicil, "用語集を読む", *story02_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -1867,7 +1867,7 @@ csel "補足説明を読む", *story02_condicil, "用語集を読む", *story02_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -2274,7 +2274,7 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret  ;A
@@ -2349,7 +2349,7 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret  ;A
@@ -2401,7 +2401,7 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %tmp, %ret
@@ -2461,7 +2461,7 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %tmp, %ret
@@ -2933,7 +2933,7 @@ csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -2962,7 +2962,7 @@ csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -3371,7 +3371,7 @@ csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -3396,7 +3396,7 @@ csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -3813,7 +3813,7 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -3838,7 +3838,7 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -4336,7 +4336,7 @@ csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -4361,7 +4361,7 @@ csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -4767,7 +4767,7 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -4812,7 +4812,7 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -4842,7 +4842,7 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -4867,7 +4867,7 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -5700,7 +5700,7 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -5743,7 +5743,7 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -6150,7 +6150,7 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
@@ -6175,7 +6175,7 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   mov %arg1, %adv_tmp3
-  gosub *assoc
+  gosub *find_var
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret
