@@ -1565,7 +1565,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop        ; key
   mov %arg0, %ret
   goto *assoc       ; tail recursion
-  return
 
 
 ;;;;;;;;;;
@@ -1592,7 +1591,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop        ; key
   mov %arg0, %ret
   goto *rassoc      ; tail recursion
-  return
 
 
 ;;;;;;;;;;
@@ -1708,7 +1706,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *lobject_to_string
   mov $sarg0, $sret + "‚Í–¢‘©”›‚Å‚·"
   goto *create_error; tail call
-  return
 *eval_compound
   gosub *push       ; S(obj)
   mov %tmp, %arg0
@@ -1744,7 +1741,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop        ; fn < S()
   mov %arg0, %ret
   goto *apply       ; Apply(fn, CDR(obj), env) tail call
-  return
 
 
 ;;;;;;;;;;
@@ -1797,7 +1793,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *lobject_to_string
   mov $sarg0, $sret + "‚ÍŠÖ”‚Å‚Í‚ ‚è‚Ü‚¹‚ñ"
   goto *create_error  ; tail call
-  return
 
 
 ;;;;;;;;;;
@@ -1821,7 +1816,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop           ; new env < S()
   mov %arg2, %ret      ; %arg2 = new env
   goto *fsubr_func_begin  ; tail call
-  return
 
 
 ;;;;;;;;;;
@@ -1845,7 +1839,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop           ; new env < S()
   mov %arg2, %ret
   goto *fsubr_func_begin  ; tail call
-  return
 
 
 ;;;;;;;;;;
@@ -2357,7 +2350,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop            ; fn < S()
   mov %arg1, %ret
   goto *create_expr_env ; tail call
-  return
 
 
 ;;;;;;;;;;
@@ -2527,7 +2519,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 *subr_func_add_exit
   mov %arg0, %arg2
   goto *create_num  ; tail call
-  return
 
 *subr_func_sub
   gosub *pop        ; len < S(Args, ...)
@@ -2546,7 +2537,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *get_num_data
   mov %arg0, %arg2 - %ret
   goto *create_num  ; tail call
-  return
 
 *subr_func_mul
   mov %arg2, 1    ; result
@@ -2570,7 +2560,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 *subr_func_mul_exit
   mov %arg0, %arg2
   goto *create_num  ; tail call
-  return
 
 *subr_func_div
   gosub *pop        ; len < S(Args, ...)
@@ -2589,7 +2578,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *get_num_data
   mov %arg0, %arg2 / %ret
   goto *create_num  ; tail call
-  return
 
 *subr_func_mod
   gosub *pop        ; len < S(Args, ...)
@@ -2608,7 +2596,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *get_num_data
   mov %arg0, %arg2 mod %ret
   goto *create_num  ; tail call
-  return
 
 *subr_func_gt
   gosub *pop        ; len < S(Args, ...)
@@ -2831,7 +2818,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *lobject_to_string
   mov $sarg0, $sret
   goto *create_error  ; tail call
-  return
 
 
 ;;;;;;;;;;
@@ -2855,7 +2841,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == lf_time goto *fsubr_func_time
   mov $sarg0, "Invalid-FSUBR"
   goto *subr_func_error  ; tail call
-  return
 
 *fsubr_func_quote
   mov %arg0, %arg1
@@ -2911,7 +2896,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop           ; object < S()
   ;mov %ret, %ret
   goto *fsubr_func_begin_l1
-  return
 *fsubr_func_begin_tail  ; S(arg, env, arg)
   gosub *pop           ; arg < S(env, arg)
   mov %arg0, %ret
@@ -2972,7 +2956,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop          ; env < S()
   mov %arg2, %ret     ; arg2 = env
   goto *fsubr_func_begin  ; tail call
-  return
 
 *fsubr_func_lambda
   if %arg1 == %nil gosub *too_few_arg0 : mov %ret, %arg0 : return
@@ -2995,7 +2978,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop         ; env < S()
   mov %arg2, %ret    ; arg2 = env
   goto *create_expr  ; tail call (form, arg, env)
-  return
 
 *fsubr_func_nlambda
   gosub *fsubr_func_lambda
@@ -3204,7 +3186,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop          ; new env < S()
   mov %arg2, %ret
   goto *fsubr_func_begin  ; tail call
-  return
 *fsubr_func_let_null_env ; S(env, arg)
   gosub *create_new_env
   mov %arg0, %ret
@@ -3215,7 +3196,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop          ; arg < S()
   mov %arg1, %ret
   goto *fsubr_func_begin  ; tail call
-  return
 
 *fsubr_func_letrec
   if %arg1 == %nil gosub *too_few_arg0 : mov %ret, %arg0 : return
@@ -3264,7 +3244,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg2, %ret
   sub %sp, 1          ; < S()
   goto *fsubr_func_begin  ; tail call
-  return
 
 *fsubr_func_letstar
   if %arg1 == %nil gosub *too_few_arg0 : mov %ret, %arg0 : return
@@ -3304,7 +3283,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg2, %ret
   sub %sp, 1          ; < S()
   goto *fsubr_func_begin  ; tail call
-  return
 
 *fsubr_func_if
   ; TODO: check too-many-arguments
@@ -3886,7 +3864,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop            ; env < S()
   mov %arg0, %ret       ; arg0 = env
   goto *add_bind_to_env ; tail call
-  return
 
 
 ;;;;;;;;;;
@@ -3912,7 +3889,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop            ; env < S()
   mov %arg0, %ret       ; arg0 = env
   goto *add_bind_to_env ; tail call
-  return
 
 
 ;;;;;;;;;;
