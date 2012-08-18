@@ -135,6 +135,7 @@ bgm ms_ex
   if %ret == 1 goto *fm01_menu  ;Tab
   if $sarg0 == "" goto *fm01
 textclear
+  if $sarg0 == "__ex_test__" gosub *ex_test_start : goto *fm01
   gosub *fm01_say_calc
 repaint
   gosub *check_lr_parenthesis

@@ -401,6 +401,7 @@ textclear
   mov %current_proc, %nil
   mov %current_env, %adv_tmp3
   mov %adv_error, 0
+  if %in_ex_test != 0 goto *ex_rep_get_answer
   mov $sarg0, ""
   textclear
   gosub $problem_label
@@ -413,6 +414,10 @@ textclear
   repaint
   gosub *check_lr_parenthesis
   if %ret != 0 gosub *parenthesis_error : goto $ret_label
+  goto *ex_rep_exec
+*ex_rep_get_answer
+  gosub *ex_test_set_answer
+*ex_rep_exec
   gosub *input_to_lobject
   mov %arg0, %ret
   gosub *push
@@ -422,6 +427,7 @@ textclear
   gosub *get_tag : if %ret == TAG_ERROR mov %adv_error, 1
   gosub *push
   gosub *lobject_to_string
+  if %in_ex_test != 0 goto $suc_label
   textclear
   if %adv_error == 1 goto *ex_rep_error
 アリサ「結果は『$sret』ね」\
@@ -431,11 +437,114 @@ textclear
 #33FF33$sret#FFFFFF\
   goto $suc_label
 
+;;; ex_check_pass($label)
+*ex_check_pass
+  if %in_ex_test == 0 goto $sarg0
+  goto *ex_test_pass
+
+;;; ex_check_pass_end($label)
+*ex_check_pass_end
+  if %in_ex_test == 0 goto $sarg0
+  goto *ex_test_pass_end
+
+;;; ex_check_fail($label)
+*ex_check_fail
+  if %in_ex_test == 0 goto $sarg0
+  goto *ex_test_fail
+
+;;; ex_test_set_answer()
+*ex_test_set_answer
+  if $suc_label == "*ex02_check" mov $sarg0, "(define x 4)"
+  if $suc_label == "*ex02_2_check" mov $sarg0, "(* (+ x 3) 4)"
+  if $suc_label == "*ex03_check" mov $sarg0, "'hayate"
+  if $suc_label == "*ex03_2_check" mov $sarg0, "(define fate 'nanoha)"
+  if $suc_label == "*ex03_3_check" mov $sarg0, "fate"
+  if $suc_label == "*ex04_check" mov $sarg0, "(define x '(a b c))"
+  if $suc_label == "*ex04_2_check" mov $sarg0, "(car x)"
+  if $suc_label == "*ex04_3_check" mov $sarg0, "(cdr x)"
+  if $suc_label == "*ex05_check" mov $sarg0, "(define (f x) (car (cdr x)))"
+  if $suc_label == "*ex05_2_check" mov $sarg0, "(f '(a b c d))"
+  if $suc_label == "*ex06_check" mov $sarg0, "(define (s n) (if (= n 0) 0 (+ n (s (- n 1)))))"
+  if $suc_label == "*ex06_2_check" mov $sarg0, "(s 10)"
+  if $suc_label == "*ex07_check" mov $sarg0, "(define (len x) (if (null? x) 0 (+ 1 (len (cdr x)))))"
+  if $suc_label == "*ex07_2_check" mov $sarg0, "(len '(a b c))"
+  if $suc_label == "*ex08_check" mov $sarg0, "(define (f x) (lambda (y) (+ x y)))"
+  if $suc_label == "*ex08_2_check" mov $sarg0, "((f 6) 66)"
+  if $suc_label == "*ex09_check" mov $sarg0, "(define (si n acc) (if (= n 0) acc (si (- n 1) (+ acc n))))"
+  if $suc_label == "*ex09_2_check" mov $sarg0, "(s 10)"
+  if $suc_label == "*ex11_check" mov $sarg0, "(define (map1 f x) (if (null? x) x (cons (f (car x)) (map1 f (cdr x)))))"
+  if $suc_label == "*ex11_2_check" mov $sarg0, "(map1 (lambda (n) (+ n 1)) '(1 2))"
+  if $suc_label == "*ex12_check" mov $sarg0, "(define (muli x y acc) (if (eq? y (zero)) acc (muli x (dec y) (add x acc))))"
+  if $suc_label == "*ex12_2_check" mov $sarg0, "(mul (inc (inc (zero))) (inc (inc (inc (zero)))))"
+  return
+
+;;; ex_test_pass_log($test_name)
+*ex_test_pass_log
+  gosub *print_string
+!s0【#00FF00ｐａｓｓ#FFFFFF】　$sret!sd
+  return
+
+;;; ex_test_pass($label)
+*ex_test_pass
+  gosub *spush
+  mov $sarg0, $problem_label
+  gosub *ex_test_pass_log
+  gosub *spop
+  goto $sret
+
+;;; ex_test_pass_end($ignored_label)
+*ex_test_pass_end
+  mov $sarg0, $problem_label
+  gosub *ex_test_pass_log
+  goto *ex_test_next_problem
+
+;;; ex_test_fail($ignored_label)
+*ex_test_fail
+  mov $sarg0, $problem_label
+  gosub *print_string
+!s0【#FF0000ｆａｉｌ#FFFFFF】　$sret!sd
+*ex_test_next_problem
+  mov %sp, %in_ex_test  ; restore %sp
+  gosub *ex_init_env
+  if $suc_label == "*ex02_check" goto *ex03
+  if $suc_label == "*ex02_2_check" goto *ex03
+  if $suc_label == "*ex03_check" goto *ex04
+  if $suc_label == "*ex03_2_check" goto *ex04
+  if $suc_label == "*ex03_3_check" goto *ex04
+  if $suc_label == "*ex04_check" goto *ex05
+  if $suc_label == "*ex04_2_check" goto *ex05
+  if $suc_label == "*ex04_3_check" goto *ex05
+  if $suc_label == "*ex05_check" goto *ex06
+  if $suc_label == "*ex05_2_check" goto *ex06
+  if $suc_label == "*ex06_check" goto *ex07
+  if $suc_label == "*ex06_2_check" goto *ex07
+  if $suc_label == "*ex07_check" goto *ex08
+  if $suc_label == "*ex07_2_check" goto *ex08
+  if $suc_label == "*ex08_check" goto *ex09_prev
+  if $suc_label == "*ex08_2_check" goto *ex09_prev
+  if $suc_label == "*ex09_check" goto *ex11
+  if $suc_label == "*ex09_2_check" goto *ex11
+  if $suc_label == "*ex11_check" goto *ex12_prev
+  if $suc_label == "*ex11_2_check" goto *ex12_prev
+  if $suc_label == "*ex12_check" goto *ex_test_done
+  if $suc_label == "*ex12_2_check" goto *ex_test_done
+
+*ex_test_done
+ｄｏｎｅ．\
+  mov %sp, %in_ex_test  ; restore %sp
+  mov %in_ex_test, 0
+  return
+
+*ex_test_start
+  mov %in_ex_test, %sp  ; save %sp
+  gosub *ex_init_env
+  goto *ex02
 
 ;;;;;;;;;;
 ;;;すべてはここから始まる……
 ;;;;;;;;;;
 *main_game_start
+  mov %in_ex_test, 0
   mov %adv_rmode, 1  ;;正直かなり苦しい……
   bgmfadeout 100
   gosub *get_vol
@@ -1398,7 +1507,11 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   mov %tmp1, %ret
   gosub *get_data
   mov %tmp2, %ret
-  if %tmp1 == TAG_NUM && %tmp2 == 4 goto *ex02_2  ;S(new env)
+  mov $sarg0, "*ex02_2"
+  if %tmp1 == TAG_NUM && %tmp2 == 4 goto *ex_check_pass  ;S(new env)
+  mov $sarg0, "*ex02_normal_miss"
+  goto *ex_check_fail
+*ex02_normal_miss
   r_show ari_die
   アリサ「……なに違うことやってるのよ。やり直し！」\
   r_show ari_n
@@ -1422,7 +1535,8 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   mov %tmp1, %ret
   gosub *get_data
   mov %tmp2, %ret
-  if %tmp1 == TAG_NUM && %tmp2 == 28 goto *ex02_3  ;この後xの値を変えてチェック
+  ; Don't use ex_check_pass for ex02_2_check2
+  if %tmp1 == TAG_NUM && %tmp2 == 28 goto *ex02_2_check2  ;この後xの値を変えてチェック
   ;ここでxの再定義をしてくれるという素晴らしい人のために
   mov $sarg0, "x"
   gosub *create_symbol
@@ -1436,8 +1550,12 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   mov %tmp1, %ret
   gosub *get_data
   mov %tmp2, %ret
-  if %tmp1 != TAG_NUM goto *ex02_ext
-  if %tmp2 != 4 goto *ex02_ext
+  mov $sarg0, "*ex02_ext"
+  if %tmp1 != TAG_NUM goto *ex_check_fail
+  if %tmp2 != 4 goto *ex_check_fail
+  mov $sarg0, "*ex02_2_normal_miss"
+  goto *ex_check_fail
+*ex02_2_normal_miss
   r_show ari_die
 アリサ「違うわよ。もう一回やり直し！」\
   r_show ari_n
@@ -1455,7 +1573,7 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   inc %adv_tmp
   gosub *ex_init_env : goto *ex02
 
-*ex02_3  ;（ｘ＋３）＊４なのかチェック
+*ex02_2_check2  ;（ｘ＋３）＊４なのかチェック
   mov $sarg0, "(set! x 997)"
   gosub *input_to_lobject
   mov %arg0, %ret
@@ -1470,7 +1588,8 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   mov %tmp1, %ret
   gosub *get_data
   mov %tmp2, %ret
-  if %tmp1 == TAG_NUM && %tmp2 == 4000 goto *ex02_end
+  mov $sarg0, "*ex02_end"
+  if %tmp1 == TAG_NUM && %tmp2 == 4000 goto *ex_check_pass_end
   r_show ari_muka
 アリサ「あのさ、なんで答えだけがあってるのかな……@/
   r_show ari_do
@@ -1478,7 +1597,9 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   r_show ari_n
   gosub *pop  ;new env<S()
   inc %adv_tmp
-  gosub *ex_init_env : goto *ex02
+  gosub *ex_init_env
+  mov $sarg0, "*ex02"
+  goto *ex_check_fail
 
 
 
@@ -1811,7 +1932,11 @@ csel "補足説明を読む", *story02_condicil, "用語集を読む", *story02_glossary, "タ
   gosub *create_symbol
   mov %tmp, %ret
   gosub *pop      ;ret<S(input)
-  if %tmp == %ret gosub *pop : goto *ex03_2
+  mov $sarg0, "*ex03_2"
+  if %tmp == %ret gosub *pop : goto *ex_check_pass
+  mov $sarg0, "*ex03_normal_miss"
+  goto *ex_check_fail
+*ex03_normal_miss
   gosub *pop
   textclear
   r_show ari_die
@@ -1844,7 +1969,11 @@ csel "補足説明を読む", *story02_condicil, "用語集を読む", *story02_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   gosub *pop      ;value of fate<S()
-  if %arg0 == %ret goto *ex03_3
+  mov $sarg0, "*ex03_3"
+  if %arg0 == %ret goto *ex_check_pass
+  mov $sarg0, "*ex03_2_normal_miss"
+  goto *ex_check_fail
+*ex03_2_normal_miss
   textclear
   r_show ari_die
 アリサ「違うわ。やり直し！」\
@@ -1876,18 +2005,23 @@ csel "補足説明を読む", *story02_condicil, "用語集を読む", *story02_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   gosub *pop      ;value of fate<S(ret, input)
-  if %arg0 != %ret sub %sp, 2 : goto *ex03_3_miss2
+  mov $sarg0, "*ex03_3_miss2"
+  if %arg0 != %ret sub %sp, 2 : goto *ex_check_fail
   ;;;end;;;
   mov $sarg0, "nanoha"
   gosub *create_symbol
   mov %arg0, %ret
   gosub *pop      ;ret<S(input)
-  if %arg0 != %ret gosub *pop : goto *ex03_3_miss
+  mov $sarg0, "*ex03_3_miss"
+  if %arg0 != %ret gosub *pop : goto *ex_check_fail
   mov $sarg0, "fate"
   gosub *create_symbol
   mov %arg0, %ret
   gosub *pop      ;input<S()
-  if %arg0 == %ret goto *ex03_end
+  mov $sarg0, "*ex03_end"
+  if %arg0 == %ret goto *ex_check_pass_end
+  mov $sarg0, "*ex03_3_miss"
+  goto *ex_check_fail
 *ex03_3_miss
   textclear
   r_show ari_die
@@ -2280,7 +2414,8 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   mov %arg0, %ret  ;A
   gosub *get_tag
   mov %tmp1, %ret
-  if %tmp1 != TAG_CONS goto *ex04_miss1
+  mov $sarg0, "*ex04_miss1"
+  if %tmp1 != TAG_CONS goto *ex_check_fail
   gosub *push  ;S(A, new env)
   mov $sarg0, "a"
   gosub *create_symbol
@@ -2295,14 +2430,16 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   gosub *car
   mov %tmp1, %ret  ;CAR(A)
   gosub *pop  ;a<S(A, new env)
-  if %tmp1 != %ret gosub *pop : goto *ex04_miss1
+  mov $sarg0, "*ex04_miss1"
+  if %tmp1 != %ret gosub *pop : goto *ex_check_fail
   gosub *pop  ;A<S(new env)
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret  ;B
   gosub *get_tag
   mov %tmp1, %ret
-  if %tmp1 != TAG_CONS goto *ex04_miss1
+  mov $sarg0, "*ex04_miss1"
+  if %tmp1 != TAG_CONS goto *ex_check_fail
   gosub *push  ;S(B, new env)
   mov $sarg0, "b"
   gosub *create_symbol
@@ -2317,14 +2454,16 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   gosub *car
   mov %tmp1, %ret  ;CAR(B)
   gosub *pop  ;b<S(B, new env)
-  if %tmp1 != %ret gosub *pop : goto *ex04_miss1
+  mov $sarg0, "*ex04_miss1"
+  if %tmp1 != %ret gosub *pop : goto *ex_check_fail
   gosub *pop  ;B<S(new env)
   mov %arg0, %ret
   gosub *cdr
   mov %arg0, %ret  ;C
   gosub *get_tag
   mov %tmp1, %ret
-  if %tmp1 != TAG_CONS goto *ex04_miss1
+  mov $sarg0, "*ex04_miss1"
+  if %tmp1 != TAG_CONS goto *ex_check_fail
   gosub *push  ;S(C, new env)
   mov $sarg0, "c"
   gosub *create_symbol
@@ -2339,11 +2478,13 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   gosub *car
   mov %tmp1, %ret  ;CAR(C)
   gosub *pop  ;c<S(C, new env)
-  if %tmp1 != %ret gosub *pop : goto *ex04_miss1
+  mov $sarg0, "*ex04_miss1"
+  if %tmp1 != %ret gosub *pop : goto *ex_check_fail
   gosub *pop  ;C<S(new env)
   mov %arg0, %ret
   gosub *cdr
-  if %ret != %nil goto *ex04_miss1
+  mov $sarg0, "*ex04_miss1"
+  if %ret != %nil goto *ex_check_fail
   ;;(define x '(a b c))の答え合わせ終了
   mov $sarg0, "x"
   gosub *create_symbol
@@ -2354,7 +2495,8 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   gosub *cdr
   mov %arg0, %ret  ;A
   gosub *push   ;S(A, new env)
-  goto *ex04_2  ;S(A, new env)
+  mov $sarg0, "*ex04_2"
+  goto *ex_check_pass  ;S(A, new env)
 
 *ex04_miss1
   r_show ari_die
@@ -2392,7 +2534,8 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   mov %tmp1, %ret
   gosub *pop  ;new object<S(new env)
   mov %tmp2, %ret
-  if %tmp2 == %tmp mov %arg0, %tmp1 : gosub *push : goto *ex04_3  ;S(A, new env)
+  mov $sarg0, "*ex04_3"
+  if %tmp2 == %tmp mov %arg0, %tmp1 : gosub *push : goto *ex_check_pass  ;S(A, new env)
   mov %arg0, %tmp1
   gosub *push  ;S(A, new env)
   ;ここでxの再定義をしてくれるという素晴らしい人のために
@@ -2407,8 +2550,12 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   mov %tmp, %ret
   gosub *pop  ;A<S(new env)
   mov %arg0, %ret
-  if %tmp != %arg0 goto *ex04_ext  ;S(new env)
+  mov $sarg0, "*ex04_ext"
+  if %tmp != %arg0 goto *ex_check_fail  ;S(new env)
   gosub *push  ;S(A, new env)
+  mov $sarg0, "*ex04_2_normal_miss"
+  goto *ex_check_fail
+*ex04_2_normal_miss
   r_show ari_die
 アリサ「違うわよ。もう一回やり直し！」\
   r_show ari_n
@@ -2452,7 +2599,8 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   mov %tmp1, %ret
   gosub *pop  ;new object<S(new env)
   mov %tmp2, %ret
-  if %tmp2 == %tmp goto *ex04_end  ;S(new env)
+  mov $sarg0, "*ex04_end"
+  if %tmp2 == %tmp goto *ex_check_pass_end  ;S(new env)
   mov %arg0, %tmp1
   gosub *push  ;S(A, new env)
   ;ここでxの再定義をしてくれるという素晴らしい人のために
@@ -2467,8 +2615,12 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   mov %tmp, %ret
   gosub *pop  ;A<S(new env)
   mov %arg0, %ret
-  if %tmp != %arg0 goto *ex04_ext  ;S(new env)
+  mov $sarg0, "*ex04_ext"
+  if %tmp != %arg0 goto *ex_check_fail  ;S(new env)
   gosub *push  ;S(A, new env)
+  mov $sarg0, "*ex04_3_normal_miss"
+  goto *ex_check_fail
+*ex04_3_normal_miss
   r_show ari_die
 アリサ「違うわよ。もう一回やり直し！」\
   r_show ari_n
@@ -2906,7 +3058,8 @@ csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   gosub *pop      ;l?<S()
-  if %arg0 != %ret goto *ex05_miss
+  mov $sarg0, "*ex05_miss"
+  if %arg0 != %ret goto *ex_check_fail
   ;;;検証2
   mov $sarg0, "(f '(x miko))"
   gosub *input_to_lobject
@@ -2919,7 +3072,10 @@ csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   gosub *pop      ;miko?<S()
-  if %arg0 == %ret goto *ex05_2_prev
+  mov $sarg0, "*ex05_2_prev"
+  if %arg0 == %ret goto *ex_check_pass
+  mov $sarg0, "*ex05_miss"
+  goto *ex_check_fail
 *ex05_miss
   textclear
   r_show ari_die
@@ -2956,7 +3112,8 @@ csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タ
   gosub *create_symbol
   mov %arg0, %ret
   gosub *pop      ;ret<S(f)
-  if %arg0 == %ret gosub *pop : goto *ex05_end
+  mov $sarg0, "*ex05_end"
+  if %arg0 == %ret gosub *pop : goto *ex_check_pass_end
 ;;;fの再定義をcheck;;;
   mov $sarg0, "f"
   gosub *create_symbol
@@ -2967,10 +3124,14 @@ csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タ
   gosub *cdr
   mov %arg0, %ret
   gosub *pop      ;f<S()
-  if %arg0 != %ret goto *ex05_2_miss
+  mov $sarg0, "*ex05_2_miss"
+  if %arg0 != %ret goto *ex_check_fail
   mov %arg0, %ret
   gosub *push     ;S(f)
+  mov $sarg0, "*ex05_2_normal_miss"
+  goto *ex_check_fail
 ;;;end;;;
+*ex05_2_normal_miss
   textclear
   r_show ari_die
 アリサ「違うわ。やり直し！」\
@@ -3348,7 +3509,8 @@ csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タ
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
-  if %ret != 0 goto *ex06_miss
+  mov $sarg0, "*ex06_miss"
+  if %ret != 0 goto *ex_check_fail
   ;;;検証2
   mov $sarg0, "(s 6)"
   gosub *input_to_lobject
@@ -3357,7 +3519,10 @@ csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タ
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
-  if %ret == 21 goto *ex06_2_prev
+  mov $sarg0, "*ex06_2_prev"
+  if %ret == 21 goto *ex_check_pass
+  mov $sarg0, "*ex06_miss"
+  goto *ex_check_fail
 *ex06_miss
   textclear
   r_show ari_die
@@ -3390,7 +3555,8 @@ csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タ
   mov %arg0, %ret
   gosub *pop      ;input<S(s)
   gosub *get_data
-  if %ret == 55 gosub *pop : goto *ex06_end
+  mov $sarg0, "*ex06_end"
+  if %ret == 55 gosub *pop : goto *ex_check_pass_end
 ;;;sの再定義をcheck;;;
   mov $sarg0, "s"
   gosub *create_symbol
@@ -3401,10 +3567,14 @@ csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タ
   gosub *cdr
   mov %arg0, %ret
   gosub *pop      ;s<S()
-  if %arg0 != %ret goto *ex06_2_miss
+  mov $sarg0, "*ex06_2_miss"
+  if %arg0 != %ret goto *ex_check_fail
   mov %arg0, %ret
   gosub *push     ;S(s)
+  mov $sarg0, "*ex06_2_normal_miss"
+  goto *ex_check_fail
 ;;;end;;;
+*ex06_2_normal_miss
   textclear
   r_show ari_die
 アリサ「違うわ。やり直し！」\
@@ -3790,7 +3960,8 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
-  if %ret != 0 goto *ex07_miss
+  mov $sarg0, "*ex07_miss"
+  if %ret != 0 goto *ex_check_fail
   ;;;検証2
   mov $sarg0, "(len '(1 2 3 4 5))"
   gosub *input_to_lobject
@@ -3799,7 +3970,10 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
-  if %ret == 5 goto *ex07_2_prev
+  mov $sarg0, "*ex07_2_prev"
+  if %ret == 5 goto *ex_check_pass
+  mov $sarg0, "*ex07_miss"
+  goto *ex_check_fail
 *ex07_miss
   textclear
   r_show ari_die
@@ -3832,7 +4006,8 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   mov %arg0, %ret
   gosub *pop      ;input<S(len)
   gosub *get_data
-  if %ret == 3 gosub *pop : goto *ex07_end
+  mov $sarg0, "*ex07_end"
+  if %ret == 3 gosub *pop : goto *ex_check_pass_end
 ;;;lenの再定義をcheck;;;
   mov $sarg0, "len"
   gosub *create_symbol
@@ -3843,10 +4018,14 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   gosub *cdr
   mov %arg0, %ret
   gosub *pop      ;len<S()
-  if %arg0 != %ret goto *ex07_2_miss
+  mov $sarg0, "*ex07_2_miss"
+  if %arg0 != %ret goto *ex_check_fail
   mov %arg0, %ret
   gosub *push     ;S(len)
+  mov $sarg0, "*ex07_2_normal_miss"
+  goto *ex_check_fail
 ;;;end;;;
+*ex07_2_normal_miss
   textclear
   r_show ari_die
 アリサ「違うわ。やり直し！」\
@@ -4313,7 +4492,8 @@ csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タ
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
-  if %ret != 108 goto *ex08_miss
+  mov $sarg0, "*ex08_miss"
+  if %ret != 108 goto *ex_check_fail
   ;;;検証2
   mov $sarg0, "((f 2) 5)"
   gosub *input_to_lobject
@@ -4322,7 +4502,10 @@ csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タ
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
-  if %ret == 7 goto *ex08_2_prev
+  mov $sarg0, "*ex08_2_prev"
+  if %ret == 7 goto *ex_check_pass
+  mov $sarg0, "*ex08_miss"
+  goto *ex_check_fail
 *ex08_miss
   textclear
   r_show ari_die
@@ -4355,7 +4538,8 @@ csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タ
   mov %arg0, %ret
   gosub *pop      ;input<S(f)
   gosub *get_data
-  if %ret == 72 gosub *pop : goto *ex08_end
+  mov $sarg0, "*ex08_end"
+  if %ret == 72 gosub *pop : goto *ex_check_pass_end
 ;;;fの再定義をcheck;;;
   mov $sarg0, "f"
   gosub *create_symbol
@@ -4366,10 +4550,14 @@ csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タ
   gosub *cdr
   mov %arg0, %ret
   gosub *pop      ;f<S()
-  if %arg0 != %ret goto *ex08_2_miss
+  mov $sarg0, "*ex08_2_miss"
+  if %arg0 != %ret goto *ex_check_fail
   mov %arg0, %ret
   gosub *push     ;S(f)
+  mov $sarg0, "*ex08_2_normal_miss"
+  goto *ex_check_fail
 ;;;end;;;
+*ex08_2_normal_miss
   textclear
   r_show ari_die
 アリサ「違うわ。やり直し！」\
@@ -4796,7 +4984,8 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
-  if %ret != 0 goto *ex09_miss
+  mov $sarg0, "*ex09_miss"
+  if %ret != 0 goto *ex_check_fail
   ;;;検証2
   mov $sarg0, "(s 6)"
   gosub *input_to_lobject
@@ -4805,7 +4994,10 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
-  if %ret == 21 gosub *pop : goto *ex09_2_prev  ;s<S()
+  mov $sarg0, "*ex09_2_prev"
+  if %ret == 21 gosub *pop : goto *ex_check_pass  ;s<S()
+  mov $sarg0, "*ex09_miss"
+  goto *ex_check_fail
 *ex09_miss
 ;;;sの再定義をcheck;;;
   mov $sarg0, "s"
@@ -4861,7 +5053,11 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   mov %arg0, %ret
   gosub *pop      ;input<S(si)
   gosub *get_data
-  if %ret == 55 gosub *pop : goto *ex09_end
+  mov $sarg0, "*ex09_end"
+  if %ret == 55 gosub *pop : goto *ex_check_pass_end
+  mov $sarg0, "*ex09_2_normal_miss"
+  goto *ex_check_fail
+*ex09_2_normal_miss
 ;;;siの再定義をcheck;;;
   mov $sarg0, "si"
   gosub *create_symbol
@@ -5662,11 +5858,13 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
   gosub *eval
   mov %arg0, %ret
   gosub *get_tag
-  if %ret != TAG_CONS goto *ex11_miss
+  mov $sarg0, "*ex11_miss"
+  if %ret != TAG_CONS goto *ex_check_fail
   gosub *car      ;CAR( '(38) ) ?
   mov %arg0, %ret
   gosub *get_data
-  if %ret != 38 goto *ex11_miss
+  mov $sarg0, "*ex11_miss"
+  if %ret != 38 goto *ex_check_fail
   ;;;検証2
   mov $sarg0, "(map1 number? '(1 a))"
   gosub *input_to_lobject
@@ -5675,18 +5873,24 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
   gosub *eval
   mov %arg0, %ret
   gosub *get_tag
-  if %ret != TAG_CONS goto *ex11_miss
+  mov $sarg0, "*ex11_miss"
+  if %ret != TAG_CONS goto *ex_check_fail
   gosub *push     ;S( (#t #f)? )
   gosub *car      ;CAR( (#t #f)? )
-  if %ret != %sharp_t gosub *pop : goto *ex11_miss
+  mov $sarg0, "*ex11_miss"
+  if %ret != %sharp_t gosub *pop : goto *ex_check_fail
   gosub *pop      ;(#t #f) < S()
   mov %arg0, %ret
   gosub *cdr     ;CDR( (#t #f)? ) => (#f)?
   mov %arg0, %ret
   gosub *get_tag
-  if %ret != TAG_CONS goto *ex11_miss
+  mov $sarg0, "*ex11_miss"
+  if %ret != TAG_CONS goto *ex_check_fail
   gosub *car      ;CAR( (#f)? )
-  if %ret == %sharp_f goto *ex11_2_prev
+  mov $sarg0, "*ex11_2_prev"
+  if %ret == %sharp_f goto *ex_check_pass
+  mov $sarg0, "*ex11_miss"
+  goto *ex_check_fail
 *ex11_miss
   textclear
   r_show ari_die
@@ -5721,22 +5925,26 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
   mov %arg0, %ret
   gosub *pop     ;input<S(map1)
   gosub *get_tag
-  if %ret != TAG_CONS goto *ex11_2_miss_check
+  mov $sarg0, "*ex11_2_miss_check"
+  if %ret != TAG_CONS goto *ex_check_fail
   gosub *push     ;S( (2 3)?, map1 )
   gosub *car
   mov %arg0, %ret
   gosub *get_data
-  if %ret != 2 goto *ex11_2_miss_check
+  mov $sarg0, "*ex11_2_miss_check"
+  if %ret != 2 goto *ex_check_fail
   gosub *pop      ;(2 3)? < S(map1)
   mov %arg0, %ret
   gosub *cdr      ;CDR( (2 3)? ) => (3)?
   mov %arg0, %ret
   gosub *get_tag
-  if %ret != TAG_CONS goto *ex11_2_miss_check
+  mov $sarg0, "*ex11_2_miss_check"
+  if %ret != TAG_CONS goto *ex_check_fail
   gosub *car      ;CAR( (3)? ) => 3?
   mov %arg0, %ret
   gosub *get_data
-  if %ret == 3  gosub *pop : goto *ex11_end
+  mov $sarg0, "*ex11_end"
+  if %ret == 3  gosub *pop : goto *ex_check_pass_end
 *ex11_2_miss_check
 ;;;map1の再定義をcheck;;;
   mov $sarg0, "map1"
@@ -6127,7 +6335,8 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   gosub *eval
   mov %arg0, %ret
   gosub *adv_length
-  if %ret != 0 goto *ex12_miss
+  mov $sarg0, "*ex12_miss"
+  if %ret != 0 goto *ex_check_fail
   ;;;検証2
   mov $sarg0, "(mul (inc (inc (zero))) (inc (inc (inc (zero)))))"
   gosub *input_to_lobject
@@ -6136,7 +6345,10 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   gosub *eval
   mov %arg0, %ret
   gosub *adv_length
-  if %ret == 6 goto *ex12_2_prev
+  mov $sarg0, "*ex12_2_prev"
+  if %ret == 6 goto *ex_check_pass
+  mov $sarg0, "*ex12_miss"
+  goto *ex_check_fail
 *ex12_miss
   textclear
   r_show ari_die
@@ -6169,7 +6381,11 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   mov %arg0, %ret
   gosub *pop     ;input<S(muli)
   gosub *adv_length
-  if %ret == 6 gosub *pop : goto *ex12_end
+  mov $sarg0, "*ex12_end"
+  if %ret == 6 gosub *pop : goto *ex_check_pass_end
+  mov $sarg0, "*ex12_2_normal_miss"
+  goto *ex_check_fail
+*ex12_2_normal_miss
 ;;;muliの再定義をcheck;;;
   mov $sarg0, "muli"
   gosub *create_symbol

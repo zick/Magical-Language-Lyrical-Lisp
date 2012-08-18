@@ -211,6 +211,7 @@ nsa
   ;; Debug
   numalias current_proc, 78
   numalias current_env, 79
+  numalias in_ex_test, 80
 
   ;; Error messages
   stralias str_too_few_arguments, "Too-few-arguments"
