@@ -116,7 +116,7 @@ bgm ms_ex
   if %adv_additional == 0 gosub *set_additional_func
   gosub *create_new_env  ;©—R‚É‚¢‚¶‚ê‚é‚æ‚¤‚ÉV‚µ‚¢ŠÂ‹«‚ğì‚é
   mov %arg0, %ret
-  mov %adv_tmp3, %arg0
+  mov %toplevel_env, %arg0
   gosub *push  ;GC‘Îô
   mov %arg1, %global_env
   gosub *nconc
@@ -124,7 +124,7 @@ bgm ms_ex
 *fm01
   mov %gc_run, 0  ;GC‹N“®‰ñ”‚ğ‰Šú‰»
   mov %current_proc, %nil
-  mov %current_env, %adv_tmp3
+  mov %current_env, %toplevel_env
   mov %adv_error, 0
   mov $sarg0, ""
   textclear
@@ -142,7 +142,7 @@ repaint
   if %ret != 0 gosub *fm01_say_parenthesis_error : goto *fm01
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *get_tag : if %ret == TAG_ERROR mov %adv_error, 1

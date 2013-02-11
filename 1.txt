@@ -103,14 +103,14 @@
   mov %save_flag, 0  ;セーブ不能
   gosub *create_new_env  ;自由にいじれるように新しい環境を作る
   mov %arg0, %ret
-  mov %adv_tmp3, %arg0
+  mov %toplevel_env, %arg0
   gosub *push  ;GC対策
   mov %arg1, %global_env
   gosub *nconc
 *free_eval_loop
   mov %gc_run, 0  ;GC起動回数を初期化
   mov %current_proc, %nil
-  mov %current_env, %adv_tmp3
+  mov %current_env, %toplevel_env
   mov %adv_error, 0
   mov $sarg0, ""
   lsp SP_RC_1, ":s/14,14,1;#FFFFFFＴａｂキーでゲームに戻ります", 40, 100
@@ -126,7 +126,7 @@
   if %ret != 0 gosub *free_eval_parenthesis_error : goto *free_eval_loop
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *get_tag : if %ret == TAG_ERROR mov %adv_error, 1
@@ -390,7 +390,7 @@ textclear
 *ex_init_env
   gosub *create_new_env  ;自由にいじれるように新しい環境を作る
   mov %arg0, %ret
-  mov %adv_tmp3, %arg0
+  mov %toplevel_env, %arg0
   gosub *push  ;GC対策
   mov %arg1, %global_env
   gosub *nconc
@@ -399,7 +399,7 @@ textclear
 *ex_rep
   mov %gc_run, 0  ;GC起動回数を初期化
   mov %current_proc, %nil
-  mov %current_env, %adv_tmp3
+  mov %current_env, %toplevel_env
   mov %adv_error, 0
   if %in_ex_test != 0 goto *ex_rep_get_answer
   mov $sarg0, ""
@@ -421,7 +421,7 @@ textclear
   gosub *input_to_lobject
   mov %arg0, %ret
   gosub *push
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *get_tag : if %ret == TAG_ERROR mov %adv_error, 1
@@ -1498,7 +1498,7 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   mov $sarg0, "x"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -1541,7 +1541,7 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   mov $sarg0, "x"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -1577,11 +1577,11 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   mov $sarg0, "(set! x 997)"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval  ;xの値を997に書き換え
   gosub *pop  ;input<S(new env)
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *get_tag
@@ -1959,7 +1959,7 @@ csel "補足説明を読む", *story02_condicil, "用語集を読む", *story02_glossary, "タ
   mov $sarg0, "fate"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -1995,7 +1995,7 @@ csel "補足説明を読む", *story02_condicil, "用語集を読む", *story02_glossary, "タ
   mov $sarg0, "fate"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -2407,7 +2407,7 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   mov $sarg0, "x"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -2489,7 +2489,7 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   mov $sarg0, "x"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -2543,7 +2543,7 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   mov $sarg0, "x"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -2608,7 +2608,7 @@ csel "補足説明を読む", *story03_condicil, "用語集を読む", *story03_glossary, "タ
   mov $sarg0, "x"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -3050,7 +3050,7 @@ csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タ
   mov $sarg0, "(f '(k l))"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *push     ;S(l?)
@@ -3064,7 +3064,7 @@ csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タ
   mov $sarg0, "(f '(x miko))"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *push     ;S(miko?)
@@ -3088,7 +3088,7 @@ csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タ
   mov $sarg0, "f"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -3118,7 +3118,7 @@ csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タ
   mov $sarg0, "f"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -3505,7 +3505,7 @@ csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タ
   mov $sarg0, "(s 0)"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
@@ -3515,7 +3515,7 @@ csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タ
   mov $sarg0, "(s 6)"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
@@ -3535,7 +3535,7 @@ csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タ
   mov $sarg0, "s"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -3561,7 +3561,7 @@ csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タ
   mov $sarg0, "s"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -3956,7 +3956,7 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   mov $sarg0, "(len '())"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
@@ -3966,7 +3966,7 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   mov $sarg0, "(len '(1 2 3 4 5))"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
@@ -3986,7 +3986,7 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   mov $sarg0, "len"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -4012,7 +4012,7 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   mov $sarg0, "len"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -4488,7 +4488,7 @@ csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タ
   mov $sarg0, "((f 9) 99)"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
@@ -4498,7 +4498,7 @@ csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タ
   mov $sarg0, "((f 2) 5)"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
@@ -4518,7 +4518,7 @@ csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タ
   mov $sarg0, "f"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -4544,7 +4544,7 @@ csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タ
   mov $sarg0, "f"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -4949,12 +4949,12 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   mov $sarg0, "(define (s n) (si n 0))"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov $sarg0, "s"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -4980,7 +4980,7 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   mov $sarg0, "(s 0)"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
@@ -4990,7 +4990,7 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   mov $sarg0, "(s 6)"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *get_data
@@ -5003,7 +5003,7 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   mov $sarg0, "s"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -5026,14 +5026,14 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
 最初からやり直し！！！」\
   r_show ari_n
   inc %adv_tmp
-  gosub *pop      ;adv_tmp3<S()
+  gosub *pop      ;toplevel_env<S()
   gosub *ex_init_env : goto *ex09_prev
 
 *ex09_2_prev
   mov $sarg0, "si"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -5062,7 +5062,7 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   mov $sarg0, "si"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -5087,7 +5087,7 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
 最初からやり直し！！！」\
   r_show ari_n
   inc %adv_tmp
-  gosub *pop      ;adv_tmp3<S()
+  gosub *pop      ;toplevel_env<S()
   gosub *ex_init_env : goto *ex09_prev
 
 
@@ -5854,7 +5854,7 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
   mov $sarg0, "(map1 (lambda (x) (* x 2)) '(19))"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *get_tag
@@ -5869,7 +5869,7 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
   mov $sarg0, "(map1 number? '(1 a))"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *get_tag
@@ -5903,7 +5903,7 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
   mov $sarg0, "map1"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -5950,7 +5950,7 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
   mov $sarg0, "map1"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -6301,17 +6301,17 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   mov $sarg0, "(begin (define (zero) '()) (define (inc x) (cons 'o x)) (define (dec x) (cdr x)) )"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov $sarg0, "(define (add x y) (if (null? y) x (add (inc x) (dec y))))"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov $sarg0, "(define (mul x y) (muli x y (zero)))"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   ;;
 *ex12
@@ -6331,7 +6331,7 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   mov $sarg0, "(mul (inc (zero)) (zero))"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *adv_length
@@ -6341,7 +6341,7 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   mov $sarg0, "(mul (inc (inc (zero))) (inc (inc (inc (zero)))))"
   gosub *input_to_lobject
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *eval
   mov %arg0, %ret
   gosub *adv_length
@@ -6361,7 +6361,7 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   mov $sarg0, "muli"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr
@@ -6390,7 +6390,7 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   mov $sarg0, "muli"
   gosub *create_symbol
   mov %arg0, %ret
-  mov %arg1, %adv_tmp3
+  mov %arg1, %toplevel_env
   gosub *find_var
   mov %arg0, %ret
   gosub *cdr

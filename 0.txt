@@ -199,7 +199,7 @@ nsa
   numalias global_env, 68
   numalias sharp_t, 69
   numalias sharp_f, 70
-  numalias __unused__, 71
+  numalias toplevel_env, 71
 
   ;; Garbage collection
   numalias gc_count, 72
@@ -3963,6 +3963,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov $sarg0, $sarg0 + "(nil . nil) (else . Åît)))"
   gosub *input_to_lobject
   mov %global_env, %ret
+  mov %toplevel_env, %global_env
   mov %arg0, %global_env
   ; SUBR
   mov %arg1, lf_car
