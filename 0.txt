@@ -21,7 +21,7 @@
 ;;;   Symbols are also partitioned into CAR and CDR.
 ;;;   CAR part of symbols points to the string which is the symbol name.
 ;;;   All symbols are chained by their CDR part.
-;;;   EXPR and FEXPR are represented with lists such as (env arg . body).
+;;;   EXPR is represented with lists such as (env arg . body).
 ;;;   Errors are represented with lists such as (message . location).
 ;;;
 ;;; ATTENTION:
@@ -163,7 +163,7 @@ nsa
   numalias TAG_SUBR, 3
   numalias TAG_FSUBR, 4
   numalias TAG_EXPR, 5
-  numalias TAG_FEXPR, 6
+  numalias __TAG_UNUSED__, 6
   numalias TAG_FREE, 7
   numalias TAG_ERROR, 8
   numalias TAG_VAR, 9
@@ -711,7 +711,6 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *get_tag
   if %ret == TAG_CONS goto *gc_mark_lobject_cons
   if %ret == TAG_EXPR goto *gc_mark_lobject_cons
-  if %ret == TAG_FEXPR goto *gc_mark_lobject_cons
   if %ret == TAG_ERROR goto *gc_mark_lobject_cons
   if %ret == TAG_VAR goto *gc_mark_lobject_var
   return
@@ -1030,18 +1029,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *set_cdr     ; new cons = (env arg . form)
   gosub *pop         ; new cons < S()
   return             ; %ret = new cons
-
-
-;;;;;;;;;;
-;;;*create_fexpr(form, arg, env)
-;;;;;;;;;;
-*create_fexpr
-  gosub *create_expr
-  mov %arg0, %ret
-  mov %arg1, TAG_FEXPR
-  gosub *set_tag
-  mov %ret, %arg0
-  return
 
 
 ;;;;;;;;;;
@@ -1506,7 +1493,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == TAG_SUBR goto *lobject_to_string_proc
   if %ret == TAG_FSUBR goto *lobject_to_string_proc
   if %ret == TAG_EXPR goto *lobject_to_string_expr
-  if %ret == TAG_FEXPR goto *lobject_to_string_proc
   if %ret == TAG_NUM  goto *lobject_to_string_num
   if %ret == TAG_SYMBOL goto *lobject_to_string_sym
   if %ret == TAG_ERROR goto *lobject_to_string_err
@@ -1857,7 +1843,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %current_proc, %arg0
   mov %current_env, %arg2
   if %ret == TAG_FSUBR goto *fsubr_func
-  if %ret == TAG_FEXPR goto *fexpr_call
   if %ret == TAG_ERROR mov %ret, %arg0 : return
   goto *apply_error
 *apply_error
@@ -1888,29 +1873,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %ret      ; %arg1 = form
   gosub *pop           ; new env < S()
   mov %arg2, %ret      ; %arg2 = new env
-  goto *fsubr_func_begin  ; tail call
-
-
-;;;;;;;;;;
-;;;*fexpr_call(fn, arg, env)
-;;;;;;;;;;
-*fexpr_call
-  gosub *push          ; S(fn)
-  mov %tmp, %arg0
-  mov %arg0, %arg1
-  mov %arg1, %tmp
-  gosub *create_fexpr_env  ; (arg, fn, env)
-  mov %arg0, %ret
-  gosub *pop           ; fn < S(ret)
-  mov %tmp, %ret
-  gosub *push          ; S(new env)
-  mov %arg0, %tmp
-  gosub *cdr           ; CDR(fn)
-  mov %arg0, %ret
-  gosub *cdr           ; CDDR(fn) => form
-  mov %arg1, %ret
-  gosub *pop           ; new env < S()
-  mov %arg2, %ret
   goto *fsubr_func_begin  ; tail call
 
 
@@ -2381,51 +2343,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*create_fexpr_env(arg, fn, env)
-;;;;;;;;;;
-*create_fexpr_env
-  mov %tmp, %arg0
-  mov %arg0, %arg1
-  gosub *push           ; S(fn)
-  mov %arg0, %arg2
-  gosub *push           ; S(env, fn)
-  mov %arg0, %tmp
-  gosub *push           ; S(arg, env, fn)
-  gosub *create_cons
-  mov %arg0, %ret
-  gosub *pop            ; arg < S(env, fn)
-  mov %arg1, %ret
-  gosub *push           ; S(new cons, env, fn)
-  gosub *set_car        ; new cons = (arg ...)
-  gosub *create_cons
-  mov %tmp, %ret
-  gosub *pop            ; new cons < S(env, fn)
-  mov %arg0, %ret
-  gosub *pop            ; env < S(fn)
-  mov %arg1, %ret
-  gosub *push           ; S(new cons, fn)
-  mov %arg0, %tmp
-  gosub *push           ; S(new cons2, new cons, fn)
-  gosub *set_car        ; new cons2 = (env . ?)
-  gosub *pop            ; new cons2 < S(new cons, fn)
-  mov %arg0, %ret
-  mov %arg1, %nil
-  gosub *push           ; S(new cons2, new cons, fn)
-  gosub *set_cdr        ; new cons2 = (env)
-  gosub *pop            ; new cons2 < S(new cons, fn)
-  mov %arg1, %ret
-  gosub *pop            ; new cons < S(fn)
-  mov %arg0, %ret
-  gosub *push           ; S(new cons ,fn)
-  gosub *set_cdr        ; new cons = (arg env)
-  gosub *pop            ; new cons < S(fn)
-  mov %arg0, %ret
-  gosub *pop            ; fn < S()
-  mov %arg1, %ret
-  goto *create_expr_env ; tail call
-
-
-;;;;;;;;;;
 ;;;*check_arguments_length(arg, n)
 ;;;;;;;;;;
 *check_arguments_length
@@ -2850,7 +2767,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret != TAG_EXPR && %ret != TAG_FSUBR goto *subr_func_procedurep_l1
   goto *subr_func_procedurep_l2
 *subr_func_procedurep_l1
-  if %ret != TAG_SUBR && %ret != TAG_FEXPR mov %ret, %sharp_f : return
+  if %ret != TAG_SUBR mov %ret, %sharp_f : return
 *subr_func_procedurep_l2
   mov %ret, %sharp_t
   return
