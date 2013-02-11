@@ -166,6 +166,7 @@ nsa
   numalias TAG_FEXPR, 6
   numalias TAG_FREE, 7
   numalias TAG_ERROR, 8
+  numalias TAG_VAR, 9
   numalias MAX_NUMBER, 16777215          ; 2^24 - 1
   numalias MIN_NUMBER, -16777216         ; - 2^24
   numalias UNSIGNED_MAX_PLUS1, 33554432  ; 2^25
@@ -708,13 +709,13 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *set_gc        ; Mark the object
   inc %gc_count
   gosub *get_tag
-  if %ret == TAG_CONS goto *gc_mark_lobject_l1
-  if %ret == TAG_EXPR goto *gc_mark_lobject_l1
-  if %ret == TAG_FEXPR goto *gc_mark_lobject_l1
-  if %ret == TAG_ERROR goto *gc_mark_lobject_l1
-  ; Does not mark if the object is not cons.
+  if %ret == TAG_CONS goto *gc_mark_lobject_cons
+  if %ret == TAG_EXPR goto *gc_mark_lobject_cons
+  if %ret == TAG_FEXPR goto *gc_mark_lobject_cons
+  if %ret == TAG_ERROR goto *gc_mark_lobject_cons
+  if %ret == TAG_VAR goto *gc_mark_lobject_var
   return
-*gc_mark_lobject_l1
+*gc_mark_lobject_cons
   gosub *push     ; S(obj)
   gosub *car      ; CAR(obj)
   mov %arg0, %ret
@@ -723,8 +724,11 @@ if %gc_silent == 1 goto *gc_sl2
   mov %arg0, %ret
   gosub *cdr      ; CDR(obj)
   mov %arg0, %ret
-  gosub *gc_mark_lobject
-  return
+  goto *gc_mark_lobject
+*gc_mark_lobject_var
+  gosub *cdr      ; CDR(obj)
+  mov %arg0, %ret
+  goto *gc_mark_lobject
 
 
 ;;;;;;;;;;
@@ -1073,6 +1077,40 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop        ; error < S()
   mov %arg0, %ret
   gosub *set_cdr
+  return
+
+;;;;;;;;;;
+;;;*create_var(sym, index, frame)
+;;;;;;;;;;
+*create_var
+  gosub *push        ; S(sym)
+  mov %arg0, %arg1
+  if %arg0 > 64 goto *create_var_error1
+  gosub *push        ; S(index, sym)
+  mov %arg0, %arg2
+  if %arg0 > 64 goto *create_var_error2
+  gosub *push        ; S(frame, index, sym)
+  gosub *create_cons
+  mov %arg0, %ret    ; %arg0 = (? . ?)
+  mov %arg1, TAG_VAR
+  gosub *set_tag
+  gosub *pop         ; frame < S(index, sym)
+  mov %arg1, %ret    ; %arg1 = frame
+  mul %arg1, 64      ; %arg1 = frame << 6
+  gosub *pop         ; index < S(sym)
+  add %arg1, %ret    ; %arg1 = (frame << 6) + index
+  gosub *set_car     ; %arg0 = ((frame << 6) + index . ?)
+  gosub *pop         ; sym < S()
+  mov %arg1, %ret    ; %arg1 = sym
+  gosub *set_cdr     ; %arg0 = ((frame << 6) + index . sym)
+  mov %ret, %arg0
+  return
+*create_var_error2
+  gosub *pop
+*create_var_error1
+  gosub *pop
+  mov $sarg0, "Too-large-variable-index"
+  gosub *create_error
   return
 
 ;;;;;;;;;;
@@ -1472,6 +1510,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == TAG_NUM  goto *lobject_to_string_num
   if %ret == TAG_SYMBOL goto *lobject_to_string_sym
   if %ret == TAG_ERROR goto *lobject_to_string_err
+  if %ret == TAG_VAR goto *lobject_to_string_var
   if %ret == TAG_CONS gosub *cons_to_string : return
   return
 *lobject_to_string_proc
@@ -1529,6 +1568,10 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *spop         ; location
   mov $sret, "エラー：" + $sret + "の使い方が間違っています"
   return
+*lobject_to_string_var
+  gosub *cdr          ; symbol
+  mov %arg0, %ret
+  goto *lobject_to_string_sym
 
 
 ;;;;;;;;;;
@@ -1657,6 +1700,28 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
+;;;*find_local_var(env, frame, index)
+;;;;;;;;;;
+*find_local_var
+  if %arg0 == %nil goto *find_local_var_error
+  if %arg1 == 0 gosub *car : mov %arg0, %ret : goto *find_local_var_index
+  gosub *cdr
+  mov %arg0, %ret
+  dec %arg1
+  goto *find_local_var
+*find_local_var_index
+  if %arg0 == %nil find_local_var_error
+  if %arg2 == 0 goto *car : return
+  gosub *cdr
+  mov %arg0, %ret
+  dec %arg2
+  goto *find_local_var_index
+*find_local_var_error
+  mov $sarg0, "Invalid-variable-index"
+  goto *create_error
+
+
+;;;;;;;;;;
 ;;;*nconc(lst, obj)
 ;;;;;;;;;;
 *nconc
@@ -1692,6 +1757,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == TAG_NUM mov %ret, %arg0 : return
   if %ret == TAG_ERROR mov %ret, %arg0 : return
   if %ret == TAG_SYMBOL goto *eval_variable
+  if %ret == TAG_VAR goto *eval_local_var
   goto *eval_compound  ; Assume obj is a cons
 *eval_variable
   gosub *push       ; S(obj)
@@ -1707,6 +1773,12 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *lobject_to_string
   mov $sarg0, $sret + "は未束縛です"
   goto *create_error; tail call
+*eval_local_var
+  gosub *car              ; (frame << 6) + index
+  mov %arg0, %arg1        ; %arg0 = env
+  mov %arg1, %ret / 64    ; %arg1 = frame
+  mov %arg2, %ret mod 64  ; %arg2 = index
+  goto *find_local_var
 *eval_compound
   gosub *push       ; S(obj)
   mov %tmp, %arg0
