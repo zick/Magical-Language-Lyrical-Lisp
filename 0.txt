@@ -361,7 +361,7 @@ nsa
   numalias lf_begin, 1
   numalias lf_cond, 2
   numalias lf_lambda, 3
-  numalias lf_nlambda, 4
+  numalias __lf_unused__, 4
   numalias lf_define, 5
   numalias lf_let, 6
   numalias lf_if, 7
@@ -2830,7 +2830,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == lf_begin mov %current_proc, %arg3 : goto *fsubr_func_begin
   if %ret == lf_cond goto *fsubr_func_cond
   if %ret == lf_lambda goto *fsubr_func_lambda
-  if %ret == lf_nlambda goto *fsubr_func_nlambda
   if %ret == lf_define goto *fsubr_func_define
   if %ret == lf_let goto *fsubr_func_let
   if %ret == lf_if goto *fsubr_func_if
@@ -2979,14 +2978,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop         ; env < S()
   mov %arg2, %ret    ; arg2 = env
   goto *create_expr  ; tail call (form, arg, env)
-
-*fsubr_func_nlambda
-  gosub *fsubr_func_lambda
-  mov %arg0, %ret
-  mov %arg1, TAG_FEXPR
-  gosub *set_tag
-  mov %ret, %arg0
-  return
 
 *fsubr_func_define
   mov %arg0, %arg2
@@ -4030,10 +4021,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, lf_lambda
   mov $sarg0, "lambda"
   gosub *add_fsubr_to_env  ; lambda
-  mov %arg0, %global_env
-  mov %arg1, lf_nlambda
-  mov $sarg0, "nlambda"
-  gosub *add_fsubr_to_env  ; nlambda
   mov %arg0, %global_env
   mov %arg1, lf_define
   mov $sarg0, "define"
