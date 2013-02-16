@@ -734,11 +734,45 @@ if %gc_silent == 1 goto *gc_sl2
 
 
 ;;;;;;;;;;
+;;;*gc_mark_syntax_keyword()
+;;;;;;;;;;
+*gc_mark_syntax_keyword
+  mov %arg0, %quote
+  gosub *gc_mark_lobject
+  mov %arg0, %sym_begin
+  gosub *gc_mark_lobject
+  mov %arg0, %sym_cond
+  gosub *gc_mark_lobject
+  mov %arg0, %sym_lambda
+  gosub *gc_mark_lobject
+  mov %arg0, %sym_define
+  gosub *gc_mark_lobject
+  mov %arg0, %sym_let
+  gosub *gc_mark_lobject
+  mov %arg0, %sym_if
+  gosub *gc_mark_lobject
+  mov %arg0, %sym_and
+  gosub *gc_mark_lobject
+  mov %arg0, %sym_or
+  gosub *gc_mark_lobject
+  mov %arg0, %sym_set
+  gosub *gc_mark_lobject
+  mov %arg0, %sym_letrec
+  gosub *gc_mark_lobject
+  mov %arg0, %sym_letstar
+  gosub *gc_mark_lobject
+  mov %arg0, %sym_time
+  gosub *gc_mark_lobject
+  return
+
+
+;;;;;;;;;;
 ;;;*gc_mark()
 ;;;;;;;;;;
 *gc_mark
   mov %arg0, %global_env
   gosub *gc_mark_lobject
+  gosub *gc_mark_syntax_keyword
   if %sp == STACK return  ; Stack is empty.
   for %i = STACK to %sp-1
     ; Stack may contain non-pointer values.
