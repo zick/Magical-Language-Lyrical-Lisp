@@ -171,6 +171,7 @@ nsa
   numalias MIN_NUMBER, -16777216         ; - 2^24
   numalias UNSIGNED_MAX_PLUS1, 33554432  ; 2^25
   numalias MIN_INT32, -2147483648        ; - 2^31
+  numalias NON_VALUE, -1  ; Every lisp object is different from this value.
 
   ; Aliases for numerical variables
   ;; General variables
@@ -213,6 +214,20 @@ nsa
   numalias current_proc, 78
   numalias current_env, 79
   numalias in_ex_test, 80
+
+  ;; Syntax keyword symbol
+  numalias sym_begin, 81
+  numalias sym_cond, 82
+  numalias sym_lambda, 83
+  numalias sym_define, 84
+  numalias sym_let, 85
+  numalias sym_if, 86
+  numalias sym_and, 87
+  numalias sym_or, 88
+  numalias sym_set, 89
+  numalias sym_letrec, 90
+  numalias sym_letstar, 91
+  numalias sym_time, 92
 
   ;; Error messages
   stralias str_too_few_arguments, "Too-few-arguments"
@@ -356,22 +371,6 @@ nsa
   numalias lf_read, 24
   numalias lf_write, 25
   numalias lf_error, 26
-
-  ; FSUBR
-  numalias lf_quote, 0
-  numalias lf_begin, 1
-  numalias lf_cond, 2
-  numalias lf_lambda, 3
-  numalias __lf_unused__, 4
-  numalias lf_define, 5
-  numalias lf_let, 6
-  numalias lf_if, 7
-  numalias lf_and, 8
-  numalias lf_or, 9
-  numalias lf_set, 10
-  numalias lf_letrec, 11
-  numalias lf_letstar, 12
-  numalias lf_time, 13
 
   defaultspeed 50,15,5
   caption "Magical Language Lyrical Lisp"
@@ -538,6 +537,8 @@ nsa
 
 ;;;;;;;;;;
 ;;;*car(obj)
+;;; modifies: %ret
+;;;  raw_car is used for extracting a content of symbol (maybe "nil").
 ;;;;;;;;;;
 *car
   if %arg0 == %nil mov %ret, %nil : return
@@ -549,6 +550,8 @@ nsa
 
 ;;;;;;;;;;
 ;;;*cdr(obj)
+;;; modifies: %ret
+;;;  raw_cdr is used for extracting a content of symbol (maybe "nil").
 ;;;;;;;;;;
 *cdr
   if %arg0 == %nil mov %ret, %nil : return
@@ -1765,41 +1768,39 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %ret / 64    ; %arg1 = frame
   mov %arg2, %ret mod 64  ; %arg2 = index
   goto *find_local_var
-*eval_compound
-  gosub *push       ; S(obj)
-  mov %tmp, %arg0
-  mov %arg0, %arg1
-  gosub *push       ; S(env, obj)
-  mov %arg0, %tmp
-  gosub *car
+*eval_compound      ; %arg0 = obj, %arg1 = env
+  mov %tmp, %arg0   ; %tmp = obj
+  mov %arg0, %arg1  ; %arg1 = env
+  gosub *push       ; S(env)
+  mov %arg0, %tmp   ; %arg0 = obj
+  gosub *car        ; CAR(obj)
   mov %tmp, %ret    ; %tmp = CAR(obj)
-  gosub *pop        ; env < S(obj)
-  mov %arg0, %ret
-  gosub *push       ; S(env, obj)
-  mov %arg1, %arg0
-  mov %arg0, %current_proc
-  gosub *push       ; S(proc, env, obj)
-  mov %arg0, %tmp
-  gosub *eval       ; Eval(CAR(obj), env)
-  mov %arg0, %ret   ; fn
-  gosub *pop        ; proc < S(env, obj)
-  mov %current_proc, %ret
-  gosub *pop        ; env < S(obj)
-  mov %current_env, %ret
-  mov %tmp, %ret
-  gosub *pop        ; obj < S()
-  mov %arg1, %ret
-  gosub *push       ; S(fn)
-  mov %arg0, %tmp
-  gosub *push       ; S(env, fn)
-  mov %arg0, %arg1
   gosub *cdr        ; CDR(obj)
-  mov %arg1, %ret
-  gosub *pop        ; env < S(fn)
-  mov %arg2, %ret
-  gosub *pop        ; fn < S()
-  mov %arg0, %ret
-  goto *apply       ; Apply(fn, CDR(obj), env) tail call
+  mov %arg0, %tmp   ; %arg0 = CAR(obj)
+  mov %arg1, %ret   ; %arg1 = CDR(obj)
+  gosub *pop        ; env < S()
+  mov %arg2, %ret   ; %arg2 = env
+  gosub *fsubr_func
+  if %ret != NON_VALUE return
+  mov %tmp, %arg0   ; %tmp = CAR(obj)
+  mov %arg0, %arg1  ; %arg0 = CDR(obj)
+  gosub *push       ; S(CDR(obj)
+  mov %arg0, %arg2  ; %arg0 = env
+  gosub *push       ; S(env, CDR(obj)
+  mov %arg0, %current_proc
+  gosub *push       ; S(proc, env, CDR(obj)
+  mov %arg0, %tmp   ; %arg0 = CAR(obj)
+  mov %arg1, %arg2  ; %arg1 = env
+  gosub *eval       ; Eval(CAR(obj, env)
+  mov %arg0, %ret   ; %arg0 = fn
+  gosub *pop        ; proc < S(env, CDR(obj)
+  mov %current_proc, %ret
+  gosub *pop        ; env < S(CDR(obj)
+  mov %arg2, %ret   ; %arg2 = env
+  mov %current_env, %ret
+  gosub *pop        ; CDR(obj) < S()
+  mov %arg1, %ret   ; %arg1 = CDR(obj)
+  goto *apply       ; Apply(fn, CDR(obj), env)
 
 
 ;;;;;;;;;;
@@ -2811,25 +2812,31 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*fsubr_func(fn, arg, env, old_env)
+;;;*fsubr_func(fn, arg, env)
+;;;  Call fsubr and return its value if fn is keyword.
+;;;  Return NON_VALUE if fn isn't keyword.
 ;;;;;;;;;;
 *fsubr_func
-  gosub *get_data
-  if %ret == lf_quote goto *fsubr_func_quote
-  if %ret == lf_begin mov %current_proc, %arg3 : goto *fsubr_func_begin
-  if %ret == lf_cond goto *fsubr_func_cond
-  if %ret == lf_lambda goto *fsubr_func_lambda
-  if %ret == lf_define goto *fsubr_func_define
-  if %ret == lf_let goto *fsubr_func_let
-  if %ret == lf_if goto *fsubr_func_if
-  if %ret == lf_and goto *fsubr_func_and
-  if %ret == lf_or goto *fsubr_func_or
-  if %ret == lf_set goto *fsubr_func_set
-  if %ret == lf_letrec goto *fsubr_func_letrec
-  if %ret == lf_letstar goto *fsubr_func_letstar
-  if %ret == lf_time goto *fsubr_func_time
-  mov $sarg0, "Invalid-FSUBR"
-  goto *subr_func_error  ; tail call
+  if %arg0 == %quote mov $stmp, "*fsubr_func_quote" : goto *fsubr_func1
+  if %arg0 == %sym_begin mov $stmp, "*fsubr_func_begin" : goto *fsubr_func2
+  if %arg0 == %sym_cond mov $stmp, "*fsubr_func_cond" : goto *fsubr_func1
+  if %arg0 == %sym_lambda mov $stmp, "*fsubr_func_lambda" : goto *fsubr_func1
+  if %arg0 == %sym_define mov $stmp, "*fsubr_func_define" : goto *fsubr_func1
+  if %arg0 == %sym_let mov $stmp, "*fsubr_func_let" : goto *fsubr_func1
+  if %arg0 == %sym_if mov $stmp, "*fsubr_func_if" : goto *fsubr_func1
+  if %arg0 == %sym_and mov $stmp, "*fsubr_func_and" : goto *fsubr_func1
+  if %arg0 == %sym_or mov $stmp, "*fsubr_func_or" : goto *fsubr_func1
+  if %arg0 == %sym_set mov $stmp, "*fsubr_func_set" : goto *fsubr_func1
+  if %arg0 == %sym_letrec mov $stmp, "*fsubr_func_letrec" : goto *fsubr_func1
+  if %arg0 == %sym_letstar mov $stmp, "*fsubr_func_letstar" : goto *fsubr_func1
+  if %arg0 == %sym_time mov $stmp, "*fsubr_func_time" : goto *fsubr_func1
+  mov %ret, NON_VALUE
+  return
+*fsubr_func1
+  mov %current_proc, %arg0
+*fsubr_func2
+  goto $stmp  ; tail call
+  
 
 *fsubr_func_quote
   mov %arg0, %arg1
@@ -3876,6 +3883,43 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 ;;;*set_global_env()
 ;;;;;;;;;;
 *set_global_env
+  mov $sarg0, "begin"
+  gosub *create_symbol
+  mov %sym_begin, %ret
+  mov $sarg0, "cond"
+  gosub *create_symbol
+  mov %sym_cond, %ret
+  mov $sarg0, "lambda"
+  gosub *create_symbol
+  mov %sym_lambda, %ret
+  mov $sarg0, "define"
+  gosub *create_symbol
+  mov %sym_define, %ret
+  mov $sarg0, "let"
+  gosub *create_symbol
+  mov %sym_let, %ret
+  mov $sarg0, "if"
+  gosub *create_symbol
+  mov %sym_if, %ret
+  mov $sarg0, "and"
+  gosub *create_symbol
+  mov %sym_and, %ret
+  mov $sarg0, "or"
+  gosub *create_symbol
+  mov %sym_or, %ret
+  mov $sarg0, "setI"
+  gosub *create_symbol
+  mov %sym_set, %ret
+  mov $sarg0, "letrec"
+  gosub *create_symbol
+  mov %sym_letrec, %ret
+  mov $sarg0, "let*"
+  gosub *create_symbol
+  mov %sym_letstar, %ret
+  mov $sarg0, "time"
+  gosub *create_symbol
+  mov %sym_time, %ret
+
   mov $sarg0, "(((”f . ”f) (”t . ”t)"
   mov $sarg0, $sarg0 + "(nil . nil) (else . ”t)))"
   gosub *input_to_lobject
@@ -3994,59 +4038,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, lf_error
   mov $sarg0, "error"
   gosub *add_subr_to_env  ; error
-  ;;FSUBR
-  mov %arg0, %global_env
-  mov %arg1, lf_quote
-  mov $sarg0, "quote"
-  gosub *add_fsubr_to_env  ; quote
-  mov %arg0, %global_env
-  mov %arg1, lf_begin
-  mov $sarg0, "begin"
-  gosub *add_fsubr_to_env  ; begin
-  mov %arg0, %global_env
-  mov %arg1, lf_cond
-  mov $sarg0, "cond"
-  gosub *add_fsubr_to_env  ; cond
-  mov %arg0, %global_env
-  mov %arg1, lf_lambda
-  mov $sarg0, "lambda"
-  gosub *add_fsubr_to_env  ; lambda
-  mov %arg0, %global_env
-  mov %arg1, lf_define
-  mov $sarg0, "define"
-  gosub *add_fsubr_to_env  ; define
-  mov %arg0, %global_env
-  mov %arg1, lf_let
-  mov $sarg0, "let"
-  gosub *add_fsubr_to_env  ; let
-  mov %arg0, %global_env
-  mov %arg1, lf_if
-  mov $sarg0, "if"
-  gosub *add_fsubr_to_env  ; if
-  mov %arg0, %global_env
-  mov %arg1, lf_and
-  mov $sarg0, "and"
-  gosub *add_fsubr_to_env  ; and
-  mov %arg0, %global_env
-  mov %arg1, lf_or
-  mov $sarg0, "or"
-  gosub *add_fsubr_to_env  ; or
-  mov %arg0, %global_env
-  mov %arg1, lf_set
-  mov $sarg0, "setI"
-  gosub *add_fsubr_to_env  ; set!
-  mov %arg0, %global_env
-  mov %arg1, lf_letrec
-  mov $sarg0, "letrec"
-  gosub *add_fsubr_to_env  ; letrec
-  mov %arg0, %global_env
-  mov %arg1, lf_letstar
-  mov $sarg0, "let*"
-  gosub *add_fsubr_to_env  ; letstar
-  mov %arg0, %global_env
-  mov %arg1, lf_time
-  mov $sarg0, "time"
-  gosub *add_fsubr_to_env  ; time
   mov $sarg0, "(define equal? (lambda (x y) (or (eq? x y)(and (pair? x)"
   mov $sarg0, $sarg0 + "(pair? y) (equal? (car x) (car y))"
   mov $sarg0, $sarg0 + "(equal? (cdr x) (cdr y))))))""
