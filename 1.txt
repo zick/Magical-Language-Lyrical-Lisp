@@ -127,7 +127,7 @@
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *get_tag : if %ret == TAG_ERROR mov %adv_error, 1
   gosub *lobject_to_string
@@ -422,7 +422,7 @@ textclear
   mov %arg0, %ret
   gosub *push
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *get_tag : if %ret == TAG_ERROR mov %adv_error, 1
   gosub *push
@@ -1578,11 +1578,11 @@ csel "補足説明を読む", *story01_condicil, "用語集を読む", *story01_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval  ;xの値を997に書き換え
+  gosub *eval_form  ;xの値を997に書き換え
   gosub *pop  ;input<S(new env)
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *get_tag
   mov %tmp1, %ret
@@ -3051,7 +3051,7 @@ csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *push     ;S(l?)
   mov $sarg0, "l"
@@ -3065,7 +3065,7 @@ csel "補足説明を読む", *story04_condicil, "用語集を読む", *story04_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *push     ;S(miko?)
   mov $sarg0, "miko"
@@ -3506,7 +3506,7 @@ csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *get_data
   mov $sarg0, "*ex06_miss"
@@ -3516,7 +3516,7 @@ csel "補足説明を読む", *story05_condicil, "用語集を読む", *story05_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *get_data
   mov $sarg0, "*ex06_2_prev"
@@ -3957,7 +3957,7 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *get_data
   mov $sarg0, "*ex07_miss"
@@ -3967,7 +3967,7 @@ csel "補足説明を読む", *story06_condicil, "用語集を読む", *story06_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *get_data
   mov $sarg0, "*ex07_2_prev"
@@ -4489,7 +4489,7 @@ csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *get_data
   mov $sarg0, "*ex08_miss"
@@ -4499,7 +4499,7 @@ csel "補足説明を読む", *story07_condicil, "用語集を読む", *story07_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *get_data
   mov $sarg0, "*ex08_2_prev"
@@ -4950,7 +4950,7 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "s"
   gosub *create_symbol
   mov %arg0, %ret
@@ -4981,7 +4981,7 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *get_data
   mov $sarg0, "*ex09_miss"
@@ -4991,7 +4991,7 @@ csel "補足説明を読む", *story08_condicil, "用語集を読む", *story08_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *get_data
   mov $sarg0, "*ex09_2_prev"
@@ -5855,7 +5855,7 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *get_tag
   mov $sarg0, "*ex11_miss"
@@ -5870,7 +5870,7 @@ csel "補足説明を読む", *story10_condicil, "用語集を読む", *story10_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *get_tag
   mov $sarg0, "*ex11_miss"
@@ -6302,17 +6302,17 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define (add x y) (if (null? y) x (add (inc x) (dec y))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define (mul x y) (muli x y (zero)))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   ;;
 *ex12
   mov $problem_label, "*ex12_problem"
@@ -6332,7 +6332,7 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *adv_length
   mov $sarg0, "*ex12_miss"
@@ -6342,7 +6342,7 @@ csel "補足説明を読む", *story11_condicil, "用語集を読む", *story11_glossary, "タ
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *adv_length
   mov $sarg0, "*ex12_2_prev"

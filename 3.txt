@@ -6,87 +6,87 @@
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define cadr (lambda (x) (car (cdr x))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define cdar (lambda (x) (cdr (car x))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define cddr (lambda (x) (cdr (cdr x))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define list (lambda lst lst))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define assq (lambda (key lst) (cond ((null? lst) nil) ((eq? key (caar lst)) (car lst)) (else (assq key (cdr lst))))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define length (lambda (lst) (define length-iter (lambda (n lst) (cond ((null? lst) n) (else (length-iter (+ n 1) (cdr lst)))))) (length-iter 0 lst)))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define list-ref (lambda (lst n) (car (list-tail lst n))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define list-tail (lambda (lst n) (cond ((eq? n 0) lst) (else (list-tail (cdr lst) (- n 1))))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define append (lambda (x y) (cond ((null? x) y) (else (cons (car x) (append (cdr x) y))))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define apply (lambda (fn . args) (define apply-iter (lambda (lst) (cond ((null? (cdr lst)) nil) (else (cons (car lst) (apply-iter (cdr lst))))))) (let ((arg0 (apply-iter args)) (argn (list-ref args (- (length args) 1)))) (cond ((null? arg0) (apply-primitive fn argn)) (else (apply-primitive fn (append arg0 argn)))))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define map (lambda (fn lst . more) (define map1 (lambda (l) (cond ((null? l) nil) (else (cons (fn (car l)) (map1 (cdr l))))))) (define map-more (lambda (l m) (cond ((null? l) nil) (else (cons (apply fn (car l) (map car m)) (map-more (cdr l) (map cdr m))))))) (cond ((null? more) (map1 lst)) (else (map-more lst more)))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define list? (lambda (x) (cond ((eq? x nil) #t) ((pair? x) (list? (cdr x))) (else #f))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define not (lambda (x) (eq? x #f)))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define memq(lambda (x lst) (cond ((null? lst) #f) ((eq? x (car lst)) lst) (else (memq x (cdr lst))))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define member(lambda (x lst) (cond ((null? lst) #f) ((equal? x (car lst)) lst) (else (member x (cdr lst))))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
   mov $sarg0, "(define assoc (lambda (key lst) (cond ((null? lst) nil) ((equal? key (caar lst)) (car lst)) (else (assoc key (cdr lst))))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
-  gosub *eval
+  gosub *eval_form
 textclear
   mov %adv_additional, 1
   return
@@ -143,7 +143,7 @@ repaint
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %toplevel_env
-  gosub *eval
+  gosub *eval_form
   mov %arg0, %ret
   gosub *get_tag : if %ret == TAG_ERROR mov %adv_error, 1
   gosub *lobject_to_string
