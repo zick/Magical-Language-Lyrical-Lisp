@@ -563,6 +563,8 @@ nsa
 
 ;;;;;;;;;;
 ;;;*set_car(obj0, obj1)
+;;;  You should check the type of argument before calling this subroutine.
+;;;  This subroutine modifies some variables but the value of %arg0 is kept.
 ;;;;;;;;;;
 *set_car
   gosub *push             ; S(obj0)
@@ -585,6 +587,7 @@ nsa
 
 ;;;;;;;;;;
 ;;;*set_cdr(obj0, obj1)
+;;;  See *set_car.
 ;;;;;;;;;;
 *set_cdr
   gosub *push               ; S(obj0)
@@ -1828,7 +1831,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *get_tag
   if %ret == TAG_SUBR goto *apply_eval_arg
   if %ret == TAG_EXPR goto *apply_eval_arg
-  goto *apply_l2
+  goto *apply_not_function
 *apply_eval_arg  ; Evaluate arguments and push to stack
   gosub *push        ; S(fn)
   mov %arg0, %arg2
@@ -1850,16 +1853,15 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == TAG_SUBR goto *subr_func
   if %ret == TAG_EXPR goto *expr_call
   gosub *move_from_stack_to_list  ; side effect: S(env, fn)
-  mov %arg1, %ret    ; %arg1 = arg
+  gosub *pop         ; len < S(..., env, fn)
+  sub %sp, %ret      ; S(env, fn)
   gosub *pop         ; env < S(fn)
   mov %arg2, %ret    ; %arg2 = env
   gosub *pop         ; fn < S()
   mov %arg0, %ret    ; %arg0 = fn
-*apply_l2
+*apply_not_function
   gosub *get_tag
   if %ret == TAG_ERROR mov %ret, %arg0 : return
-  goto *apply_error
-*apply_error
   gosub *lobject_to_string
   mov $sarg0, $sret + "‚ÍŠÖ”‚Å‚Í‚ ‚è‚Ü‚¹‚ñ"
   goto *create_error  ; tail call
@@ -1886,98 +1888,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop           ; new env < S()
   mov %arg2, %ret      ; %arg2 = new env
   goto *syntax_fn_begin  ; tail call
-
-
-;;;;;;;;;;
-;;;*evlis(arg, env)
-;;;;;;;;;;
-*evlis
-  gosub *push       ; S(arg)
-  mov %arg0, %arg1  ; env
-  gosub *push       ; S(env, arg)
-  gosub *create_cons
-  mov %tmp, %ret    ; root
-  gosub *pop        ; env < S(arg)
-  mov %arg1, %ret   ; arg1 = env
-  gosub *pop        ; arg < S()
-  mov %tmp1, %ret
-  mov %arg0, %tmp
-  gosub *push       ; S(root)
-  mov %arg0, %tmp1  ; arg0 = arg
-*evlis_l1  ; (%arg0=arg, %arg1=env, %tmp=current)
-  if %arg0 == %nil goto *evlis_l2
-  mov %tmp1, %arg0
-  mov %arg0, %tmp
-  gosub *push      ; S(current, root)
-  mov %arg0, %tmp1
-  gosub *push      ; S(arg, current, root)
-  mov %tmp1, %arg0
-  mov %arg0, %arg1
-  gosub *push      ; S(env, arg, current, root)
-  mov %arg0, %tmp1
-  gosub *car       ; CAR(arg)
-  mov %tmp1, %ret
-  gosub *pop       ; env < S(arg, current, root)
-  mov %arg0, %ret
-  gosub *push      ; S(env, arg, current, root)
-  mov %arg1, %arg0 ; arg1 = env
-  mov %arg0, %current_proc
-  gosub *push      ; S(proc, env, arg, current, root)
-  mov %arg0, %tmp1 ; arg0 = CAR(arg)
-  gosub *eval      ; Eval(CAR(arg), env) => object
-  mov %arg0, %ret
-  gosub *get_tag : if %ret == TAG_ERROR mov %arg1, 5 : goto *popn_and_error
-  gosub *pop       ; proc < S(env, arg, current, root)
-  mov %current_proc, %ret
-  gosub *push      ; S(object, env, arg, current, root)
-  gosub *create_cons
-  mov %arg0, %ret  ; new cons
-  gosub *pop       ; object < S(env, arg, current, root)
-  mov %arg1, %ret
-  gosub *push      ; S(new cons, env, arg, current, root)
-  gosub *set_car   ; new cons = (object . ?)
-  gosub *pop       ; new cons < S(env, arg, current, root)
-  mov %arg1, %ret  ; arg1 = new cons
-  gosub *pop       ; env < S(arg, current, root)
-  mov %current_env, %ret
-  mov %tmp1, %ret
-  gosub *pop       ; arg < S(current, root)
-  mov %tmp2, %ret
-  gosub *pop       ; current < S(root)
-  mov %tmp3, %ret
-  mov %arg0, %tmp2
-  gosub *push      ; S(arg, root)
-  mov %arg0, %tmp1
-  gosub *push      ; S(env, arg, root)
-  mov %arg0, %arg1
-  gosub *push      ; S(new cons, env, arg, root)
-  mov %arg0, %tmp3 ; arg0 = current
-  gosub *set_cdr   ; current = (? . new cons)
-  gosub *pop       ; new cons < S(env, arg, root)
-  mov %tmp, %ret   ; current = new cons
-  gosub *pop       ; env < S(arg, root)
-  mov %arg0, %ret
-  gosub *pop       ; arg < S(root)
-  mov %tmp1, %ret
-  gosub *push      ; S(env, root)
-  mov %arg0, %tmp
-  gosub *push      ; S(current, env, root)
-  mov %arg0, %tmp1
-  gosub *cdr       ; CDR(arg)
-  mov %arg0, %ret  ; arg0 = CDR(arg0)
-  gosub *pop       ; current < S(env, root)
-  mov %tmp, %ret
-  gosub *pop       ; env < S(root)
-  mov %arg1, %ret
-  goto *evlis_l1
-*evlis_l2
-  mov %arg0, %tmp
-  mov %arg1, %nil
-  gosub *set_cdr   ; current = (? . nil)
-  gosub *pop       ; root < S()
-  mov %arg0, %ret
-  gosub *cdr       ; CDR(root)
-  return           ; %ret = CDR(root)
 
 
 ;;;;;;;;;;
@@ -2026,34 +1936,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push      ; S(len, ...)
   mov %ret, %sharp_t
   return
-
-
-;;;;;;;;;;
-;;;*move_from_stack_to_list()
-;;;;;;;;;;
-*move_from_stack_to_list  ; S(len, Args, ...)
-  gosub *pop       ; len < S(Args, ...)
-  mov %arg2, %ret  ; %arg2 = len
-  mov %arg0, %nil
-  gosub *push      ; S(nil, Args, ...)
-*move_from_stack_to_list_l1  ; %arg2 = len, S(head, Args, ...)
-  if %arg2 == 0 goto *move_from_stack_to_list_exit
-  gosub *create_cons
-  mov %arg0, %ret  ; %arg0 = new cons
-  gosub *pop       ; head < S(Args, ...)
-  mov %arg1, %ret  ; %arg1 = head
-  gosub *push      ; S(new cons, Args, ...)
-  gosub *set_cdr   ; SetCdr(new cons, head)
-  gosub *pop       ; new cons < S(Args, ...)
-  mov %arg0, %ret  ; %arg0 = new cons
-  gosub *pop       ; Arg0 < S(Args, ...)
-  mov %arg1, %ret  ; %arg1 = Arg0
-  gosub *push      ; S(new cons, Args, ...)
-  gosub *set_car   ; SetCar(new cons, Arg0)
-  dec %arg2
-  goto *move_from_stack_to_list_l1
-*move_from_stack_to_list_exit  ; S(head)
-  goto *pop  ; tail call
 
 
 ;;;;;;;;;;
