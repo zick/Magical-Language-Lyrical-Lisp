@@ -52,11 +52,6 @@
   mov %arg0, %ret
   mov %arg1, %global_env
   gosub *eval_form
-  mov $sarg0, "(define apply (lambda (fn . args) (define apply-iter (lambda (lst) (cond ((null? (cdr lst)) nil) (else (cons (car lst) (apply-iter (cdr lst))))))) (let ((arg0 (apply-iter args)) (argn (list-ref args (- (length args) 1)))) (cond ((null? arg0) (apply-primitive fn argn)) (else (apply-primitive fn (append arg0 argn)))))))"
-  gosub *input_to_lobject
-  mov %arg0, %ret
-  mov %arg1, %global_env
-  gosub *eval_form
   mov $sarg0, "(define map (lambda (fn lst . more) (define map1 (lambda (l) (cond ((null? l) nil) (else (cons (fn (car l)) (map1 (cdr l))))))) (define map-more (lambda (l m) (cond ((null? l) nil) (else (cons (apply fn (car l) (map car m)) (map-more (cdr l) (map cdr m))))))) (cond ((null? more) (map1 lst)) (else (map-more lst more)))))"
   gosub *input_to_lobject
   mov %arg0, %ret

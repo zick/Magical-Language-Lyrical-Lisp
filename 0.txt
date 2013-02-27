@@ -361,7 +361,7 @@ nsa
   numalias lf_set_car, 14
   numalias lf_set_cdr, 15
   numalias lf_eval, 16
-  numalias lf_apply_primitive, 17
+  numalias lf_apply, 17
   numalias lf_booleanp, 18
   numalias lf_pairp, 19
   numalias lf_symbolp, 20
@@ -1186,6 +1186,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 *number_required
   mov $sarg0, "êî"
   goto *set_type_error_to_arg0
+*list_required
+  mov $sarg0, "ÉäÉXÉg"
+  goto *set_type_error_to_arg0
 
 
 ;;;;;;;;;;
@@ -1842,7 +1845,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret
   gosub *get_tag
   if %ret == TAG_ERROR mov %ret, %arg0 : return
-*apply_from_apply_primitive  ; S(len, ..., env, fn)
+*apply_using_stack  ; S(len, ..., env, fn)
   mov %tmp, %sp - 1
   mov %tmp, %tmp - %%tmp
   dec %tmp
@@ -2296,7 +2299,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == lf_set_car gosub *subr_func_set_car : goto *subr_func_exit
   if %ret == lf_set_cdr gosub *subr_func_set_cdr : goto *subr_func_exit
   if %ret == lf_eval gosub *subr_func_eval : goto *subr_func_exit
-  if %ret == lf_apply_primitive goto *subr_func_apply_primitive  ; Use GOTO
+  if %ret == lf_apply goto *subr_func_apply  ; Use GOTO
   if %ret == lf_booleanp gosub *subr_func_booleanp : goto *subr_func_exit
   if %ret == lf_pairp gosub *subr_func_pairp : goto *subr_func_exit
   if %ret == lf_symbolp gosub *subr_func_symbolp : goto *subr_func_exit
@@ -2590,28 +2593,54 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 *subr_func_eval
-  gosub *pop        ; len < S(Args, ...)
+  gosub *pop          ; len < S(Args, ...)
   if %ret != 1 : mov %arg0, 1 : mov %arg1, %ret : goto *wrong_stack_arguments
-  gosub *pop        ; Arg0 < S()
+  gosub *pop          ; Arg0 < S()
   mov %arg0, %ret
   mov %arg1, %global_env
   goto *eval_form  ; tail call
 
-*subr_func_apply_primitive  ; S(len, Arg1, Arg0, env, fn)
-  gosub *pop        ; len < S(Args, ...)
-  if %ret != 2 : mov %arg0, 2 : mov %arg1, %ret : goto *wrong_stack_arguments
-  mov %arg2, %arg1  ; %arg2 = env
-  gosub *pop        ; Arg1 < S(Arg0, env, fn)
-  mov %arg1, %ret   ; %arg1 = Arg1 = arguments
-  gosub *pop        ; Arg0 < S(env, fn)
-  mov %arg0, %ret   ; %arg0 = Arg0 = fn1
-  sub %sp, 2        ; S()
-  gosub *push       ; S(fn1)
-  mov %arg0, %arg2
-  gosub *push       ; S(env, fn1)
-  mov %arg0, %arg1  ; %arg0 = arguments
-  gosub *move_from_list_to_stack
-  goto *apply_from_apply_primitive  ; tail call
+*subr_func_apply  ; S(len, ArgN-1, ..., Arg0, env, fn)
+  gosub *pop          ; len < S(ArgN-1, ..., Arg0, env, fn)
+  if %ret < 2 : mov %arg0, 2 : mov %arg1, %ret : goto *wrong_stack_arguments
+  mov %arg1, %ret     ; %arg1 = len (= N)
+  ; Replace fn with Arg0
+  mov %tmp, %sp       ; %tmp = %sp
+  sub %tmp, %arg1     ; %tmp -> Arg0
+  mov %tmp1, %tmp - 2 ; %tmp1 -> fn
+  mov %%tmp1, %%tmp   ; fn = Arg0
+  ; Shift Arguments
+  for %i=0 to %arg1-2
+    mov %tmp1, %tmp+%i ; %tmp1 -> ArgI
+    mov %tmp2, %tmp1+1; %tmp1 -> ArgI+1
+    mov %%tmp1, %%tmp2; ArgI = ArgI+1
+  next
+  dec %sp             ; S(ArgN-1, ..., Arg1, env, Arg0)
+  dec %arg1           ; %arg1 = N-1
+  gosub *pop          ; ArgN-1 < S(ArgN-2, ..., Arg1, env, Arg0)
+  mov %arg0, %ret     ; %arg0 = ArgN-1
+*subr_func_apply_loop  ; %arg0 = list, %arg1 = N-1
+  if %arg0 == %nil goto *subr_func_apply_call
+  gosub *get_tag
+  if %ret != TAG_CONS goto *subr_func_apply_not_list
+  gosub *cdr          ; CDR(list)
+  mov %tmp, %ret      ; %tmp = rest
+  gosub *car          ; CAR(list)
+  mov %arg0, %ret     ; %arg0 = head
+  gosub *push         ; S(head, ArgN-2, ..., Arg1, env, Arg0)
+  inc %arg1           ; %arg1 = (N+1)-1, S(Arg(N+1)-2, ..., Arg1, env, Arg0)
+  mov %arg0, %tmp     ; %arg0 = rest
+  goto *subr_func_apply_loop
+*subr_func_apply_call  ; %arg1 = N-1
+  mov %arg0, %arg1 - 1
+  gosub *push         ; S(N-2, ArgN-2, ..., Arg1, env, Arg-)
+  goto *apply_using_stack  ; taill call
+*subr_func_apply_not_list  ; %arg1 = N-1, S(ArgN-2, ..., Arg1, env, Arg0)
+  mov %tmp, %arg1 + 1 ; %tmp = N
+  sub %sp, %tmp       ; S()
+  gosub *list_required
+  mov %ret, %arg0
+  return
 
 *subr_func_booleanp
   gosub *pop        ; len < S(Args, ...)
@@ -3985,9 +4014,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov $sarg0, "eval"
   gosub *add_subr_to_env  ; eval
   mov %arg0, %global_env
-  mov %arg1, lf_apply_primitive
-  mov $sarg0, "apply-primitive"
-  gosub *add_subr_to_env  ; apply-primitive
+  mov %arg1, lf_apply
+  mov $sarg0, "apply"
+  gosub *add_subr_to_env  ; apply
   mov %arg0, %global_env
   mov %arg1, lf_booleanp
   mov $sarg0, "boolean?"
