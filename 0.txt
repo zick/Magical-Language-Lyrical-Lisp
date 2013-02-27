@@ -1844,7 +1844,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *evstack     ; Evstack(arg, env) => side effect: S(len, ..., env, fn)
   mov %arg0, %ret
   gosub *get_tag
-  if %ret == TAG_ERROR mov %ret, %arg0 : return
+  if %ret == TAG_ERROR sub %sp, 2 : mov %ret, %arg0 : return
 *apply_using_stack  ; S(len, ..., env, fn)
   mov %tmp, %sp - 1
   mov %tmp, %tmp - %%tmp
@@ -1895,6 +1895,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 ;;;;;;;;;;
 ;;;*evstack(arg, env)
+;;;  Evaluate elements of a list and push these values and the size of list.
+;;;  Stack will become S(N, ArgN-1, ArgN-2, ..., Arg0).
+;;;  No value is pushed if an error occurs during evaluation.
 ;;;;;;;;;;
 *evstack
   mov %arg2, 0
