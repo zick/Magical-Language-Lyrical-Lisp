@@ -1855,14 +1855,12 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *get_tag
   if %ret == TAG_SUBR goto *subr_func
   if %ret == TAG_EXPR goto *expr_call
-  gosub *move_from_stack_to_list  ; side effect: S(env, fn)
   gosub *pop         ; len < S(..., env, fn)
   sub %sp, %ret      ; S(env, fn)
   gosub *pop         ; env < S(fn)
-  mov %arg2, %ret    ; %arg2 = env
   gosub *pop         ; fn < S()
   mov %arg0, %ret    ; %arg0 = fn
-*apply_not_function
+*apply_not_function  ; %arg0 = fn, S()
   gosub *get_tag
   if %ret == TAG_ERROR mov %ret, %arg0 : return
   gosub *lobject_to_string
@@ -1941,31 +1939,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %arg2
   gosub *push      ; S(len, ...)
   mov %ret, %sharp_t
-  return
-
-
-;;;;;;;;;;
-;;;*move_from_list_to_stack(list)
-;;;;;;;;;;
-*move_from_list_to_stack
-  mov %arg2, 0
-*move_from_list_to_stack_l1  ; %arg0 = list, S(...)
-  if %arg0 == %nil goto *move_from_list_to_stack_exit
-  gosub *push      ; S(list, ...)
-  gosub *car       ; CAR(list)
-  mov %tmp, %ret   ; %tmp = CAR(list)
-  gosub *pop       ; list < S(...)
-  mov %arg1, %ret  ; %arg1 = list
-  mov %arg0, %tmp  ; %arg0 = CAR(list)
-  gosub *push      ; S(CAR(list), ...)
-  mov %arg0, %arg1 ; %arg0 = list
-  gosub *cdr       ; CDR(list)
-  mov %arg0, %ret  ; %arg0 = CDR(list)
-  inc %arg2
-  goto *move_from_list_to_stack_l1
-*move_from_list_to_stack_exit
-  mov %arg0, %arg2
-  gosub *push      ; S(len, ...)
   return
 
 
@@ -2636,7 +2609,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   goto *subr_func_apply_loop
 *subr_func_apply_call  ; %arg1 = N-1
   mov %arg0, %arg1 - 1
-  gosub *push         ; S(N-2, ArgN-2, ..., Arg1, env, Arg-)
+  gosub *push         ; S(N-2, ArgN-2, ..., Arg1, env, Arg0)
   goto *apply_using_stack  ; taill call
 *subr_func_apply_not_list  ; %arg1 = N-1, S(ArgN-2, ..., Arg1, env, Arg0)
   mov %tmp, %arg1 + 1 ; %tmp = N
