@@ -27,12 +27,12 @@
   mov %arg0, %ret
   mov %arg1, %global_env
   gosub *eval_form
-  mov $sarg0, "(define assq (lambda (key lst) (cond ((null? lst) nil) ((eq? key (caar lst)) (car lst)) (else (assq key (cdr lst))))))"
+  mov $sarg0, "(define assq (lambda (key lst) (if (null? lst) nil (if (eq? key (caar lst)) (car lst) (assq key (cdr lst))))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
   gosub *eval_form
-  mov $sarg0, "(define length (lambda (lst) (define length-iter (lambda (n lst) (cond ((null? lst) n) (else (length-iter (+ n 1) (cdr lst)))))) (length-iter 0 lst)))"
+  mov $sarg0, "(define length (lambda (lst) (letrec ((length-iter (lambda (n lst) (if (null? lst) n (length-iter (+ n 1) (cdr lst)))))) (length-iter 0 lst))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
@@ -42,22 +42,22 @@
   mov %arg0, %ret
   mov %arg1, %global_env
   gosub *eval_form
-  mov $sarg0, "(define list-tail (lambda (lst n) (cond ((eq? n 0) lst) (else (list-tail (cdr lst) (- n 1))))))"
+  mov $sarg0, "(define list-tail (lambda (lst n) (if (eq? n 0) lst (list-tail (cdr lst) (- n 1)))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
   gosub *eval_form
-  mov $sarg0, "(define append (lambda (x y) (cond ((null? x) y) (else (cons (car x) (append (cdr x) y))))))"
+  mov $sarg0, "(define append (lambda (x y) (if (null? x) y (cons (car x) (append (cdr x) y)))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
   gosub *eval_form
-  mov $sarg0, "(define map (lambda (fn lst . more) (define map1 (lambda (l) (cond ((null? l) nil) (else (cons (fn (car l)) (map1 (cdr l))))))) (define map-more (lambda (l m) (cond ((null? l) nil) (else (cons (apply fn (car l) (map car m)) (map-more (cdr l) (map cdr m))))))) (cond ((null? more) (map1 lst)) (else (map-more lst more)))))"
+  mov $sarg0, "(define map (lambda (fn lst . more) (letrec ((map1 (lambda (l) (if (null? l) nil (cons (fn (car l)) (map1 (cdr l)))))) (map-more (lambda (l m) (if (null? l) nil (cons (apply fn (car l) (map car m)) (map-more (cdr l) (map cdr m))))))) (if (null? more) (map1 lst) (map-more lst more)))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
   gosub *eval_form
-  mov $sarg0, "(define list? (lambda (x) (cond ((eq? x nil) #t) ((pair? x) (list? (cdr x))) (else #f))))"
+  mov $sarg0, "(define list? (lambda (x) (if (eq? x nil) #t (if (pair? x) (list? (cdr x)) #f))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
@@ -67,17 +67,17 @@
   mov %arg0, %ret
   mov %arg1, %global_env
   gosub *eval_form
-  mov $sarg0, "(define memq(lambda (x lst) (cond ((null? lst) #f) ((eq? x (car lst)) lst) (else (memq x (cdr lst))))))"
+  mov $sarg0, "(define memq (lambda (x lst) (if (null? lst) #f (if (eq? x (car lst)) lst (memq x (cdr lst))))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
   gosub *eval_form
-  mov $sarg0, "(define member(lambda (x lst) (cond ((null? lst) #f) ((equal? x (car lst)) lst) (else (member x (cdr lst))))))"
+  mov $sarg0, "(define member (lambda (x lst) (if (null? lst) #f (if (equal? x (car lst)) lst (member x (cdr lst))))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
   gosub *eval_form
-  mov $sarg0, "(define assoc (lambda (key lst) (cond ((null? lst) nil) ((equal? key (caar lst)) (car lst)) (else (assoc key (cdr lst))))))"
+  mov $sarg0, "(define assoc (lambda (key lst) (if (null? lst) nil (if (equal? key (caar lst)) (car lst) (assoc key (cdr lst))))))"
   gosub *input_to_lobject
   mov %arg0, %ret
   mov %arg1, %global_env
