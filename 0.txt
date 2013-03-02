@@ -3239,12 +3239,13 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == %sym_letrec mov $sarg0, "*translate_letrec" : goto *translate1
   if %ret == %sym_letstar mov $sarg0, "*translate_letstar" : goto *translate1
   if %ret == %sym_cond mov $sarg0, "*translate_cond" : goto *translate1
+  ;; TODO: Support define in begin. We must distinguish toplevel from in-body.
   if %ret == %sym_begin mov $sarg0, "*translate_list" : goto *translate1
   if %ret == %sym_and mov $sarg0, "*translate_list" : goto *translate1
   if %ret == %sym_or mov $sarg0, "*translate_list" : goto *translate1
   if %ret == %sym_time mov $sarg0, "*translate_list" : goto *translate1
   if %ret == %sym_if mov $sarg0, "*translate_list" : goto *translate1
-  if %ret == %sym_lambda mov $sarg0, "*translate_list_s1" : goto *translate1
+  if %ret == %sym_lambda mov $sarg0, "*translate_lambda" : goto *translate1
   if %ret == %sym_define mov $sarg0, "*translate_list_s1" : goto *translate1
   if %ret == %sym_set mov $sarg0, "*translate_list_s1" : goto *translate1
   gosub *pop          ; form < S()
@@ -3321,8 +3322,10 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 ;;; Translate (op skip args) to (op skip translated-args).
 *translate_list_s1
+  mov %current_proc, %arg0
   gosub *push         ; S(op)
-  mov %arg0, %arg1    ; %arg1 = (skip . form)
+  mov %arg0, %arg1    ; %arg0 = (skip . form)
+  gosub *get_tag : if %ret != TAG_CONS mov %arg1, 1 : goto *popn_and_invstx
   gosub *cdr          ; CDR[(skip . form)]
   mov %arg1, %ret     ; %arg1 = form
   gosub *car          ; CAR[(skip . form)]
@@ -3345,15 +3348,213 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   sub %sp, 1          ; S()
   return
 
+;;; Translate (lambda args . body).
+*translate_lambda
+  mov %current_proc, %sym_lambda
+  mov %arg0, %arg1    ; %arg0 = (args . body)
+  gosub *get_tag : if %ret != TAG_CONS mov %arg1, 0 : goto *popn_and_invstx
+  gosub *cdr          ; CDR[(args . body)]
+  mov %arg1, %ret     ; %arg1 = body
+  gosub *car          ; CAR[(args . body)]
+  mov %arg0, %ret     ; %arg0 = args
+  gosub *push         ; S(args)
+  mov %arg0, %arg1    ; %arg0 = body
+  gosub *translate_body
+  mov %arg0, %ret     ; %arg0 = body
+  gosub *push         ; S(body, args)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons1
+  gosub *pop          ; body < S(args)
+  mov %arg1, %ret     ; %arg1 = body
+  gosub *set_cdr      ; cons1 = (? . body)
+  gosub *pop          ; args < S()
+  mov %arg1, %ret     ; %arg1 = args
+  gosub *set_car      ; cons1 = (args . body)
+  gosub *push         ; S(cons1)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons2
+  gosub *pop          ; cons1 < S()
+  mov %arg1, %ret     ; %arg1 = cons1
+  gosub *set_cdr      ; cons2 = (? . (args . body))
+  mov %arg1, %sym_lambda
+  gosub *set_car      ; cons2 = (lambda args . body)
+  mov %ret, %arg0
+  return
+
+;;; %ret = form
+;;; form -> (form)
+*enclose
+  mov %arg0, %ret
+  gosub *push
+  gosub *create_cons
+  mov %arg0, %ret
+  mov %arg1, %nil
+  gosub *set_cdr
+  gosub *pop
+  mov %arg1, %ret
+  gosub *set_car
+  mov %ret, %arg0
+  return
+
+;;;*translate_body(form)
 ;;; Translate (form1 form2 ...).
-;;; TODO: Support inner define
+;;; Return an error object with %current_proc if %arg0 isn't list.
 *translate_body
+  if %arg0 == %nil mov %ret, %nil : return
+  gosub *get_tag
+  if %ret != TAG_CONS mov %arg1, 0 : gosub *popn_and_invstx : goto *enclose
+  gosub *car          ; CAR(body)
+  mov %arg1, %arg0    ; %arg1 = body
+  mov %arg0, %ret     ; %arg0 = form1
+  gosub *get_tag
+  if %ret != TAG_CONS mov %arg0, %arg1 : goto *translate_body_normally
+  gosub *car          ; CAR(form1)
+  mov %arg0, %arg1    ; %arg0 = form
+  if %ret != %sym_define goto *translate_body_normally
+  gosub *translate_inner_define
+  goto *enclose  ; tail call
+*translate_body_normally
   mov %arg1, %arg0
   mov %arg0, %nil
   gosub *translate_list
   mov %arg0, %ret
   gosub *cdr
   return
+
+;;;*translate_inner_define(form)
+;;; Translate ((define ...) ... . body) to (letrec binds ...).
+;;; Form has at least one define form.
+;;; Order of binds are reversed but letrec ignores that.
+*translate_inner_define
+  gosub *push         ; S(form)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons1
+  mov %arg1, %sym_letrec
+  gosub *set_car      ; cons1 = (letrec . ?)
+  gosub *push         ; S(cons1, form)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons2
+  mov %arg1, %nil
+  gosub *set_car      ; cons2 = (nil . ?)
+  gosub *push         ; S(cons2, cons1, form)
+  mov %arg1, %arg0    ; %arg1 = cons2
+  mov %tmp, %sp - 2   ; %tmp -> cons1
+  mov %arg0, %%tmp    ; %arg0 = cons1
+  gosub *set_cdr      ; cons1 = (letrec . form2)
+  mov %tmp, %sp - 3   ; %tmp -> form
+  mov %arg0, %%tmp    ; %arg0 = form
+*translate_inner_define_loop  ; %arg0 = form, S(cons2, cons1, form)
+  if %arg0 == %nil goto *translate_inner_define_finish
+  gosub *get_tag
+  if %ret != TAG_CONS mov %arg1, 3 : goto *popn_and_invstx
+  gosub *car          ; CAR(form)
+  mov %tmp, %arg0     ; %tmp = form
+  mov %arg0, %ret     ; %arg0 = form1
+  gosub *get_tag
+  if %ret != TAG_CONS goto *translate_inner_define_finish
+  gosub *car
+  if %ret != %sym_define goto *translate_inner_define_finish
+  gosub *cdr          ; CDR[(define name1 . body1)]
+  mov %arg0, %ret     ; %arg0 = (name1 . body1)
+  gosub *car          ; CAR[(name1 . body1)]
+  mov %tmp, %ret      ; %tmp = name1
+  gosub *cdr          ; CDR[(name1 . body1)]
+  mov %arg0, %ret     ; %arg0 = body1
+  gosub *push         ; S(body1, cons2, cons1, form)
+  mov %arg0, %tmp     ; %arg0 = name1
+  gosub *push         ; S(name1, body1, cons2, cons1, form)
+  gosub *get_tag
+  if %ret == TAG_CONS goto *translate_inner_define_lambda
+  mov %tmp, %sp - 2   ; %tmp -> body1
+  mov %arg0, %%tmp    ; %arg0 = body1
+  gosub *car          ; CAR(body1)
+  mov %%tmp, %ret     ; S(name1, val1, cons2, cons1, form)
+*translate_inner_define_add  ; S(name1, val1, cons2, cons1, form)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons3
+  gosub *pop          ; name1 < S(val1, cons2, cons1, form)
+  mov %arg1, %ret     ; %arg1 = name1
+  gosub *set_car      ; cons3 = (name1 . ?)
+  gosub *push         ; S(cons3, val1, cons2, cons1, form)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons4
+  mov %arg1, %nil
+  gosub *set_cdr      ; cons4 = (? . nil)
+  mov %tmp, %sp - 2   ; %tmp -> val1
+  mov %arg1, %%tmp    ; %arg1 = val1
+  gosub *set_car      ; cons4 = (val1)
+  mov %arg1, %arg0    ; %arg1 = cons4
+  gosub *pop          ; cons3 < S(val1, cons2, cons1, form)
+  mov %arg0, %ret     ; %arg0 = cons3
+  gosub *set_cdr      ; cons3 = (name1 val1)
+  gosub *pop          ; val1 < S(cons2, cons1, form)
+  gosub *push         ; S(cons3, cons2, cons1, form)
+  gosub *create_cons
+  mov %tmp1, %ret     ; %tmp1 = cons5
+  mov %tmp, %sp - 2   ; %tmp -> cons2
+  mov %arg0, %%tmp    ; %arg0 = cons2
+  gosub *car          ; CAR(cons2)
+  mov %arg1, %ret     ; %arg1 = binds
+  mov %arg0, %tmp1    ; %arg0 = cons5
+  gosub *set_cdr      ; cons5 = (? . binds)
+  gosub *pop          ; cons3 < S(cons2, cons1, form)
+  mov %arg1, %ret     ; %arg1 = cons3
+  gosub *set_car      ; cons5 = ((name1 val1) . binds)
+  mov %arg1, %arg0    ; %arg1 = cons5
+  mov %tmp, %sp - 1   ; %tmp -> cons2
+  mov %arg0, %%tmp    ; %arg0 = cons2
+  gosub *set_car      ; Update binds
+  mov %tmp, %sp - 3   ; %tmp -> form
+  mov %arg0, %%tmp    ; %arg0 = form
+  gosub *cdr          ; CDR(form)
+  mov %tmp1, %ret     ; %tmp1 = CDR(form)
+  mov %%tmp, %tmp1    ; form = CDR(form)
+  mov %arg0, %%tmp    ; %arg0 = form
+  goto *translate_inner_define_loop
+*translate_inner_define_finish  ; S(cons2, cons1, form)
+  gosub *pop          ; cons2 < S(cons1, form)
+  mov %arg0, %ret     ; %arg0 = cons2
+  mov %tmp, %sp - 2   ; %tmp -> form
+  mov %arg1, %%tmp    ; %arg1 = form
+  gosub *set_cdr      ; cons2 = (binds . form)
+  gosub *pop          ; cons1 < S(form)
+  mov %arg0, %ret     ; %tmp = (letrec binds . form)
+  gosub *pop          ; form < S()
+  gosub *cdr
+  mov %arg1, %ret     ; %arg1 = (binds . form)
+  gosub *car
+  mov %arg0, %ret     ; %arg0 = letrec
+  goto *translate_letrec  ; tail call
+
+*translate_inner_define_lambda  ; S(name1, body1, cons2, cons1, form)
+  gosub *pop          ; name1 < S(body1, cons2, cons1, form)
+  mov %arg0, %ret     ; %arg0 = name1
+  gosub *cdr          ; CDR(name1) => args
+  mov %tmp, %ret      ; %tmp = args
+  gosub *car          ; CAR(name1) => sym1
+  mov %arg0, %ret     ; %arg0 = sym1
+  gosub *push         ; S(sym1, body1, cons2, cons1, form)
+  mov %arg0, %tmp     ; %arg0 = args
+  gosub *push         ; S(args, sym1, body1, cons2, cons1, form)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons3
+  gosub *pop          ; args < S(sym1, body1, cons2, cons1, form)
+  mov %arg1, %ret     ; %arg1 = args
+  gosub *set_car      ; cons3 = (args . ?)
+  mov %tmp, %sp - 2   ; %tmp -> body1
+  mov %arg1, %%tmp    ; %arg1 = body1
+  gosub *set_cdr      ; cons3 = (args . body1)
+  gosub *push         ; S(cons3, sym1, body1, cons2, cons1, form)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons4
+  gosub *pop          ; cons3 < S(sym1, body1, cons2, cons1, form)
+  mov %arg1, %ret     ; %arg1 = cons3
+  gosub *set_cdr      ; cons4 = (? . (args . body))
+  mov %arg1, %sym_lambda
+  gosub *set_car      ; cons4 = (lambda args . body)
+  mov %tmp, %sp - 2   ; %tmp -> body1
+  mov %%tmp, %arg0    ; body1 = (lambda arg . body)
+  goto *translate_inner_define_add
 
 ;;; Translate (cond (test . body) ...) to (if test (begin . body) ...).
 *translate_cond
