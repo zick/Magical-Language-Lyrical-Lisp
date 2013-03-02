@@ -1582,9 +1582,21 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov $sret, "エラー：" + $sret + "の使い方が間違っています"
   return
 *lobject_to_string_var
+  gosub *push         ; S(var)
   gosub *cdr          ; symbol
   mov %arg0, %ret
-  goto *lobject_to_string_sym
+  gosub *lobject_to_string_sym
+  mov $sret, $sret + "＜"
+  gosub *pop          ; var < S()
+  mov %arg0, %ret     ; %arg0 = var
+  gosub *car          ; (frame << 6) + index
+  mov %tmp, %ret / 64 ; %tmp = frame
+  itoa2 $sarg0, %tmp
+  mov $sret, $sret + $sarg0 + "，"
+  mov %tmp, %ret mod 64  ; %tmp = index
+  itoa2 $sarg0, %tmp
+  mov $sret, $sret + $sarg0 + "＞"
+  return
 
 
 ;;;;;;;;;;
@@ -1713,18 +1725,18 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 
 ;;;;;;;;;;
-;;;*find_local_var(env, frame, index)
+;;;*find_local_var_cell(env, frame, index)
 ;;;;;;;;;;
-*find_local_var
+*find_local_var_cell
   if %arg0 == %nil goto *find_local_var_error
   if %arg1 == 0 gosub *car : mov %arg0, %ret : goto *find_local_var_index
   gosub *cdr
   mov %arg0, %ret
   dec %arg1
-  goto *find_local_var
+  goto *find_local_var_cell
 *find_local_var_index
   if %arg0 == %nil find_local_var_error
-  if %arg2 == 0 goto *car : return
+  if %arg2 == 0 mov %ret, %arg0 : return
   gosub *cdr
   mov %arg0, %ret
   dec %arg2
@@ -1732,6 +1744,17 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 *find_local_var_error
   mov $sarg0, "Invalid-variable-index"
   goto *create_error
+
+;;;;;;;;;;
+;;;*find_local_var(env, frame, index)
+;;;;;;;;;;
+*find_local_var
+  gosub *find_local_var_cell
+  mov %arg0, %ret
+  gosub *get_tag
+  if %ret == TAG_CONS gosub *car : return
+  mov %ret, %arg0
+  return
 
 
 ;;;;;;;;;;
@@ -1774,6 +1797,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   goto *eval_compound  ; Assume obj is a cons
 *eval_variable
   gosub *push       ; S(obj)
+  mov %arg1, %toplevel_env
   gosub *find_var
   if %ret == %nil goto *eval_variable_error
   mov %arg0, %ret   ; %arg0 = (var . val)
@@ -2022,7 +2046,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %tmp2       ; %arg0 = farg
   gosub *push            ; S(farg, idx, env, fn, len, Args, ...)
   mov %arg0, %tmp3       ; %arg0 = env
-  gosub *add_bind_to_env ; (env, CAR(farg), Arg)
+  gosub *add_bind_v2     ; (env, CAR(farg), Arg)
   gosub *pop             ; farg < S(idx, env, fn, len, Args, ...)
   mov %arg0, %ret        ; %arg0 = farg
   gosub *cdr             ; CDR(farg)
@@ -2036,6 +2060,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop             ; idx < S(env, fn, len, Args, ...)
   if %ret != 0 goto *create_expr_env_using_stack_many
   gosub *pop             ; env < S(fn, len, Args, ...)
+  mov %arg0, %ret        ; %arg0 = env
+  gosub *finish_env_v2
   mov %arg0, %ret        ; %arg0 = env
   gosub *pop             ; fn < S(len, Args, ...)
   mov %tmp, %ret         ; %tmp = fn
@@ -2087,7 +2113,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop             ; env < S(fn, len, Args, ...)
   mov %arg0, %ret        ; %arg0 = env
   gosub *push            ; S(env, fn, len, Args, ...)
-  gosub *add_bind_to_env ; (env, farg, cons)
+  gosub *add_bind_v2     ; (env, farg, cons)
   mov %arg0, 0           ; %arg0 = 0
   gosub *push            ; S(0, env, fn, len, Args, ...)
   goto *create_expr_env_using_stack_nil
@@ -2106,114 +2132,50 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %ret        ; %arg1 = len
   goto *popn_and_error  ; tail call
 
-
 ;;;;;;;;;;
-;;;*create_expr_env(arg, fn)
+;;;*add_bind_v2(env, sym, val)
+;;;  Add bind to environment and return the environment.
+;;;  This subroutine is for local environment. Local environment is list of
+;;;  just list, not a-list. For example ((1 2 3) (4 5)).
+;;;  You MUST call *finish_env_v2 before use the environment.
 ;;;;;;;;;;
-*create_expr_env
-  mov %tmp, %arg0
-  mov %arg0, %arg1
-  gosub *push            ; S(fn)
-  mov %arg0, %tmp
-  gosub *push            ; S(arg, fn)
-  mov %arg0, %arg1
-  gosub *cdr             ; CDR(fn)
-  mov %arg0, %ret
-  gosub *car             ; CADR(fn) => farg
-  mov %arg0, %ret
-  gosub *push            ; S(farg, arg, fn)
-  gosub *create_new_env
-  mov %arg0, %ret        ; arg0 = env
-  gosub *pop             ; farg < S(arg, fn)
-  mov %tmp1, %ret        ; tmp1 = farg
-  gosub *pop             ; arg < S(fn)
-  mov %tmp2, %ret
-  gosub *push            ; S(env, fn)
-  mov %arg0, %tmp2
-  gosub *push            ; S(arg, env, fn)
-*create_expr_env_l1  ; (tmp1 = farg, S(arg, env, fn))
-  if %tmp1 == %nil goto *create_expr_env_l2
-  mov %arg0, %tmp1
-  gosub *push            ; S(farg, arg, env, fn)
-  gosub *get_tag
-  if %ret == TAG_SYMBOL goto *create_expr_env_l3  ; rest argument
-  gosub *car             ; CAR(farg)
-  mov %tmp, %ret
-  gosub *pop             ; farg < S(arg, env, fn)
-  mov %tmp1, %ret
-  gosub *pop             ; arg < S(env, fn)
-  if %ret == %nil gosub *too_few_arg0 : goto *pop2_and_error
-  mov %tmp2, %ret
-  mov %arg0, %tmp1
-  gosub *push            ; S(farg, env, fn)
-  mov %arg0, %tmp
-  gosub *push            ; S(CAR(farg), farg, env, fn)
-  mov %arg0, %tmp2
-  gosub *push            ; S(arg, CAR(farg), farg, env, fn)
-  gosub *car             ; CAR(arg)
-  mov %arg2, %ret        ; arg2 = CAR(arg)
-  gosub *pop             ; arg < S(CAR(farg), farg, env, fn)
-  mov %tmp1, %ret
-  gosub *pop             ; CAR(farg) < S(farg, env, fn)
-  mov %arg1, %ret        ; arg1 = CAR(farg)
-  gosub *pop             ; farg < S(env, fn)
-  mov %tmp2, %ret
-  gosub *pop             ; env < S(fn)
-  mov %arg0, %ret
-  gosub *push            ; S(env, fn)
-  mov %tmp3, %arg0
-  mov %arg0, %tmp1
-  gosub *push            ; S(arg, env, fn)
-  mov %arg0, %tmp2
-  gosub *push            ; S(farg, arg, env, fn)
-  mov %arg0, %tmp3       ; arg0 = env
-  gosub *add_bind_to_env ; (env, CAR(farg), CAR(arg))
-  gosub *pop             ; farg < S(arg, env, fn)
-  mov %arg0, %ret
-  gosub *cdr             ; CDR(farg)
-  mov %arg0, %ret        ; farg = CDR(farg)
-  gosub *pop             ; arg < S(env, fn)
-  mov %tmp1, %ret
-  gosub *push            ; S(farg, env, fn)
-  mov %arg0, %tmp1
-  gosub *cdr             ; CDR(arg)
-  mov %arg0, %ret        ; arg = CDR(arg)
-  gosub *pop             ; farg < S(env, fn)
-  mov %tmp1, %ret        ; tmp1 = farg
-  gosub *push            ; S(arg, env, fn)
-  goto *create_expr_env_l1
-*create_expr_env_l2  ; (tmp1 = farg, S(arg, env, fn))
-  gosub *pop             ; arg < S(env, fn)
-  if %ret != %nil gosub *too_many_arg0 : goto *pop2_and_error
-  gosub *pop             ; env < S(fn)
-  mov %arg0, %ret
-  gosub *pop             ; fn < S()
-  mov %tmp, %ret
-  gosub *push            ; S(env)
-  mov %arg0, %tmp
-  gosub *car             ; CAR(fn) => cls_env
-  mov %arg1, %ret
-  gosub *pop             ; env < S()
-  mov %arg0, %ret
-  gosub *push            ; S(env)
-  gosub *nconc           ; (env, cls_env)
-  gosub *pop             ; env < S()
-  return                 ; ret = env
-*create_expr_env_l3  ; S(farg, arg, env, fn)
+*add_bind_v2
+  gosub *push         ; S(env)
+  gosub *car          ; CAR(env) => frame
+  mov %arg0, %ret     ; %arg0 = frame
+  gosub *push         ; S(frame, env)
+  mov %arg0, %arg2    ; %arg0 = val
+  gosub *push         ; S(val, frame, env)
   gosub *create_cons
-  mov %arg0, %ret
-  gosub *pop             ; farg < S(arg, env, fn)
-  mov %arg1, %ret
-  gosub *pop             ; arg < S(env, fn)
-  mov %arg2, %ret
-  gosub *pop             ; env < S(fn)
-  mov %arg0, %ret
-  gosub *push            ; S(env, fn)
-  gosub *add_bind_to_env
-  mov %arg0, %nil        ; remaining arguments
-  gosub *push            ; S(nil(arg), env, fn)
-  goto *create_expr_env_l2
+  mov %arg0, %ret     ; %arg0 = cons1
+  gosub *pop          ; val < S(frame, env)
+  mov %arg1, %ret     ; %arg1 = val
+  gosub *set_car      ; cons1 = (val . ?)
+  gosub *pop          ; frame < S(env)
+  mov %arg1, %ret     ; %arg1 = frame
+  gosub *set_cdr      ; cons1 = (val . frame)
+  mov %arg1, %arg0    ; %arg1 = cons1
+  gosub *pop          ; env < S()
+  mov %arg0, %ret     ; %arg0 = env
+  gosub *set_car      ; env = (cons1 . rest-frame)
+  return
 
+
+;;;;;;;;;;
+;;;*finish_env_v2(env)
+;;;  Correct first frame of local environment and return the environment.
+;;;  You MUST NOT call this subroutine twice for the same frame.
+;;;;;;;;;;
+*finish_env_v2
+  gosub *push         ; S(env)
+  gosub *car          ; CAR(env) => frame_r
+  mov %arg0, %ret     ; %arg0 = frame_r
+  gosub *nreverse     ; nreverse(frame_r)
+  mov %arg1, %ret     ; %arg1 = frame
+  gosub *pop          ; env < S()
+  mov %arg0, %ret     ; %arg0 = env
+  gosub *set_car      ; env = (frame ...)
+  return
 
 ;;;;;;;;;;
 ;;;*check_arguments_length(arg, n)
@@ -2821,6 +2783,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   goto *create_expr  ; tail call (form, arg, env)
 
 *syntax_fn_define
+  mov %arg2, %toplevel_env
   mov %arg0, %arg2
   gosub *push         ; S(env)
   mov %arg0, %arg1
@@ -2955,6 +2918,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %tmp
   gosub *push         ; S(object)
   mov %arg0, %tmp1
+  gosub *get_tag
+  if %ret == TAG_VAR goto *syntax_fn_set_local
+  mov %arg1, %toplevel_env
   gosub *find_var     ; find_var(sym, env)
   if %ret == %nil goto *syntax_fn_set_l1
   mov %arg0, %ret
@@ -2966,6 +2932,18 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 *syntax_fn_set_l1  ;S(object)
   gosub *pop          ; object < S()
   mov %ret, %sharp_f
+  return
+*syntax_fn_set_local  ; %arg0 = var, %arg1 = env, S(object)
+  gosub *car              ; (frame << 6) + index
+  mov %arg0, %arg1        ; %arg0 = env
+  mov %arg1, %ret / 64    ; %arg1 = frame
+  mov %arg2, %ret mod 64  ; %arg2 = index
+  gosub *find_local_var_cell
+  mov %arg0, %ret         ; %arg0 = cell
+  gosub *pop              ; object < S()
+  mov %arg1, %ret         ; %arg1 = object
+  gosub *set_car          ; Update variable
+  mov %ret, %sharp_t
   return
 
 *syntax_fn_if
@@ -3219,8 +3197,12 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %tmp     ; %arg0 = form
   gosub *translate_form
   mov %arg0, %ret     ; %arg0 = form
+  mov %arg1, %nil
+  gosub *debruijn
+  mov %arg0, %ret     ; %arg0 = form
   gosub *pop          ; env < S()
-  mov %arg1, %ret     ; %arg1 = env
+;;;;  mov %arg1, %ret     ; %arg1 = env
+  mov %arg1, %nil     ; %arg1 = env
   goto *eval  ; tail call
 
 
@@ -4056,6 +4038,151 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %%tmp, %ret     ; S(fargs, aargs)
   mov %ret, %sharp_t
   return
+
+
+;;;;;;;;;;
+;;;*debruijn(form, env)
+;;;  Translate symbol which represents local variable into de Bruijn index.
+;;;  For example, (lambda (x) x) is translated into (lambda (x) <0,0>)
+;;;  env is a list of formal arguments list, like ((a b) c (d . e)).
+;;;  This subroutine modify form destructively.
+;;;;;;;;;;
+*debruijn
+  ;; We don't support the variable whose name is NIL so far.
+  ;; Maybe we will support it in the future.
+  if %arg0 == %nil mov %ret, %nil : return
+  gosub *get_tag
+  if %ret == TAG_SYMBOL goto *debruijn_symbol
+  if %ret != TAG_CONS : mov %ret, %arg0 : return
+  gosub *car
+  if %ret == %quote : mov %ret, %arg0 : return
+  if %ret == %sym_lambda goto *debruijn_lambda
+  if %ret == %sym_define goto *debruijn_skip2
+*debruijn_start  ; %arg0 = form, %arg1 = env
+  gosub *push         ; S(form0)
+*debruijn_loop  ; %arg0 = form, %arg1 = env, S(form0)
+  if %arg0 == %nil goto *debruijn_finish
+  mov %tmp, %arg0     ; %tmp = form
+  mov %arg0, %arg1    ; %arg0 = env
+  gosub *push         ; S(env, form0)
+  mov %arg0, %tmp     ; %arg0 = form
+  gosub *push         ; S(form, env, form0)
+  gosub *car          ; CAR(form) => form1
+  mov %arg0, %ret     ; %arg0 = form1
+  gosub *push         ; S(form1, form, env, form0)
+  gosub *debruijn     ; debruijn(form1, env)
+  mov %arg1, %ret     ; %ret = d-form1
+  gosub *pop          ; form1 < S(form, env, form0)
+  if %arg1 == %ret goto *debruijn_next
+  mov %tmp, %sp - 1   ; %tmp -> form
+  mov %arg0, %%tmp    ; %arg0 = form
+  gosub *set_car      ; form = (d-form1 ...)
+*debruijn_next  ; S(form, env, form0)
+  gosub *pop          ; form < S(env, form0)
+  mov %arg0, %ret     ; %arg0 = form
+  gosub *cdr          ; CDR(form)
+  mov %tmp1, %arg0    ; %tmp1 = form
+  mov %arg0, %ret     ; %arg0 = CDR(form)
+  gosub *get_tag
+  if %ret != TAG_CONS mov %arg0, %tmp1 : goto *debruijn_cdr
+  gosub *pop          ; env < S(form0)
+  mov %arg1, %ret     ; %arg1 = env
+  goto *debruijn_loop
+*debruijn_cdr  ; %arg0 = form, S(env, form0)
+  gosub *cdr          ; CDR(form)
+  gosub *push         ; S(form, env, form0)
+  mov %arg0, %ret     ; %arg0 = CDR(form)
+  gosub *push         ; S(form-cdr, form, env, form0)
+  mov %tmp, %sp - 3   ; %tmp -> env
+  mov %arg1, %%tmp    ; %arg1 = env
+  gosub *debruijn     ; debruijn(form-cdr, env)
+  mov %arg1, %ret     ; %arg1 = d-form-cdr
+  gosub *pop          ; form-cdr < S(form, env, form0)
+  if %arg1 == %ret sub %sp, 2 :  goto * debruijn_finish
+  gosub *pop          ; form < S(env, form0)
+  mov %arg0, %ret     ; %arg0 = form
+  gosub *set_cdr      ; form = (form-car . d-form-cdr)
+  gosub *pop          ; env < S(form0)
+*debruijn_finish  ; S(form0)
+  gosub *pop          ; form0 < S()
+  return
+
+*debruijn_skip2  ; (form, env)
+  gosub *push         ; S(form)
+  gosub *cdr
+  mov %arg0, %ret     ; %arg0 = CDR(form)
+  gosub *cdr
+  mov %arg0, %ret     ; %arg0 = CDDR(form)
+  gosub *debruijn_start
+  gosub *pop          ; form < S()
+  return
+
+*debruijn_lambda  ; (form, env)
+  gosub *push         ; S(form0)
+  gosub *cdr          ; CDR[(lambda args . body)]
+  mov %arg0, %ret     ; %arg0 = (args . body)
+  gosub *push         ; S((args . body), form0)
+  mov %arg0, %arg1    ; %arg0 = env
+  gosub *push         ; S(env, (args . body), form0)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons1
+  gosub *pop          ; env < S((args . body), form0)
+  mov %arg1, %ret     ; %arg1 = env
+  gosub *set_cdr      ; cons1 = (? . env)
+  gosub *pop          ; (args . body) < S(form0)
+  mov %tmp, %arg0     ; %tmp = cons1
+  mov %arg0, %ret     ; %arg0 = (args . body)
+  gosub *car          ; CAR[(args . body)]
+  mov %tmp1, %ret     ; %tmp1 = args
+  gosub *cdr          ; CDR[(args . body)]
+  mov %arg0, %ret     ; %arg0 = body
+  gosub *push         ; S(body, form0)
+  mov %arg0, %tmp     ; %arg0 = cons1
+  mov %arg1, %tmp1    ; args
+  gosub *set_car      ; cons1 = (args . env)
+  mov %arg1, %arg0    ; %arg1 = cons1
+  gosub *pop          ; body < S(form0)
+  mov %arg0, %ret     ; %arg0 = body
+  gosub *debruijn
+  gosub *pop          ; form0 < S()
+  return
+
+*debruijn_symbol  ; (sym, env)
+  mov %tmp, %arg0     ; %tmp = sym
+  mov %arg0, %arg1    ; %arg0 = env
+  mov %arg1, %tmp     ; %arg1 = sym
+  mov %arg2, 0
+  mov %arg3, 0
+*debruijn_symbol_loop  ; (env, sym, index, frame)
+  if %arg0 == %nil mov %ret, %arg1 : return
+  gosub *push         ; S(env)
+  gosub *car          ; CAR[(args ...)]
+  mov %arg0, %ret     ; %arg0 = args
+*debruijn_symbol_frame_loop  ; (args, sym, index, frame), S(env)
+  ;; args is symbol if args represents &rest argument.
+  if %arg0 == %arg1 goto *debruijn_symbol_finish
+  gosub *get_tag
+  if %ret != TAG_CONS goto *debruijn_symbol_next_frame
+  gosub *car          ; CAR[(arg ...)]
+  if %ret == %arg1 goto *debruijn_symbol_finish
+  inc %arg2           ; index++
+  gosub *cdr          ; CDR(args)
+  mov %arg0, %ret     ; args = CDR(args)
+  goto *debruijn_symbol_frame_loop
+*debruijn_symbol_next_frame  ; (args, sym, index, frame), S(env)
+  inc %arg3           ; frame++
+  mov %arg2, 0        ; index = 0
+  gosub *pop          ; env < S()
+  mov %arg0, %ret     ; %arg0 = env
+  gosub *cdr          ; CDR(env)
+  mov %arg0, %ret     ; %arg0 = CDR(env)
+  goto *debruijn_symbol_loop
+*debruijn_symbol_finish  ; (args, sym, index, frame), S(env)
+  gosub *pop          ; env < S()
+  mov %arg0, %arg1    ; %arg0 = sym
+  mov %arg1, %arg2    ; %arg1 = index
+  mov %arg2, %arg3    ; %arg2 = frame
+  goto *create_var  ; tail call
 
 
 ;;;;;;;;;;
