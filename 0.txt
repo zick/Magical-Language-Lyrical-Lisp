@@ -2790,8 +2790,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *push         ; S(arg, env)
   gosub *car          ; CAR(arg) => sym
   mov %arg0, %ret
-  gosub *get_tag
-  if %ret == TAG_CONS goto *define_syntax_sugar  ;(arg0 = sym, S(arg, env))
   gosub *pop          ; arg < S(env)
   mov %tmp1, %ret
   gosub *push         ; S(sym, env)
@@ -2828,57 +2826,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *add_bind_to_env
   gosub *pop
   return
-
-*define_syntax_sugar  ; (arg0 = sym, S(arg, env))
-  gosub *push        ; S(sym, arg, env)
-  gosub *cdr         ; CDR(sym) => argument
-  mov %tmp, %ret
-  gosub *pop         ; sym < S(arg, env)
-  mov %arg0, %ret
-  gosub *pop         ; arg < S(env)
-  mov %tmp1, %ret
-  gosub *push        ; S(sym, env)
-  mov %arg0, %tmp
-  gosub *push        ; S(argument, sym, env)
-  mov %arg0, %tmp1
-  gosub *cdr         ; CDR(arg) => body
-  mov %arg0, %ret
-  gosub *push        ; S(body, argument, sym, env)
-  gosub *create_cons
-  mov %arg0, %ret
-  gosub *pop         ; body < S(argument, sym, env)
-  mov %arg1, %ret
-  gosub *push        ; S(new cons, argument, sym, env)
-  gosub *set_cdr     ; new cons = (... . body)
-  gosub *pop         ; new cons < S(argument, sym, env)
-  mov %arg0, %ret
-  gosub *pop         ; argument < S(sym, env)
-  mov %arg1, %ret
-  gosub *push        ; S(new cons, sym, env)
-  gosub *set_car     ; new cons = (argument . body)
-  gosub *pop         ; new cons < S(sym, env)
-  mov %arg1, %ret
-  gosub *pop         ; sym < S(env)
-  mov %tmp, %ret
-  gosub *pop         ; env < S()
-  mov %arg0, %ret
-  gosub *push        ; S(env)
-  mov %arg2, %arg0
-  mov %arg0, %tmp
-  gosub *push        ; S(sym, env)
-  gosub *syntax_fn_lambda
-  mov %arg0, %ret
-  gosub *get_tag : if %ret == TAG_ERROR goto *pop2_and_error
-  gosub *pop         ; sym < S(env)
-  mov %tmp, %ret
-  gosub *push        ; S(val, env)
-  mov %arg0, %tmp
-  gosub *car         ;CAR(sym) => name
-  mov %arg0, %ret
-  gosub *pop         ;val < S(env)
-  mov %arg2, %ret    ;arg2 = val
-  gosub *push        ;S(name, env)
-  goto *syntax_fn_define_l1
 
 
 *syntax_fn_set
@@ -3246,6 +3193,23 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret     ; %arg0 = operator
   goto $sarg0  ; tail call
 
+;;; Use for checking invalid inner-define, like (form1 (define ...) form2).
+;;; This subroutine just checks if (car form) is define.
+;;; If so return error object, otherwise return NIL.
+;;; This subroutine keeps %arg0
+*check_invalid_define
+  gosub *push         ; S(form)
+  gosub *car          ; CAR(form)
+  if %ret == %sym_define goto *check_invalid_define_invalid
+  gosub *pop
+  mov %arg0, %ret
+  mov %ret, %nil
+  return
+*check_invalid_define_invalid
+  mov %current_proc, %sym_define
+  mov %arg1, 1
+  goto *popn_and_invstx  ; tail call
+
 ;;; Translate (op args) to (op translated-args).
 *translate_list
   gosub *push         ; S(op)
@@ -3254,12 +3218,15 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %arg1    ; %arg0 = list
 *translate_list_loop  ; S(form_r, op)
   if %arg0 == %nil goto *translate_list_reverse
-  gosub *car          ; CAR(list)
+  gosub *car          ; CAR(list) => head
   mov %tmp, %ret      ; %tmp = head
-  gosub *cdr          ; CDR(list)
+  gosub *cdr          ; CDR(list) => rest
   mov %arg0, %ret     ; %arg0 = rest
   gosub *push         ; S(rest, form_r, op)
   mov %arg0, %tmp     ; %arg0 = head
+  ;; TODO: We should check this, but we must support define-in-begin before.
+  ;  gosub *check_invalid_define
+  ;  if %ret != %nil sub %sp, 3 : return
   gosub *translate_form
   mov %arg0, %ret     ; %arg0 = head
   gosub *push         ; S(head, rest, form_r, op)
