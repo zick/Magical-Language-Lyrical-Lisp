@@ -3246,7 +3246,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == %sym_time mov $sarg0, "*translate_list" : goto *translate1
   if %ret == %sym_if mov $sarg0, "*translate_list" : goto *translate1
   if %ret == %sym_lambda mov $sarg0, "*translate_lambda" : goto *translate1
-  if %ret == %sym_define mov $sarg0, "*translate_list_s1" : goto *translate1
+  if %ret == %sym_define mov $sarg0, "*translate_define" : goto *translate1
   if %ret == %sym_set mov $sarg0, "*translate_list_s1" : goto *translate1
   gosub *pop          ; form < S()
   mov %arg1, %ret     ; %arg1 = form
@@ -3347,6 +3347,70 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop          ; cons1 < S(op)
   sub %sp, 1          ; S()
   return
+
+;;; Translate (define (name .  args) . body) into (define name (lambda ...)).
+*translate_define
+  mov %arg0, %arg1    ; %arg0 = (name0 . body) = rest
+  gosub *push         ; S(rest)
+  gosub *car          ; CAR[(name0 . body)] => name0
+  mov %arg0, %ret     ; %arg0 = name0
+  gosub *get_tag
+  if %ret != TAG_CONS goto *translate_define_var
+  gosub *cdr          ; CDR[(name . args)] => args
+  mov %tmp, %ret      ; %tmp = args
+  gosub *car          ; CAR[(name . args)] => name
+  mov %arg0, %ret     ; %arg0 = name
+  gosub *push         ; S(name, rest)
+  mov %arg0, %tmp     ; %arg0 = args
+  gosub *push         ; S(args, name, rest)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons1
+  gosub *pop          ; args < S(name, rest)
+  mov %arg1, %ret     ; %arg1 = rest
+  gosub *set_car      ; cons1 = (args . ?)
+  mov %tmp1, %arg0    ; %tmp1 = cons1
+  mov %tmp, %sp - 2   ; %tmp -> rest
+  mov %arg0, %%tmp    ; %arg0 = rest
+  gosub *cdr          ; CDR[(name0 . body)] => body
+  mov %arg1, %ret     ; %arg1 = body
+  mov %arg0, %tmp1    ; %arg0 = cons1
+  gosub *set_cdr      ; cons1 = (args . body)
+  mov %arg1, %arg0    ; %arg1 = cons1
+  mov %arg0, %sym_lambda
+  gosub *translate_lambda
+  mov %arg0, %ret     ; arg0 = lambda-form
+  gosub *push         ; S(lambda-form, name, rest)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons2
+  gosub *pop          ; lambda-form < S(name, rest)
+  mov %arg1, %ret     ; %arg1 = lambda-form
+  gosub *set_car      ; cons2 = (lambda-form . ?)
+  mov %arg1, %nil
+  gosub *set_cdr      ; cons2 = (lambda-form)
+  gosub *push         ; S(cons2, name, rest)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons3
+  gosub *pop          ; cons2 < S(name, rest)
+  mov %arg1, %ret     ; %arg1 = cons2
+  gosub *set_cdr      ; cons3 = (? . (lambda-form))
+  gosub *pop          ; name < S(rest)
+  mov %arg1, %ret     ; %arg1 = name
+  gosub *set_car      ; cons3 = (name lambda-form)
+  gosub *push         ; S(cons3, rest)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons4
+  gosub *pop          ; cons3 < S(rest)
+  mov %arg1, %ret     ; %arg1 = cons3
+  gosub *set_cdr      ; cons4 = (? . (name lambda-form))
+  mov %arg1, %sym_define
+  gosub *set_car      ; cons4 = (define name lambda-form)
+  sub %sp, 1          ; S()
+  return
+*translate_define_var
+  gosub *pop          ; rest < S()
+  mov %arg1, %ret     ; %arg1 = (name0 . body)
+  mov %arg0, %sym_define
+  goto *translate_list_s1  ; tail call
 
 ;;; Translate (lambda args . body).
 *translate_lambda
