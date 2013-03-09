@@ -146,32 +146,33 @@ nsa
   usewheel
 
   ; Constants
-  numalias MEM, 100
-  numalias MEM_END, 2999
-  numalias MEM_OVER, 3000
+  ;; Heap is used for any lisp objects (100 <= heap < 3000)
+  numalias HEAP, 100
+  numalias HEAP_LAST, 2999
+  numalias HEAP_LIMIT, 3000
+  ;; Stack is used for any lisp objects and integers (3000 <= stack < 4000)
   numalias STACK, 3000
-  numalias STACK_OVER, 4000
+  numalias STACK_LIMIT, 4000
+  ;; Symbol-set is used for symbol strings (100 <= from < 500 <= to < 900)
   numalias SYMBOL_SET, 100
-  numalias SYMBOL_SET_END, 899
-  numalias SYMBOL_SET_OVER, 900
   numalias SYMBOL_SET_HALF_SIZE, 400
+  ;; SStack is used for any string (900 <= sstack < 1000)
   numalias SSTACK, 900
-  numalias SSTACK_OVER, 1000
+  numalias SSTACK_LIMIT, 1000
   numalias TAG_CONS, 0
   numalias TAG_SYMBOL, 1
   numalias TAG_NUM, 2
   numalias TAG_SUBR, 3
-  numalias __TAG_UNUSED__, 4
-  numalias TAG_EXPR, 5
-  numalias __TAG_UNUSED2__, 6
-  numalias TAG_FREE, 7
-  numalias TAG_ERROR, 8
-  numalias TAG_VAR, 9
+  numalias TAG_EXPR, 4
+  numalias TAG_FREE, 5
+  numalias TAG_ERROR, 6
+  numalias TAG_VAR, 7
   numalias MAX_NUMBER, 16777215          ; 2^24 - 1
   numalias MIN_NUMBER, -16777216         ; - 2^24
   numalias UNSIGNED_MAX_PLUS1, 33554432  ; 2^25
   numalias MIN_INT32, -2147483648        ; - 2^31
   numalias NON_VALUE, -1  ; Every lisp object is different from this value.
+  numalias DEFAULT_GC_LIMIT, 3
 
   ; Aliases for numerical variables
   ;; General variables
@@ -190,7 +191,7 @@ nsa
   numalias free_lst, 60
   numalias i, 61
   numalias gc_tmp ,62
-  numalias test_val, 63
+  numalias __unused__, 63
   numalias symbol_used, 64
   numalias ssp, 65
 
@@ -417,7 +418,7 @@ nsa
 ;;; modifies: %sp
 ;;;;;;;;;;
 *push
-  if %sp >= STACK_OVER mesbox "スタックオーバフロー", "Error" : end
+  if %sp >= STACK_LIMIT mesbox "スタックオーバフロー", "Error" : end
   mov %%sp, %arg0
   inc %sp
   return
@@ -439,7 +440,7 @@ nsa
 ;;; modifies: %ssp
 ;;;;;;;;;;
 *spush
-  if %ssp >= STACK_OVER mesbox "スタックオーバフロー", "Error" : end
+  if %ssp >= STACK_LIMIT mesbox "スタックオーバフロー", "Error" : end
   mov $%ssp, $sarg0
   inc %ssp
   return
@@ -626,8 +627,8 @@ nsa
   mov %symbol_used, SYMBOL_SET
   mov %sp, STACK
   mov %ssp, SSTACK
-  mov %free_lst, MEM
-  for %i=MEM to MEM_END  ; Create the free-list
+  mov %free_lst, HEAP
+  for %i=HEAP to HEAP_LAST  ; Create the free-list
     mov %arg0, %i
     mov %arg1, TAG_FREE
     gosub *set_tag
@@ -635,7 +636,7 @@ nsa
     mov %arg1, %i + 1
     gosub *set_data
   next
-  mov %symbol_lst, MEM_OVER
+  mov %symbol_lst, HEAP_LIMIT
   mov $sarg0, "nil"
   gosub *create_symbol
   mov %nil, %ret
@@ -660,8 +661,8 @@ nsa
 *next_cell
   ; If there is no cell, then do GC.
   ; If there is no cell after GC, then quit.
-  if %free_lst == MEM_OVER gosub *gc
-  if %free_lst == MEM_OVER mesbox "メモリ不足", "Error" : end
+  if %free_lst == HEAP_LIMIT gosub *gc
+  if %free_lst == HEAP_LIMIT mesbox "メモリ不足", "Error" : end
   mov %arg0, %free_lst
   gosub *get_data
   mov %tmp, %free_lst
@@ -700,8 +701,8 @@ if %gc_silent == 1 goto *gc_sl1
   gosub *gc_sweep
 if %gc_silent == 1 goto *gc_sl2
   Ｕｓｅｄ：%gc_count
-  mov %gc_count, MEM_OVER - %gc_count
-  mov %gc_count, %gc_count - MEM
+  mov %gc_count, HEAP_LIMIT - %gc_count
+  mov %gc_count, %gc_count - HEAP
   Ａｖａｉｌａｂｌｅ：%gc_count
 *gc_sl2
   gosub *pop_registers
@@ -785,8 +786,8 @@ if %gc_silent == 1 goto *gc_sl2
   for %i = STACK to %sp-1
     ; Stack may contain non-pointer values.
     ; Do conservative GC.
-    if %%i < MEM goto *gc_mark_l1
-    if %%i > MEM_END goto *gc_mark_l1
+    if %%i < HEAP goto *gc_mark_l1
+    if %%i > HEAP_LAST goto *gc_mark_l1
     mov %arg0, %%i
     gosub *gc_mark_lobject
   *gc_mark_l1
@@ -798,9 +799,9 @@ if %gc_silent == 1 goto *gc_sl2
 ;;;*gc_sweep()
 ;;;;;;;;;;
 *gc_sweep
-  mov %free_lst, MEM_OVER
-  mov %symbol_lst, MEM_OVER
-  for %i=MEM to MEM_END  ; Find the first unused cell.
+  mov %free_lst, HEAP_LIMIT
+  mov %symbol_lst, HEAP_LIMIT
+  for %i=HEAP to HEAP_LAST  ; Find the first unused cell.
     mov %arg0, %i
     gosub *get_gc
     if %ret == 0 mov %free_lst, %i : break
@@ -813,9 +814,9 @@ if %gc_silent == 1 goto *gc_sl2
     mov %symbol_lst, %i
   *gc_sweep_l0
   next
-  if %free_lst == MEM_OVER return  ; There is no unused cell.
+  if %free_lst == HEAP_LIMIT return  ; There is no unused cell.
   mov %gc_tmp, %free_lst  ; Keep the first unusd cell.
-  for %i=%i+1 to MEM_END
+  for %i=%i+1 to HEAP_LAST
     mov %arg0, %i
     gosub *get_gc
     if %ret == 1 goto *gc_sweep_l1
@@ -838,7 +839,7 @@ if %gc_silent == 1 goto *gc_sl2
     gosub *set_gc  ; Unmark
   next
   mov %arg0, %gc_tmp
-  mov %arg1, MEM_OVER  ; The end of the free-list.
+  mov %arg1, HEAP_LIMIT  ; The end of the free-list.
   gosub *reuse_cell
   return
 
@@ -901,7 +902,7 @@ if %gc_silent == 1 goto *symbol_gc_sl1
   mov %symbol_used, SYMBOL_SET + %symbol_offset
   mov %i, %symbol_lst
 *symbol_gc_l1
-  if %i == MEM_OVER goto *symbol_gc_l2
+  if %i == HEAP_LIMIT goto *symbol_gc_l2
   mov %arg0, %i
   gosub *raw_car
   mov $%symbol_used, $%ret
@@ -965,7 +966,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 *create_symbol
   mov %i, %symbol_lst
 *create_symbol_l1
-  if %i == MEM_OVER goto *create_symbol_l2
+  if %i == HEAP_LIMIT goto *create_symbol_l2
   mov %arg0, %i
   gosub *raw_car
   if $sarg0 == $%ret mov %ret, %i : return

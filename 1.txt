@@ -673,8 +673,11 @@ delay 1500
 Ｐｌｅａｓｅ　ｈａｖｅ　ａ　ｃｏｆｆｅｅ　ｂｒｅａｋ．
 !sd
   gosub *mem_init
-  mov %gc_limit, 3  ;一回の入力で3回GCが起こると、中断するか問い合わせる。
   gosub *set_additional_func
+  mov %gc_silent, 1
+  gosub *gc
+  mov %gc_silent, 0
+  mov %gc_limit, DEFAULT_GC_LIMIT
   mov %save_flag, 1  ;セーブ可能
 textclear
   csp SP_TMP

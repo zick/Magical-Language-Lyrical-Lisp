@@ -115,7 +115,7 @@ bgm ms_ex
   gosub *push  ;GC‘Îô
   mov %arg1, %global_env
   gosub *nconc
-  mov %gc_limit, 0
+  mov %gc_limit, DEFAULT_GC_LIMIT
 *fm01
   mov %gc_run, 0  ;GC‹N“®‰ñ”‚ğ‰Šú‰»
   mov %current_proc, %nil
