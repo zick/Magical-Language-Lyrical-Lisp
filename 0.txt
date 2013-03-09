@@ -211,6 +211,8 @@ nsa
   numalias gc_silent, 77
 
   ;; Debug
+  ;; NOTE: current_proc and current_env are not protected from GC so far.
+  ;;       We should protect them if GC moves objects.
   numalias current_proc, 78
   numalias current_env, 79
   numalias in_ex_test, 80
@@ -228,6 +230,7 @@ nsa
   numalias sym_letrec, 90
   numalias sym_letstar, 91
   numalias sym_time, 92
+  numalias sym_else, 93
 
   ;; Error messages
   stralias str_too_few_arguments, "Too-few-arguments"
@@ -765,6 +768,8 @@ if %gc_silent == 1 goto *gc_sl2
   mov %arg0, %sym_letstar
   gosub *gc_mark_lobject
   mov %arg0, %sym_time
+  gosub *gc_mark_lobject
+  mov %arg0, %sym_else
   gosub *gc_mark_lobject
   return
 
@@ -3569,14 +3574,29 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %%tmp, %arg0    ; body1 = (lambda arg . body)
   goto *translate_inner_define_add
 
+;;; Translate (exp1 ...) to (begin exp1 ...) and (exp) to exp.
+*translate_to_1exp
+  gosub *cdr          ; CDR(form)
+  if %ret == %nil goto *translate_to_1exp_1exp
+  mov %arg1, %arg0    ; %arg1 = form
+  mov %arg0, %sym_begin
+  goto *translate_list  ; tail call
+*translate_to_1exp_1exp
+  gosub *car          ; CAR[(exp)] => exp
+  mov %arg0, %ret     ; %arg0 = exp
+  goto *translate_form  ; tail call
+
 ;;; Translate (cond (test . body) ...) to (if test (begin . body) ...).
 *translate_cond
   mov %current_proc, %sym_cond
   mov %arg0, %nil
   gosub *push         ; S(nil)
   mov %arg0, %arg1    ; %arg0 = clauses
+  gosub *get_tag
+  if %ret != TAG_CONS mov %arg1, 1 : goto *popn_and_invstx
   gosub *reverse
   mov %arg0, %ret     ; %arg0 = clauses
+  gosub *translate_cond_else
 *translate_cond_loop  ; %arg0 = clauses, S(form)
   if %arg0 == %nil gosub *pop : return
   gosub *car          ; CAR(clauses)
@@ -3591,17 +3611,16 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *car          ; CAR(clause)
   mov %arg0, %ret     ; %arg0 = test
   gosub *push         ; S(test, clauses, form)
-  mov %arg1, %tmp     ; %arg1 = body
-  mov %arg0, %sym_begin
-  gosub *translate_list
-  mov %arg0, %ret     ; %arg0 = (begin . body)
-  gosub *push         ; S(body, test, clauses, form)
+  mov %arg0, %tmp     ; %arg0 = body
+  gosub *translate_to_1exp
+  mov %arg0, %ret     ; %arg0 = exp
+  gosub *push         ; S(exp, test, clauses, form)
   gosub *create_cons
   mov %arg0, %ret     ; %arg0 = cons1
-  gosub *pop          ; body < S(test, clauses, form)
+  gosub *pop          ; exp < S(test, clauses, form)
   gosub *push         ; S(cons1, test, clauses, form)
-  mov %arg1, %ret     ; %arg1 = body
-  gosub *set_car      ; cons1 = ((begin ...) . ?)
+  mov %arg1, %ret     ; %arg1 = exp
+  gosub *set_car      ; cons1 = (exp . ?)
   gosub *create_cons
   mov %arg0, %ret     ; %arg0 = cons2
   gosub *push         ; S(cons2, cons1, test, clauses, form)
@@ -3616,37 +3635,57 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %ret     ; %arg1 = cons2
   mov %tmp, %sp - 1   ; %tmp -> cons1
   mov %arg0, %%tmp    ; %arg0 = cons1
-  gosub *set_cdr      ; cons1 = ((begin ...) form)
+  gosub *set_cdr      ; cons1 = (exp form)
   gosub *create_cons
   mov %arg0, %ret     ; %arg0 = cons3
   gosub *pop          ; cons1 < S(test, clauses, form)
   mov %arg1, %ret     ; %arg1 = cons1
   gosub *push         ; S(cons3, test, clauses, form)
-  gosub *set_cdr      ; cons3 = (? . ((begin ...) form)
+  gosub *set_cdr      ; cons3 = (? . (exp form)
   mov %tmp, %sp - 2   ; %tmp -> test
   mov %arg0, %%tmp    ; %arg0 = test
   gosub *translate_form
   mov %arg1, %ret     ; %arg1 = test
   mov %tmp, %sp - 1   ; %tmp -> cons3
   mov %arg0, %%tmp    ; %arg0 = cons3
-  gosub *set_car      ; cons3 = (test (begin ...) form)
+  gosub *set_car      ; cons3 = (test exp form)
   gosub *create_cons
   mov %arg0, %ret     ; %arg0 = cons4
   gosub *pop          ; cons3 < S(test, clauses, form)
   mov %arg1, %ret     ; %arg1 = cons3
   gosub *pop          ; test < S(clauses, form)
   gosub *push         ; S(cons4, clauses, form)
-  gosub *set_cdr      ; cons4 = (? . (test (begin ...) form))
+  gosub *set_cdr      ; cons4 = (? . (test exp form))
   mov %tmp, %sp - 1   ; %tmp -> cons4
   mov %arg0, %%tmp    ; %arg0 = cons4
   mov %arg1, %sym_if
-  gosub *set_car      ; cons4 = (if test (begin ...) form)
+  gosub *set_car      ; cons4 = (if test exp form)
   gosub *pop          ; cons4 < S(claues, form)
   mov %tmp, %sp - 2   ; %tmp -> form
-  mov %%tmp, %ret     ; form = (if test (begin ...) form)
+  mov %%tmp, %ret     ; form = (if test exp form)
   gosub *pop          ; clauses < S(form)
   mov %arg0, %ret     ; %arg0 = clauses
   goto *translate_cond_loop
+*translate_cond_else  ; %arg0 = clauses, S(nil)
+  gosub *car          ; CAR(clauses) => clause
+  gosub *push         ; S(clauses, nil)
+  mov %arg0, %ret     ; %arg0 = clause
+  gosub *get_tag
+  if %ret != TAG_CONS gosub *pop : mov %arg0, %ret : return
+  gosub *car          ; CAR[(test . body)] => test
+  if %ret != %sym_else gosub *pop : mov %arg0, %ret : return
+  gosub *cdr          ; CDR[(test . body)] => body
+  mov %arg0, %ret     ; %arg0 = body
+  gosub *translate_to_1exp
+  mov %arg0, %ret     ; %arg0 = exp
+  gosub *pop          ; clauses < S(nil)
+  mov %tmp, %ret      ; %tmp = clauses
+  gosub *pop          ; nil < S()
+  gosub *push         ; S(exp)
+  mov %arg0, %tmp     ; %arg0 = clauses
+  gosub *cdr          ; CDR(clauses)
+  mov %arg0, %ret     ; %arg0 = CDR(clauses)
+  return
 
 ;;; Translate (let binds body) to ((lambda ...) ...).
 *translate_let
@@ -4269,9 +4308,12 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov $sarg0, "time"
   gosub *create_symbol
   mov %sym_time, %ret
+  mov $sarg0, "else"
+  gosub *create_symbol
+  mov %sym_else, %ret
 
   mov $sarg0, "(((”f . ”f) (”t . ”t)"
-  mov $sarg0, $sarg0 + "(nil . nil) (else . ”t)))"
+  mov $sarg0, $sarg0 + "(nil . nil)))"
   gosub *input_to_lobject
   mov %global_env, %ret
   mov %toplevel_env, %global_env
