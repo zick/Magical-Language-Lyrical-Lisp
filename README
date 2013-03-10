@@ -3,24 +3,25 @@
 Let's play in Lisp!
 
 
-== Introduction
+== How to run Lyrical Lisp
 
-This repository has only text-data.
-In order to execute the game,
+Lyrical Lisp is consist of text data, graphic data, and sound data. This
+repository has only source code of text data. In order to get all data,
 download ``lyricallisp_free-X.X.zip'' from following URL:
 
   http://lyrical.bugyo.tk/download.html
 
-Unzip it and ``lyricallisp_free'' directory is created.
+If you unzip it, ``lyricallisp_free'' directory is created. You can run Lyrical
+Lisp by double-clicking the ``nsclisper.exe'' in the directory.
 
 
-== Execution
+== How to compile your source code
 
-In order to execute the game with your data,
-you must make ``nscript.dat'' and put it to ``lyricallisp_free'' directory.
+In order to run Lyrical Lisp with your source code, you must make ``nscript.dat''
+and put it to ``lyricallisp_free'' directory.
 
-You can convert text-data (``X.txt'') into ``nscript.dat'' with ``nscmake.exe''.
-``nscmake.exe'' can be downloaded from following URL:
+You can compile your source files (``X.txt'') into ``nscript.dat'' using
+``nscmake.exe'' which can be downloaded from following URL:
 
   http://www.nscripter.com/
 
@@ -28,13 +29,23 @@ Or you can also make ``nscript.dat'' with following commands:
 
 % vi a.c
 #include <stdio.h>
-int main() {
-  char b;
-  while (fread(&b,1,1,stdin)) printf("%c",b^0x84);
+int main(int argc, char** argv) {
+  int i;
+  for (i = 1; i < argc; ++i) {
+    char b;
+    FILE* fp = fopen(argv[i], "r");
+    while (fread(&b, 1, 1, fp)) {
+      if (b != '\r') {
+        printf("%c", b ^ 0x84);
+      }
+    }
+    printf("%c", '\n' ^ 0x84);
+    fclose(fp);
+  }
   return 0;
 }
 % gcc -o a a.c
-% cat *.txt | tr -d \\r | ./a > nscript.dat
+% ./a *.txt > nscript.dat
 
 
 == License
