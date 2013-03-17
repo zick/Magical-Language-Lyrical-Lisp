@@ -174,6 +174,7 @@ nsa
   numalias MIN_INT32, -2147483648        ; - 2^31
   numalias NON_VALUE, -1  ; Every lisp object is different from this value.
   numalias DEFAULT_GC_LIMIT, 3
+  numalias UNBOUND, 4095
 
   ; Aliases for numerical variables
   ;; General variables
@@ -1134,22 +1135,22 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 ;;;;;;;;;;
-;;;*create_gvar(sym, cell)
+;;;*create_gvar(sym, val)
 ;;;;;;;;;;
 *create_gvar
   gosub *push         ; S(sym)
-  mov %arg0, %arg1    ; %arg0 = cell
-  gosub *push         ; S(cell, sym)
+  mov %arg0, %arg1    ; %arg0 = val
+  gosub *push         ; S(val, sym)
   gosub *create_cons
   mov %arg0, %ret
   mov %arg1, TAG_GVAR
   gosub *set_tag      ; %arg0 = gvar
-  gosub *pop          ; cell < S(sym)
-  mov %arg1, %ret     ; %arg1 = cell
-  gosub *set_car      ; gvar = (cell . ?)
+  gosub *pop          ; val < S(sym)
+  mov %arg1, %ret     ; %arg1 = val
+  gosub *set_cdr      ; gvar = (? . val)
   gosub *pop          ; sym < S()
   mov %arg1, %ret     ; %arg1 = sym
-  gosub *set_cdr      ; gvar = (cell . sym)
+  gosub *set_car      ; gvar = (sym . val)
   mov %ret, %arg0     ; %ret = gvar
   return
 
@@ -1627,19 +1628,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov $sret, $sret + $sarg0 + "ÅÑ"
   return
 *lobject_to_string_gvar
-  gosub *push         ; S(gvar)
-  gosub *cdr          ; symbol
+  gosub *car          ; symbol
   mov %arg0, %ret
-  gosub *lobject_to_string_sym
-  mov $sret, $sret + "ÅÉ"
-  gosub *pop          ; var < S()
-  mov %arg0, %ret     ; %arg0 = gvar
-  gosub *car          ; => cell
-  mov %arg0, %ret     ; %arg0 = cell
-  gosub *get_data
-  itoa2 $sarg0, %ret
-  mov $sret, $sret + $sarg0 + "ÅÑ"
-  return
+  goto *lobject_to_string_sym  ; tail call
 
 ;;;;;;;;;;
 ;;;*print_string(str)
@@ -1831,25 +1822,25 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 ;;;*eval(obj, env)
 ;;;;;;;;;;
 *eval
+  if %arg0 == %nil mov %ret, %arg0 : return
+  if %arg0 == %sharp_t mov %ret, %arg0 : return
+  if %arg0 == %sharp_f mov %ret, %arg0 : return
   gosub *get_tag
   if %ret == TAG_NUM mov %ret, %arg0 : return
   if %ret == TAG_ERROR mov %ret, %arg0 : return
-  if %ret == TAG_SYMBOL goto *eval_variable
+  if %ret == TAG_SYMBOL goto *eval_symbol
   if %ret == TAG_VAR goto *eval_local_var
   if %ret == TAG_GVAR goto *eval_global_var
   goto *eval_compound  ; Assume obj is a cons
-*eval_variable
-  gosub *push       ; S(obj)
-  mov %arg1, %toplevel_env
-  gosub *find_var
-  if %ret == %nil goto *eval_variable_error
-  mov %arg0, %ret   ; %arg0 = (var . val)
-  gosub *pop        ; obj < S()
-  gosub *cdr        ; %ret = val
+*eval_symbol
+  gosub *member_syntax
+  if %ret == %sharp_t goto *eval_unbound
+  ;; When a symbol is evaluated, the symbol must be a syntax symbol.
+  ;; Therefore, following code shouldn't be run.
+  gosub *lobject_to_string
+  mov $sarg0, "E " + $sret  ; Internal error
   return
-*eval_variable_error
-  gosub *pop        ; obj < S()
-  mov %arg0, %ret
+*eval_unbound
   gosub *lobject_to_string
   mov $sarg0, $sret + "ÇÕñ¢ë©îõÇ≈Ç∑"
   goto *create_error; tail call
@@ -1860,10 +1851,13 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg2, %ret mod 64  ; %arg2 = index
   goto *find_local_var
 *eval_global_var
+  gosub *cdr
+  if %ret == UNBOUND goto *eval_global_var_unbound
+  return
+*eval_global_var_unbound  ; %arg0 = gvar
   gosub *car
   mov %arg0, %ret
-  gosub *cdr
-  return
+  goto *eval_unbound  ; tail call
 *eval_compound      ; %arg0 = obj, %arg1 = env
   mov %tmp, %arg0   ; %tmp = obj
   mov %arg0, %arg1  ; %arg1 = env
@@ -2871,7 +2865,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %tmp
   ; TODO: We should protect built-in functions/variables from user.
   if %arg1 == %quote gosub *pop : mov %ret, %nil : return
-  gosub *add_bind_to_env
+  gosub *add_global_bind
   gosub *pop
   return
 
@@ -2915,16 +2909,23 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %tmp1
   gosub *get_tag
   if %ret == TAG_VAR goto *syntax_fn_set_local
-  mov %arg1, %toplevel_env
-  gosub *find_var     ; find_var(sym, env)
-  if %ret == %nil goto *syntax_fn_set_l1
-  mov %arg0, %ret
+  if %ret == TAG_GVAR goto *syntax_fn_set_found
+  gosub *member_syntax
+  if %ret == %sharp_t goto *syntax_fn_set_error
+  ;; When a symbol occurs here, the symbol must be a syntax symbol.
+  ;; Therefore, following code shouldn't be run.
+  gosub *pop          ; object < S()
+  gosub *lobject_to_string
+  mov $sarg0, "E " + $sret  ; Internal error
+  gosub *create_error
+  return
+*syntax_fn_set_found
   gosub *pop          ; object < S()
   mov %arg1, %ret
   gosub *set_cdr      ; SetCdr(pair, object)
   mov %ret, %sharp_t
   return
-*syntax_fn_set_l1  ;S(object)
+*syntax_fn_set_error  ;S(object)
   gosub *pop          ; object < S()
   mov %ret, %sharp_f
   return
@@ -4196,6 +4197,19 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop          ; form0 < S()
   return
 
+*member_syntax  ; (sym)
+  if %arg0 == %quote mov %ret, %sharp_t : return
+  if %arg0 == %sym_begin mov %ret, %sharp_t : return
+  if %arg0 == %sym_lambda mov %ret, %sharp_t : return
+  if %arg0 == %sym_define mov %ret, %sharp_t : return
+  if %arg0 == %sym_if mov %ret, %sharp_t : return
+  if %arg0 == %sym_and mov %ret, %sharp_t : return
+  if %arg0 == %sym_or mov %ret, %sharp_t : return
+  if %arg0 == %sym_set mov %ret, %sharp_t : return
+  if %arg0 == %sym_time mov %ret, %sharp_t : return
+  mov %ret, %sharp_f
+  return
+
 *debruijn_symbol  ; (sym, env)
   mov %tmp, %arg0     ; %tmp = sym
   mov %arg0, %arg1    ; %arg0 = env
@@ -4232,72 +4246,77 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %arg2    ; %arg1 = index
   mov %arg2, %arg3    ; %arg2 = frame
   goto *create_var  ; tail call
-;; NOTE: The gvar objects are created for every occurrence of symbols.
-;;       We should share gvar object.
 *debruijn_symbol_global  ; (env, sym, index, frame)
   mov %arg0, %arg1    ; %arg0 = sym
+  gosub *member_syntax
+  if %ret == %sharp_t mov %ret, %arg0 : return
   gosub *push         ; S(sym)
   mov %arg1, %toplevel_env
-  gosub *find_var
+  gosub *find_var     ; => gvar or NIL
   if %ret == %nil goto *debruijn_symbol_global_error
-  mov %arg1, %ret     ; %arg1 = (var . val)
+  mov %tmp, %ret      ; %tmp = gvar
+  gosub *pop          ; sym < S()
+  mov %ret, %tmp      ; %ret = gvar
+  return              ; return gvar
+*debruijn_symbol_global_error  ; S(sym)
+  mov %arg0, %toplevel_env
+  mov %tmp, %sp - 1   ; %tmp -> sym
+  mov %arg1, %%tmp    ; %arg1 = sym
+  mov %arg2, UNBOUND
+  gosub *add_global_bind
   gosub *pop          ; sym < S()
   mov %arg0, %ret     ; %arg0 = sym
-  goto *create_gvar  ; tail call
-*debruijn_symbol_global_error  ; S(sym)
-  gosub *pop          ; sym < S()
+  mov %arg1, %toplevel_env
+  goto *find_var  ; tail call
+
+
+;;;;;;;;;;
+;;;*add_global_bind(env, sym, val)
+;;;;;;;;;;
+*add_global_bind
+  gosub *push         ; S(env)
+  mov %tmp1, %arg0    ; %tmp1 = env
+  mov %arg0, %arg1    ; %arg0 = sym
+  gosub *push         ; S(sym, env)
+  mov %tmp2, %arg0    ; %tmp2 = sym
+  mov %arg0, %arg2    ; %arg0 = val
+  gosub *push         ; S(val, sym, env)
+  mov %arg0, %tmp2    ; %arg0 = sym
+  mov %arg1, %tmp1    ; %arg1 = env
+  gosub *find_var
+  if %ret != %nil goto *add_global_bind_found
+  gosub *pop          ; val < S(sym, env)
+  mov %arg1, %ret     ; %arg1 = val
+  gosub *pop          ; sym < S(env)
+  mov %arg0, %ret     ; %arg0 = sym
+  gosub *create_gvar
+  mov %arg0, %ret     ; %arg0 = gvar
+  gosub *push         ; S(gvar, env)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons1
+  gosub *pop          ; gvar < S(env)
+  mov %arg1, %ret     ; %arg1 = gvar
+  gosub *set_car      ; cons1 = (gvar . ?)
+  mov %tmp1, %arg0    ; %tmp1 = cons1
+  mov %tmp, %sp - 1   ; %tmp -> env
+  mov %arg0, %%tmp    ; %arg0 = env
+  gosub *car          ; CAR(env) => alist
+  mov %arg0, %tmp1    ; %arg0 = cons1
+  mov %arg1, %ret     ; %arg1 = alist
+  gosub *set_cdr      ; cons1 = (gvar . alist)
+  mov %arg1, %arg0    ; %arg1 = cons1
+  gosub *pop          ; env < S()
+  mov %arg0, %ret     ; %arg0 = env
+  gosub *set_car      ; env = ((gvar . alist) . rest)
+  mov %ret, %arg0     ; %ret = env
   return
-
-
-;;;;;;;;;;
-;;;*add_bind_to_env(env, sym, val)
-;;;;;;;;;;
-*add_bind_to_env
-  gosub *push       ; S(env)
-  mov %arg0, %arg1  ; %arg0 = sym
-  gosub *push       ; S(sym, env)
-  mov %arg0, %arg2  ; %arg0 = val
-  gosub *push       ; S(val, sym, env)
-  gosub *create_cons
-  mov %arg0, %ret   ; %arg0 = pair
-  gosub *pop        ; val < S(sym, env)
-  mov %arg1, %ret   ; %arg1 = val
-  gosub *push       ; S(pair, sym, env)
-  gosub *set_cdr    ; pair = (? . val)
-  gosub *pop        ; pair < S(sym, env)
-  mov %arg0, %ret   ; %arg0 = pair
-  gosub *pop        ; sym < S(env)
-  mov %arg1, %ret   ; %arg1 = sym
-  gosub *push       ; S(pair, env)
-  gosub *set_car    ; pair = (sym . val)
-  gosub *create_cons
-  mov %arg0, %ret   ; %arg0 = new cons
-  gosub *pop        ; pair < S(env)
-  mov %arg1, %ret   ; %arg1 = pair
-  gosub *push       ; S(new cons, env)
-  gosub *set_car    ; new_cons = (pair . ?)
-  gosub *pop        ; new_cons < S(env)
-  mov %arg1, %ret   ; %arg1 = new_cons
-  gosub *pop        ; env < S()
-  mov %arg0, %ret   ; %arg0 = env
-  gosub *push       ; S(env)
-  mov %tmp, %arg0   ; %tmp = env
-  mov %arg0, %arg1  ; %arg0 = new_cons
-  gosub *push       ; S(new_cons, env)
-  mov %arg0, %tmp   ; %arg0 = env
-  gosub *car        ; CAR(env) = the first alist in env
-  mov %arg1, %ret   ; %arg1 = CAR(env)
-  gosub *pop        ; new_cons < S(env)
-  mov %arg0, %ret   ; %arg0 = new_cons
-  gosub *push       ; S(new_cons, env)
-  gosub *set_cdr    ; new_cons = (pair . CAR(env))
-  gosub *pop        ; new_cons < S(env)
-  mov %arg1, %ret   ; %arg1 = new_cons
-  gosub *pop        ; env < S()
-  mov %arg0, %ret   ; %arg0 = env
-  gosub *push       ; S(env)
-  gosub *set_car    ; env = ((pair . CAR(env)) . CDR(env))
-  gosub *pop        ; env < S()
+*add_global_bind_found  ; %ret = gvar, S(val, sym, env)
+  mov %arg0, %ret     ; %arg0 = gvar
+  gosub *pop          ; val < S(sym, env)
+  mov %arg1, %ret     ; %arg1 = val
+  gosub *set_cdr      ; gvar = (sym . val)
+  gosub *pop          ; sym < S(env)
+  gosub *pop          ; env < S()
   return
 
 
@@ -4323,7 +4342,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %ret       ; arg1 = new symbol
   gosub *pop            ; env < S()
   mov %arg0, %ret       ; arg0 = env
-  goto *add_bind_to_env ; tail call
+  goto *add_global_bind ; tail call
 
 
 ;;;;;;;;;;
@@ -4370,8 +4389,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *create_symbol
   mov %sym_else, %ret
 
-  mov $sarg0, "(((Åîf . Åîf) (Åît . Åît)"
-  mov $sarg0, $sarg0 + "(nil . nil)))"
+  mov $sarg0, "(())"
   gosub *input_to_lobject
   mov %global_env, %ret
   mov %toplevel_env, %global_env
