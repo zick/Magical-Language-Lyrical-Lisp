@@ -167,6 +167,7 @@ nsa
   numalias TAG_FREE, 5
   numalias TAG_ERROR, 6
   numalias TAG_VAR, 7
+  numalias TAG_GVAR, 8
   numalias MAX_NUMBER, 16777215          ; 2^24 - 1
   numalias MIN_NUMBER, -16777216         ; - 2^24
   numalias UNSIGNED_MAX_PLUS1, 33554432  ; 2^25
@@ -723,6 +724,7 @@ if %gc_silent == 1 goto *gc_sl2
   if %ret == TAG_EXPR goto *gc_mark_lobject_cons
   if %ret == TAG_ERROR goto *gc_mark_lobject_cons
   if %ret == TAG_VAR goto *gc_mark_lobject_var
+  if %ret == TAG_GVAR goto *gc_mark_lobject_cons
   return
 *gc_mark_lobject_cons
   gosub *push     ; S(obj)
@@ -1132,6 +1134,26 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 ;;;;;;;;;;
+;;;*create_gvar(sym, cell)
+;;;;;;;;;;
+*create_gvar
+  gosub *push         ; S(sym)
+  mov %arg0, %arg1    ; %arg0 = cell
+  gosub *push         ; S(cell, sym)
+  gosub *create_cons
+  mov %arg0, %ret
+  mov %arg1, TAG_GVAR
+  gosub *set_tag      ; %arg0 = gvar
+  gosub *pop          ; cell < S(sym)
+  mov %arg1, %ret     ; %arg1 = cell
+  gosub *set_car      ; gvar = (cell . ?)
+  gosub *pop          ; sym < S()
+  mov %arg1, %ret     ; %arg1 = sym
+  gosub *set_cdr      ; gvar = (cell . sym)
+  mov %ret, %arg0     ; %ret = gvar
+  return
+
+;;;;;;;;;;
 ;;;*popn_and_error(error, n)
 ;;;;;;;;;;
 *popn_and_error
@@ -1530,6 +1552,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == TAG_SYMBOL goto *lobject_to_string_sym
   if %ret == TAG_ERROR goto *lobject_to_string_err
   if %ret == TAG_VAR goto *lobject_to_string_var
+  if %ret == TAG_GVAR goto *lobject_to_string_gvar
   if %ret == TAG_CONS gosub *cons_to_string : return
   return
 *lobject_to_string_proc
@@ -1603,7 +1626,20 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   itoa2 $sarg0, %tmp
   mov $sret, $sret + $sarg0 + "ÅÑ"
   return
-
+*lobject_to_string_gvar
+  gosub *push         ; S(gvar)
+  gosub *cdr          ; symbol
+  mov %arg0, %ret
+  gosub *lobject_to_string_sym
+  mov $sret, $sret + "ÅÉ"
+  gosub *pop          ; var < S()
+  mov %arg0, %ret     ; %arg0 = gvar
+  gosub *car          ; => cell
+  mov %arg0, %ret     ; %arg0 = cell
+  gosub *get_data
+  itoa2 $sarg0, %ret
+  mov $sret, $sret + $sarg0 + "ÅÑ"
+  return
 
 ;;;;;;;;;;
 ;;;*print_string(str)
@@ -1800,6 +1836,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == TAG_ERROR mov %ret, %arg0 : return
   if %ret == TAG_SYMBOL goto *eval_variable
   if %ret == TAG_VAR goto *eval_local_var
+  if %ret == TAG_GVAR goto *eval_global_var
   goto *eval_compound  ; Assume obj is a cons
 *eval_variable
   gosub *push       ; S(obj)
@@ -1822,6 +1859,11 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %ret / 64    ; %arg1 = frame
   mov %arg2, %ret mod 64  ; %arg2 = index
   goto *find_local_var
+*eval_global_var
+  gosub *car
+  mov %arg0, %ret
+  gosub *cdr
+  return
 *eval_compound      ; %arg0 = obj, %arg1 = env
   mov %tmp, %arg0   ; %tmp = obj
   mov %arg0, %arg1  ; %arg1 = env
@@ -4161,7 +4203,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg2, 0
   mov %arg3, 0
 *debruijn_symbol_loop  ; (env, sym, index, frame)
-  if %arg0 == %nil mov %ret, %arg1 : return
+  if %arg0 == %nil goto *debruijn_symbol_global
   gosub *push         ; S(env)
   gosub *car          ; CAR[(args ...)]
   mov %arg0, %ret     ; %arg0 = args
@@ -4190,6 +4232,21 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %arg2    ; %arg1 = index
   mov %arg2, %arg3    ; %arg2 = frame
   goto *create_var  ; tail call
+;; NOTE: The gvar objects are created for every occurrence of symbols.
+;;       We should share gvar object.
+*debruijn_symbol_global  ; (env, sym, index, frame)
+  mov %arg0, %arg1    ; %arg0 = sym
+  gosub *push         ; S(sym)
+  mov %arg1, %toplevel_env
+  gosub *find_var
+  if %ret == %nil goto *debruijn_symbol_global_error
+  mov %arg1, %ret     ; %arg1 = (var . val)
+  gosub *pop          ; sym < S()
+  mov %arg0, %ret     ; %arg0 = sym
+  goto *create_gvar  ; tail call
+*debruijn_symbol_global_error  ; S(sym)
+  gosub *pop          ; sym < S()
+  return
 
 
 ;;;;;;;;;;
