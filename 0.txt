@@ -168,6 +168,7 @@ nsa
   numalias TAG_ERROR, 6
   numalias TAG_VAR, 7
   numalias TAG_GVAR, 8
+  numalias TAG_BOOL, 9
   numalias MAX_NUMBER, 16777215          ; 2^24 - 1
   numalias MIN_NUMBER, -16777216         ; - 2^24
   numalias UNSIGNED_MAX_PLUS1, 33554432  ; 2^25
@@ -638,6 +639,12 @@ nsa
     mov %arg1, %i + 1
     gosub *set_data
   next
+  mov %arg0, 0
+  gosub *create_bool
+  mov %sharp_f, %ret
+  mov %arg0, 1
+  gosub *create_bool
+  mov %sharp_t, %ret
   mov %symbol_lst, HEAP_LIMIT
   mov $sarg0, "nil"
   gosub *create_symbol
@@ -645,12 +652,6 @@ nsa
   mov $sarg0, "quote"
   gosub *create_symbol
   mov %quote, %ret
-  mov $sarg0, "Åît"
-  gosub *create_symbol
-  mov %sharp_t, %ret
-  mov $sarg0, "Åîf"
-  gosub *create_symbol
-  mov %sharp_f, %ret
   gosub *set_global_env
   mov %current_proc, %nil
   mov %current_env, %global_env
@@ -1155,6 +1156,23 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 ;;;;;;;;;;
+;;;*create_bool(num)
+;;;  num = 0 : #f
+;;;  num = 1 : #t
+;;;;;;;;;;
+*create_bool
+  gosub *push         ; S(num)
+  gosub *next_cell
+  mov %arg0, %ret     ; %arg0 = object
+  mov %arg1, TAG_BOOL
+  gosub *set_tag      ; %arg0 = boolean
+  gosub *pop          ; num < S()
+  mov %arg1, %ret     ; %arg1 = num
+  gosub *set_data
+  mov %ret, %arg0     ; %ret = boolean
+  return
+
+;;;;;;;;;;
 ;;;*popn_and_error(error, n)
 ;;;;;;;;;;
 *popn_and_error
@@ -1411,18 +1429,19 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if $sret == "Åi" gosub *input_to_list : return
   if $sret == "Åf" gosub *translate_quote : return
   if $sret == "Åj" mov %ret, %nil : return
-  gosub *spush      ;str
+  gosub *spush        ; SS(rest_str)
   mov $sarg0, $sret
   gosub *is_number
-  if %ret != 0 goto *input_to_lobject_l1
+  if %ret != 0 goto *input_to_lobject_not_number
   atoi %arg0, $sarg0
   gosub *create_num
-  gosub *spop
-  mov $sarg0, $sret
-  return
-*input_to_lobject_l1
+  goto *input_to_lobject_finish
+*input_to_lobject_not_number
+  if $sarg0 == "Åît" mov %ret, %sharp_t : goto *input_to_lobject_finish
+  if $sarg0 == "Åîf" mov %ret, %sharp_f : goto *input_to_lobject_finish
   gosub *create_symbol
-  gosub *spop       ;str
+*input_to_lobject_finish  ; %ret = object
+  gosub *spop         ; rest_str < SS()
   mov $sarg0, $sret
   return
 
@@ -1550,6 +1569,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == TAG_SUBR goto *lobject_to_string_proc
   if %ret == TAG_EXPR goto *lobject_to_string_expr
   if %ret == TAG_NUM  goto *lobject_to_string_num
+  if %ret == TAG_BOOL  goto *lobject_to_string_bool
   if %ret == TAG_SYMBOL goto *lobject_to_string_sym
   if %ret == TAG_ERROR goto *lobject_to_string_err
   if %ret == TAG_VAR goto *lobject_to_string_var
@@ -1571,6 +1591,11 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 *lobject_to_string_num
   gosub *get_num_data
   itoa $sarg0, %ret
+  gosub *print_string
+  return
+*lobject_to_string_bool
+  if %arg0 == %sharp_t mov $sarg0, "Åît"
+  if %arg0 == %sharp_f mov $sarg0, "Åîf"
   gosub *print_string
   return
 *lobject_to_string_sym
@@ -1823,11 +1848,10 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 ;;;;;;;;;;
 *eval
   if %arg0 == %nil mov %ret, %arg0 : return
-  if %arg0 == %sharp_t mov %ret, %arg0 : return
-  if %arg0 == %sharp_f mov %ret, %arg0 : return
   gosub *get_tag
   if %ret == TAG_NUM mov %ret, %arg0 : return
   if %ret == TAG_ERROR mov %ret, %arg0 : return
+  if %ret == TAG_BOOL mov %ret, %arg0 : return
   if %ret == TAG_SYMBOL goto *eval_symbol
   if %ret == TAG_VAR goto *eval_local_var
   if %ret == TAG_GVAR goto *eval_global_var
