@@ -308,24 +308,14 @@
 
 
 
-*gclimit
+*confirm_abort
 アリサ「やけに時間がかかるわね……無限ループの可能性があるわ。計算を中止する？」
-csel "中止", *gclimit_stop, "続行", *gclimit_cont
-
-*gclimit_cont
+csel "中止", *confirm_abort_abort, "続行", *confirm_abort_resume
+*confirm_abort_resume
   mov %gc_run, 0
-  goto *gc_l1
-*gclimit_stop
-  textclear
-  talk_mode
-  r_load ":l;img/arin.bmp"
-  l_load suzu_n
-  print E_FAST
-アリサ「すずかくん、すずかくん、強制終了し
-　　　　ないかい？」\
-すずか「それはこれからするでしょ」\
-アリサ「ありーん」\
-  end
+  return
+*confirm_abort_abort
+  return
 
 *parenthesis_error
 textclear

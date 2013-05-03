@@ -692,7 +692,6 @@ nsa
 *gc
   inc %gc_run
   if %gc_limit == 0 goto *gc_l1
-  if %gc_run >= %gc_limit goto *gclimit
 *gc_l1
   gosub *push_registers
   mov %gc_count, 0
@@ -1847,6 +1846,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 ;;;*eval(obj, env)
 ;;;;;;;;;;
 *eval
+  if %gc_limit > 0 && %gc_run >= %gc_limit goto *eval_maybe_abort
   if %arg0 == %nil mov %ret, %arg0 : return
   gosub *get_tag
   if %ret == TAG_NUM mov %ret, %arg0 : return
@@ -1915,6 +1915,14 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop        ; CDR(obj) < S()
   mov %arg1, %ret   ; %arg1 = CDR(obj)
   goto *apply       ; Apply(fn, CDR(obj), env)
+*eval_maybe_abort
+  gosub *confirm_abort
+  if %gc_run == 0 goto *eval_resume
+  mov $sarg0, "ŒvŽZ‚ð’†’f‚µ‚Ü‚µ‚½"
+  goto *create_error  ; taill call
+*eval_resume
+  ŒvŽZ‚ðÄŠJ‚µ‚Ü‚·
+  goto *eval
 
 
 ;;;;;;;;;;
