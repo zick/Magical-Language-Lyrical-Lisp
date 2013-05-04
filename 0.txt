@@ -1894,8 +1894,10 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, %ret   ; %arg1 = CDR(obj)
   gosub *pop        ; env < S()
   mov %arg2, %ret   ; %arg2 = env
-  gosub *syntax_fn
-  if %ret != NON_VALUE return
+  gosub *syntax_fn  ; $sret = syntax function, if %arg0 is syntax keyword
+  if %ret == %sharp_f goto *eval_compound_not_syntax
+  goto $sret  ; tail call
+*eval_compound_not_syntax
   mov %tmp, %arg0   ; %tmp = CAR(obj)
   mov %arg0, %arg1  ; %arg0 = CDR(obj)
   gosub *push       ; S(CDR(obj)
@@ -2747,26 +2749,26 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 ;;;;;;;;;;
 ;;;*syntax_fn(fn, arg, env)
-;;;  Call syntax function and return its value if fn is keyword.
-;;;  Return NON_VALUE if fn isn't keyword.
+;;;  Returns syntax function label and #t if fn is keyword.
+;;;  Returns #f if fn isn't keyword.
 ;;;;;;;;;;
 *syntax_fn
-  if %arg0 == %quote mov $stmp, "*syntax_fn_quote" : goto *syntax_fn1
-  if %arg0 == %sym_begin mov $stmp, "*syntax_fn_begin" : goto *syntax_fn2
-  if %arg0 == %sym_lambda mov $stmp, "*syntax_fn_lambda" : goto *syntax_fn1
-  if %arg0 == %sym_define mov $stmp, "*syntax_fn_define" : goto *syntax_fn1
-  if %arg0 == %sym_if mov $stmp, "*syntax_fn_if" : goto *syntax_fn1
-  if %arg0 == %sym_and mov $stmp, "*syntax_fn_and" : goto *syntax_fn1
-  if %arg0 == %sym_or mov $stmp, "*syntax_fn_or" : goto *syntax_fn1
-  if %arg0 == %sym_set mov $stmp, "*syntax_fn_set" : goto *syntax_fn1
-  if %arg0 == %sym_time mov $stmp, "*syntax_fn_time" : goto *syntax_fn1
-  mov %ret, NON_VALUE
+  if %arg0 == %quote mov $sret, "*syntax_fn_quote" : goto *syntax_fn1
+  if %arg0 == %sym_begin mov $sret, "*syntax_fn_begin" : goto *syntax_fn2
+  if %arg0 == %sym_lambda mov $sret, "*syntax_fn_lambda" : goto *syntax_fn1
+  if %arg0 == %sym_define mov $sret, "*syntax_fn_define" : goto *syntax_fn1
+  if %arg0 == %sym_if mov $sret, "*syntax_fn_if" : goto *syntax_fn1
+  if %arg0 == %sym_and mov $sret, "*syntax_fn_and" : goto *syntax_fn1
+  if %arg0 == %sym_or mov $sret, "*syntax_fn_or" : goto *syntax_fn1
+  if %arg0 == %sym_set mov $sret, "*syntax_fn_set" : goto *syntax_fn1
+  if %arg0 == %sym_time mov $sret, "*syntax_fn_time" : goto *syntax_fn1
+  mov %ret, %sharp_f
   return
 *syntax_fn1
   mov %current_proc, %arg0
 *syntax_fn2
-  goto $stmp  ; tail call
-  
+  mov %ret, %sharp_t
+  return
 
 *syntax_fn_quote
   mov %arg0, %arg1
