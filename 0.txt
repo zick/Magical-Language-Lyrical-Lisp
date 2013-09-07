@@ -3477,6 +3477,16 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %ret, %arg0
   return
 
+;;; *check_syntax(form, syntax)
+;;; Returns #t if form is (syntax ...).
+*check_syntax
+  gosub *get_tag
+  if %ret != TAG_CONS mov %ret, %sharp_f : return
+  gosub *car          ; CAR(form)
+  if %ret != %arg1 mov %ret, %sharp_f : return
+  mov %ret, %sharp_t
+  return
+
 ;;; %ret = form
 ;;; form -> (form)
 *enclose
@@ -3499,18 +3509,19 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %arg0 == %nil mov %ret, %nil : return
   gosub *get_tag
   if %ret != TAG_CONS mov %arg1, 0 : gosub *popn_and_invstx : goto *enclose
-  gosub *car          ; CAR(body)
-  mov %arg1, %arg0    ; %arg1 = body
+  gosub *car          ; CAR(body) => form1
+  gosub *push         ; S(body)
   mov %arg0, %ret     ; %arg0 = form1
-  gosub *get_tag
-  if %ret != TAG_CONS mov %arg0, %arg1 : goto *translate_body_normally
-  gosub *car          ; CAR(form1)
-  mov %arg0, %arg1    ; %arg0 = form
-  if %ret != %sym_define goto *translate_body_normally
+  mov %arg1, %sym_define
+  gosub *check_syntax
+  if %ret != %sharp_t goto *translate_body_normally
+  gosub *pop          ; body < S()
+  mov %arg0, %ret     ; %arg0 = body
   gosub *translate_inner_define
   goto *enclose  ; tail call
-*translate_body_normally
-  mov %arg1, %arg0
+*translate_body_normally  ; S(body)
+  gosub *pop          ; body < S()
+  mov %arg1, %ret     ; %arg1 = body
   mov %arg0, %nil
   gosub *translate_list
   mov %arg0, %ret
