@@ -3187,7 +3187,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %nil
   gosub *push         ; S(nil)
   mov %arg0, %tmp     ; %arg0 = list
-*reverse_loop  ; %arg0 = list, S(acc)
+*revappend  ; %arg0 = list, S(acc)
   gosub *get_tag
   if %ret != TAG_CONS gosub *pop : return
   gosub *car          ; CAR(list)
@@ -3213,27 +3213,30 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %%tmp, %ret     ; acc = cons1
   gosub *pop          ; rest < S(acc)
   mov %arg0, %ret
-  goto *reverse_loop
+  goto *revappend
 
 
 ;;;;;;;;;;
 ;;;*eval_form(form, env)
-;;;  Translate form and evaluate it.
+;;;  Translate form and evaluate it. The env is ignored.
 ;;;;;;;;;;
 *eval_form
-  mov %tmp, %arg0     ; %tmp = form
-  mov %arg0, %arg1    ; %arg0 = env
-  gosub *push         ; S(env)
-  mov %arg0, %tmp     ; %arg0 = form
+  mov %arg1, %sym_begin
+  gosub *check_syntax
+  if %ret == %sharp_t goto *eval_form_begin
   gosub *translate_form
+*eval_form_after_translation
   mov %arg0, %ret     ; %arg0 = form
   mov %arg1, %nil
   gosub *debruijn
   mov %arg0, %ret     ; %arg0 = form
-  gosub *pop          ; env < S()
-;;;;  mov %arg1, %ret     ; %arg1 = env
   mov %arg1, %nil     ; %arg1 = env
   goto *eval  ; tail call
+*eval_form_begin
+  gosub *push         ; S(form)
+  mov $sarg0, "*translate_begin"
+  gosub *translate1   ; S()
+  goto *eval_form_after_translation
 
 
 ;;;;;;;;;;
@@ -3251,7 +3254,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == %sym_letrec mov $sarg0, "*translate_letrec" : goto *translate1
   if %ret == %sym_letstar mov $sarg0, "*translate_letstar" : goto *translate1
   if %ret == %sym_cond mov $sarg0, "*translate_cond" : goto *translate1
-  ;; TODO: Support define in begin. We must distinguish toplevel from in-body.
   if %ret == %sym_begin mov $sarg0, "*translate_list" : goto *translate1
   if %ret == %sym_and mov $sarg0, "*translate_list" : goto *translate1
   if %ret == %sym_or mov $sarg0, "*translate_list" : goto *translate1
@@ -3278,7 +3280,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 ;;; Use for checking invalid inner-define, like (form1 (define ...) form2).
 ;;; This subroutine just checks if (car form) is define.
-;;; If so return error object, otherwise return NIL.
+;;; If so returns error object, otherwise returns NIL.
 ;;; This subroutine keeps %arg0
 *check_invalid_define
   gosub *push         ; S(form)
@@ -3293,13 +3295,31 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg1, 1
   goto *popn_and_invstx  ; tail call
 
+;;; Always returns NIL.
+*check_nothing
+  mov %ret, %nil
+  return
+
+;;; Translate (begin args) to (begin translated-args).
+;;; This is similar to tanrslate_list but it doesn't treat occurrences of
+;;; define as an error.
+*translate_begin
+  mov $sarg0, "*check_nothing"
+  gosub *spush        ; SS(check_function)
+  goto *translate_list_internal
+
 ;;; Translate (op args) to (op translated-args).
+;;; This subroutine treats occurences of define as an error because define
+;;; forms must be translated to letrec.
 *translate_list
+  mov $sarg0, "*check_invalid_define"
+  gosub *spush        ; SS(check_function)
+*translate_list_internal  ; (op, args, toplevel?), SS(check_function)
   gosub *push         ; S(op)
   mov %arg0, %nil
   gosub *push         ; S(nil, op)
   mov %arg0, %arg1    ; %arg0 = list
-*translate_list_loop  ; S(form_r, op)
+*translate_list_loop  ; %arg0 = list, S(form_r, op)
   if %arg0 == %nil goto *translate_list_reverse
   gosub *car          ; CAR(list) => head
   mov %tmp, %ret      ; %tmp = head
@@ -3307,9 +3327,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret     ; %arg0 = rest
   gosub *push         ; S(rest, form_r, op)
   mov %arg0, %tmp     ; %arg0 = head
-  ;; TODO: We should check this, but we must support define-in-begin before.
-  ;  gosub *check_invalid_define
-  ;  if %ret != %nil sub %sp, 3 : return
+  mov %tmp, %ssp - 1 ; %tmp -> check_function
+  gosub $%tmp  ; *check_invalid_define or *check_nothing
+  if %ret != %nil goto *translate_list_error
   gosub *translate_form
   mov %arg0, %ret     ; %arg0 = head
   gosub *push         ; S(head, rest, form_r, op)
@@ -3331,7 +3351,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *pop          ; rest < S(form_r)
   mov %arg0, %ret     ; %arg0 = rest
   goto *translate_list_loop
-*translate_list_reverse  ; S(form_r, op)
+*translate_list_reverse  ; S(form_r, op), SS(check_function)
   gosub *pop          ; form_r < S(op)
   mov %arg0, %ret     ; %arg0 = form_r
   gosub *nreverse
@@ -3350,6 +3370,24 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *set_car      ; cons1 = (op . form)
   gosub *pop          ; cons1 < S(op)
   sub %sp, 1          ; S()
+  sub %ssp, 1         ; SS()
+  return
+*translate_list_error  ; %ret = error, S(rest, form_r, op), SS(check_function)
+  gosub *enclose
+  mov %arg0, %ret     ; %arg0 = (error)
+  gosub *pop          ; rest < S(form_r, op)
+  gosub *pop          ; form_r < S(op)
+  gosub *push         ; S((error), op)
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons1
+  gosub *pop          ; (error) < S(op)
+  mov %arg1, %ret     ; %arg1 = (error)
+  gosub *set_cdr      ; cons1 = (? error)
+  gosub *pop          ; op < S()
+  mov %arg1, %ret     ; %arg1 = op
+  gosub *set_car      ; cons1 = (op error)
+  mov %ret, %arg0     ; %ret = cons1
+  sub %ssp, 1         ; SS()
   return
 
 ;;; Translate (op skip args) to (op skip translated-args).
@@ -3479,6 +3517,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 
 ;;; *check_syntax(form, syntax)
 ;;; Returns #t if form is (syntax ...).
+;;; This subroutine doesn't modify %arg0.
 *check_syntax
   gosub *get_tag
   if %ret != TAG_CONS mov %ret, %sharp_f : return
@@ -3486,6 +3525,79 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret != %arg1 mov %ret, %sharp_f : return
   mov %ret, %sharp_t
   return
+
+;;;*have_begin_in_body(body)
+;;; Returns #t if body has begin.
+;;; This subroutine is used for inner-define, so it ignores begins which don't
+;;; affect inner-define.
+*have_begin_in_body
+  gosub *get_tag
+  if %ret != TAG_CONS mov %ret, %sharp_f : return
+  gosub *push         ; S(body)
+  gosub *car          ; CAR(body) => head
+  mov %arg0, %ret     ; %arg0 = head
+  mov %arg1, %sym_begin
+  gosub *check_syntax ; Checks if head is (begin ...)
+  if %ret == %sharp_t gosub *pop : mov %ret, %sharp_t : return
+  mov %arg1, %sym_define
+  gosub *check_syntax ; Checks if head is (define ...)
+  if %ret == %sharp_f gosub *pop : mov %ret, %sharp_f : return
+  gosub *pop          ; body < S()
+  mov %arg0, %ret     ; %arg0 = body
+  gosub *cdr          ; CDR(body) => rest
+  mov %arg0, %ret     ; %arg0 = rest
+  goto *have_begin_in_body
+
+;;;*expand_begin_in_body(body)
+;;; Expands ((begin A) B (begin C) ...) => (A B C ...).
+;;; This subroutine is used for inner-define, so it may ignore begins which
+;;; don't affect inner-define.
+*expand_begin_in_body
+  gosub *push         ; S(body)
+  gosub *have_begin_in_body
+  if %ret == %sharp_f gosub *pop : return
+  gosub *pop          ; body < S()
+  mov %arg0, %ret     ; %arg0 = body
+  mov %arg1, %nil     ; %arg1 = nil
+*expand_begin_in_body_loop  ; %arg0 = body, %arg1 = acc
+  if %arg0 == %nil goto *expand_begin_in_body_finish
+  gosub *push         ; S(body)
+  gosub *car          ; CAR(body) => head
+  mov %arg0, %arg1    ; %arg0 = acc
+  gosub *push         ; S(acc, body)
+  mov %arg0, %ret     ; %arg0 = head
+  gosub *push         ; S(head, acc, body)
+  mov %arg1, %sym_begin
+  gosub *check_syntax ; Check if head is (begin ...)
+  if %ret == %sharp_t goto *expand_begin_in_body_begin
+  gosub *create_cons
+  mov %arg0, %ret     ; %arg0 = cons1
+  gosub *pop          ; head < S(acc, body)
+  mov %arg1, %ret     ; %arg1 = head
+  gosub *set_car      ; cons1 = (head . ?)
+  gosub *pop          ; acc < S(body)
+  mov %arg1, %ret     ; %arg1 = acc
+  gosub *set_cdr      ; cons1 = (head . acc)
+  mov %arg1, %arg0    ; %arg1 = cons1
+*expand_begin_in_body_next  ; %arg1 = acc, S(body)
+  gosub *pop          ; body < S()
+  mov %arg0, %ret     ; %arg0 = body
+  gosub *cdr          ; CDR(body) => rest
+  mov %arg0, %ret     ; %arg0 = rest
+  goto *expand_begin_in_body_loop
+*expand_begin_in_body_begin  ; S(head, acc, body)
+  gosub *pop          ; head < S(acc, body)
+  mov %arg0, %ret     ; %arg0 = head = (begin A B ...)
+  gosub *cdr          ; CDR(head) => (A B ...)
+  mov %arg0, %ret     ; %arg0 = (A B ...)
+  gosub *expand_begin_in_body  ; expands (A B ...) recursively.
+  mov %arg0, %ret     ; %arg0 = expanded (A B ...)
+  gosub *revappend ; %ret = (... B A . acc), S(body)
+  mov %arg1, %ret     ; %arg1 = new acc
+  goto *expand_begin_in_body_next
+*expand_begin_in_body_finish  ; %arg1 = acc
+  mov %arg0, %arg1    ; %arg0 = acc
+  goto *nreverse  ; tail call
 
 ;;; %ret = form
 ;;; form -> (form)
@@ -3509,6 +3621,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %arg0 == %nil mov %ret, %nil : return
   gosub *get_tag
   if %ret != TAG_CONS mov %arg1, 0 : gosub *popn_and_invstx : goto *enclose
+  gosub *expand_begin_in_body
+  mov %arg0, %ret
   gosub *car          ; CAR(body) => form1
   gosub *push         ; S(body)
   mov %arg0, %ret     ; %arg0 = form1
