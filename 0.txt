@@ -1582,9 +1582,16 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 *lobject_to_string_expr
   gosub *cdr
   mov %arg0, %ret
-  mov $stmp3, ""  ; Dirty hack!
+  mov $stmp3, ""  ; Dirty hack for removing the first left parenthesis!
+  gosub *car
+  if %ret == %nil goto *lobject_to_string_expr_thunk
   gosub *cons_to_string_l1
   mov $sarg0, "”ƒ‚‚’‚‚ƒ‚…‚„‚•‚’‚…ilambda" + $sret + "„"
+  gosub *print_string
+  return
+*lobject_to_string_expr_thunk
+  gosub *cons_to_string_l1
+  mov $sarg0, "”ƒ‚‚’‚‚ƒ‚…‚„‚•‚’‚…ilambda@" + $sret + "„"
   gosub *print_string
   return
 *lobject_to_string_num
