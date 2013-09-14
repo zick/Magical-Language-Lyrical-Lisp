@@ -115,7 +115,7 @@ bgm ms_ex
   gosub *push  ;GC対策
   mov %arg1, %global_env
   gosub *nconc
-  mov %gc_limit, DEFAULT_GC_LIMIT
+  mov %eval_limit, 0
 *fm01
   mov %gc_run, 0  ;GC起動回数を初期化
   mov %current_proc, %nil
@@ -149,7 +149,7 @@ repaint
 
 *fm01_end
   gosub *pop
-  mov %gc_limit, 5
+  mov %eval_limit, DEFAULT_EVAL_LIMIT
   saveon
   mov %save_flag, 1  ;セーブ可能
   textclear

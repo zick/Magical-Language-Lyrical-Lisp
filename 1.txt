@@ -312,7 +312,7 @@
 アリサ「やけに時間がかかるわね……無限ループの可能性があるわ。計算を中止する？」
 csel "中止", *confirm_abort_abort, "続行", *confirm_abort_resume
 *confirm_abort_resume
-  mov %gc_run, 0
+  mov %eval_count, 0
   return
 *confirm_abort_abort
   return
@@ -667,7 +667,6 @@ delay 1500
   mov %gc_silent, 1
   gosub *gc
   mov %gc_silent, 0
-  mov %gc_limit, DEFAULT_GC_LIMIT
   mov %save_flag, 1  ;セーブ可能
 textclear
   csp SP_TMP

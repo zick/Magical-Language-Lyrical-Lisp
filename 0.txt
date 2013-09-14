@@ -175,7 +175,7 @@ nsa
   numalias UNSIGNED_MAX_PLUS1, 33554432  ; 2^25
   numalias MIN_INT32, -2147483648        ; - 2^31
   numalias NON_VALUE, -1  ; Every lisp object is different from this value.
-  numalias DEFAULT_GC_LIMIT, 3
+  numalias DEFAULT_EVAL_LIMIT, 20000
   numalias UNBOUND, 4095
 
   ; Aliases for numerical variables
@@ -195,7 +195,7 @@ nsa
   numalias free_lst, 60
   numalias i, 61
   numalias gc_tmp ,62
-  numalias __unused__, 63
+  numalias eval_count, 63
   numalias symbol_used, 64
   numalias ssp, 65
 
@@ -212,7 +212,7 @@ nsa
   numalias symbol_lst, 73
   numalias symbol_offset, 74
   numalias gc_run, 75
-  numalias gc_limit, 76
+  numalias eval_limit, 76
   numalias gc_silent, 77
 
   ;; Debug
@@ -627,7 +627,7 @@ nsa
   mid $sLF, $stmp, 2, 1
 
   mov %gc_run, 0
-  mov %gc_limit, 0
+  mov %eval_limit, DEFAULT_EVAL_LIMIT
   mov %symbol_offset, 0
   mov %symbol_used, SYMBOL_SET
   mov %sp, STACK
@@ -693,8 +693,6 @@ nsa
 ;;;;;;;;;;
 *gc
   inc %gc_run
-  if %gc_limit == 0 goto *gc_l1
-*gc_l1
   gosub *push_registers
   mov %gc_count, 0
   textclear
@@ -1860,7 +1858,8 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 ;;;*eval(obj, env)
 ;;;;;;;;;;
 *eval
-  if %gc_limit > 0 && %gc_run >= %gc_limit goto *eval_maybe_abort
+  inc %eval_count
+  if %eval_limit > 0 && %eval_count >= %eval_limit goto *eval_maybe_abort
   if %sp >= STACK_SAFE_LIMIT goto *eval_stack_overflow
   if %arg0 == %nil mov %ret, %arg0 : return
   gosub *get_tag
@@ -1934,7 +1933,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   goto *apply       ; Apply(fn, CDR(obj), env)
 *eval_maybe_abort
   gosub *confirm_abort
-  if %gc_run == 0 goto *eval_resume
+  if %eval_count == 0 goto *eval_resume
   mov $sarg0, "ŒvŽZ‚ð’†’f‚µ‚Ü‚µ‚½"
   goto *create_error  ; taill call
 *eval_resume
@@ -3239,6 +3238,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 ;;;  Translate form and evaluate it. The env is ignored.
 ;;;;;;;;;;
 *eval_form
+  mov %eval_count, 0
   mov %arg1, %sym_begin
   gosub *check_syntax
   if %ret == %sharp_t goto *eval_form_begin
