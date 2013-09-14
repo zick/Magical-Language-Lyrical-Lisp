@@ -152,6 +152,7 @@ nsa
   numalias HEAP_LIMIT, 3000
   ;; Stack is used for any lisp objects and integers (3000 <= stack < 4000)
   numalias STACK, 3000
+  numalias STACK_SAFE_LIMIT, 3990
   numalias STACK_LIMIT, 4000
   ;; Symbol-set is used for symbol strings (100 <= from < 500 <= to < 900)
   numalias SYMBOL_SET, 100
@@ -240,6 +241,7 @@ nsa
   stralias str_too_few_arguments, "Too-few-arguments"
   stralias str_too_many_arguments, "Too-many-arguments"
   stralias str_invalid_syntax, "Invalid-syntax"
+  stralias str_stack_overflow, "Stack-overflow"
 
   ; Variables for the game
   numalias save_flag, 0
@@ -1625,6 +1627,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if $sarg0 == str_too_few_arguments goto *lobject_to_string_err_few
   if $sarg0 == str_too_many_arguments goto *lobject_to_string_err_many
   if $sarg0 == str_invalid_syntax goto *lobject_to_string_err_inv
+  if $sarg0 == str_stack_overflow goto *lobject_to_string_err_stack
   gosub *print_string
   mov $stmp, $sret    ; message
   gosub *spop         ; location
@@ -1641,6 +1644,10 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 *lobject_to_string_err_inv
   gosub *spop         ; location
   mov $sret, "エラー：" + $sret + "の使い方が間違っています"
+  return
+*lobject_to_string_err_stack
+  gosub *spop         ; location
+  mov $sret, "エラー：スタックオーバフロー"
   return
 *lobject_to_string_var
   gosub *push         ; S(var)
@@ -1854,6 +1861,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 ;;;;;;;;;;
 *eval
   if %gc_limit > 0 && %gc_run >= %gc_limit goto *eval_maybe_abort
+  if %sp >= STACK_SAFE_LIMIT goto *eval_stack_overflow
   if %arg0 == %nil mov %ret, %arg0 : return
   gosub *get_tag
   if %ret == TAG_NUM mov %ret, %arg0 : return
@@ -1932,6 +1940,9 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 *eval_resume
   計算を再開します
   goto *eval
+*eval_stack_overflow
+  mov $sarg0, str_stack_overflow
+  goto *create_error  ; tail call
 
 
 ;;;;;;;;;;
