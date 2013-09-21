@@ -2994,8 +2994,6 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 *syntax_fn_if
-  ; TODO: check too-many-arguments
-  if %arg1 == %nil gosub *too_few_arg0 : mov %ret, %arg0 : return
   mov %arg0, %arg1
   mov %arg1, %arg2
   gosub *push         ; S(arg)
@@ -3276,7 +3274,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   if %ret == %sym_and mov $sarg0, "*translate_list" : goto *translate1
   if %ret == %sym_or mov $sarg0, "*translate_list" : goto *translate1
   if %ret == %sym_time mov $sarg0, "*translate_list" : goto *translate1
-  if %ret == %sym_if mov $sarg0, "*translate_list" : goto *translate1
+  if %ret == %sym_if mov $sarg0, "*translate_if" : goto *translate1
   if %ret == %sym_lambda mov $sarg0, "*translate_lambda" : goto *translate1
   if %ret == %sym_define mov $sarg0, "*translate_define" : goto *translate1
   if %ret == %sym_set mov $sarg0, "*translate_list_s1" : goto *translate1
@@ -3806,6 +3804,27 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   gosub *car          ; CAR[(exp)] => exp
   mov %arg0, %ret     ; %arg0 = exp
   goto *translate_form  ; tail call
+
+;;; Checks syntax.
+*translate_if
+  mov %current_proc, %sym_if
+  mov %arg0, %arg1    ; %arg0 = args
+  if %arg0 == %nil goto *translate_if_invalid
+  gosub *cdr          ; CDR(args)
+  mov %arg0, %ret     ; %arg0 = CDR(args)
+  if %arg0 == %nil goto *translate_if_invalid
+  gosub *cdr          ; CDDR(args)
+  mov %arg0, %ret     ; %arg0 = CDDR(args)
+  if %arg0 == %nil goto *translate_if_valid
+  gosub *cdr          ; CDDDR(args)
+  mov %arg0, %ret     ; %arg0 = CDDDR(args)
+  if %arg0 == %nil goto *translate_if_valid
+*translate_if_invalid
+  mov %arg1, 0
+  goto *popn_and_invstx  ; tail call
+*translate_if_valid
+  mov %arg0, %sym_if
+  goto *translate_list  ; tail call
 
 ;;; Translate (cond (test . body) ...) to (if test (begin . body) ...).
 *translate_cond
