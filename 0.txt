@@ -3826,7 +3826,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   mov %arg0, %ret     ; %arg0 = rest
   gosub *push         ; S(clauses, form)
   mov %arg0, %tmp     ; %arg0 = clause
-  gosub *get_tag : if %ret != TAG_CONS mov %arg1, 1 : goto *popn_and_invstx
+  gosub *get_tag : if %ret != TAG_CONS mov %arg1, 2 : goto *popn_and_invstx
   gosub *cdr          ; CDR(clause)
   mov %tmp, %ret      ; %tmp = body
   gosub *car          ; CAR(clause)
