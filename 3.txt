@@ -131,6 +131,7 @@ bgm ms_ex
   if $sarg0 == "" goto *fm01
 textclear
   if $sarg0 == "__ex_test__" gosub *ex_test_start : goto *fm01
+  if $sarg0 == "__lisp_test__" gosub *lisp_test_start : goto *fm01
   gosub *fm01_say_calc
 repaint
   gosub *check_lr_parenthesis
@@ -347,4 +348,284 @@ csel "立ち絵なし", *fm01_char_non, "アリサ", *fm01_char_arisa, "すずか", *fm01_c
   r_show suzur_ase
 すずか「括弧の開く数と、閉じる数が一致していないよ」\
   r_show suzur_n
+  return
+
+
+;;;*lisp_test_eval($form, $description)
+*lisp_test_eval
+!s0$sarg1!sd
+!s0ｓｐ：%sp!sd
+!s0ｓｓｐ：%ssp!sd
+  len %arg0, $sarg0
+  gosub *push         ; S(length)
+  gosub *spush        ; SS(form)
+  gosub *input_to_lobject
+  mov %arg0, %ret
+  mov %arg1, %global_env
+  gosub *eval_form
+  mov %arg0, %ret     ; %arg0 = result
+  if %ret == %sharp_f goto *lisp_test_eval_fail
+!s0【#00FF00ｐａｓｓ#FFFFFF】!sd
+*lisp_test_eval_stack_check
+  gosub *spop         ; form < SS()
+  len %tmp, $sret
+  gosub *pop          ; length < S()
+!s0ｓｐ：%sp!sd
+!s0ｓｓｐ：%ssp!sd
+  if %tmp != %ret gosub *lisp_test_eval_stack_error
+  textclear
+  return
+*lisp_test_eval_fail
+!s0【#FF0000ｆａｉｌ#FFFFFF】!sd@
+  goto *lisp_test_eval_stack_check
+*lisp_test_eval_stack_error
+!s0#FF0000！！！ｓｔａｃｋ　ｗａｓ　ｂｒｏｋｅｎ！！！#FFFFFF!sd@
+  return
+
+*lisp_test_start
+  ;; Basic tests
+  mov $sarg0, "(eq? 'test 'test)"
+  mov $sarg1, "ｅｑ？"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= 1 1)"
+  mov $sarg1, "＝"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not #f)"
+  mov $sarg1, "ｎｏｔ"
+  gosub *lisp_test_eval
+
+  ;; Type tests
+  mov $sarg0, "(boolean? #t)"
+  mov $sarg1, "ｂｏｏｌｅａｎ？　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (boolean? '()))"
+  mov $sarg1, "ｂｏｏｌｅａｎ？　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(symbol? 'test)"
+  mov $sarg1, "ｓｙｍｂｏｌ？　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (symbol? 1))"
+  mov $sarg1, "ｓｙｍｂｏｌ？　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(number? 1)"
+  mov $sarg1, "ｎｕｍｂｅｒ？　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (number? 'test))"
+  mov $sarg1, "ｎｕｍｂｅｒ？　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(pair? (cons 1 2))"
+  mov $sarg1, "ｐａｉｒ？　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (pair? '()))"
+  mov $sarg1, "ｐａｉｒ？　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(procedure? car)"
+  mov $sarg1, "ｐｒｏｃｅｄｕｒｅ？　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (procedure? 'car))"
+  mov $sarg1, "ｐｒｏｃｅｄｕｒｅ？　＃２"
+  gosub *lisp_test_eval
+
+  ;; Numeric tests
+  mov $sarg0, "(= (+ 1 2 3) (+ 1 (+ 2 3)))"
+  mov $sarg1, "＋"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= (- 1 100) -99)"
+  mov $sarg1, "－"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= (* 2 3 4) (* (* 2 3) 4))"
+  mov $sarg1, "＊"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= (/ 99 33) 3)"
+  mov $sarg1, "／"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= (mod 13 7) 6)"
+  mov $sarg1, "ｍｏｄ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(< 99 100)"
+  mov $sarg1, "＜　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (< 100 100))"
+  mov $sarg1, "＜　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(<= 99 100)"
+  mov $sarg1, "＜＝　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(<= 100 100)"
+  mov $sarg1, "＜＝　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (<= 101 100))"
+  mov $sarg1, "＜＝　＃３"
+  gosub *lisp_test_eval
+  mov $sarg0, "(> 100 99)"
+  mov $sarg1, "＞　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (> 100 100))"
+  mov $sarg1, "＞　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (>= 99 100))"
+  mov $sarg1, "＞＝　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(>= 100 100)"
+  mov $sarg1, "＞＝　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(>= 101 100)"
+  mov $sarg1, "＞＝　＃３"
+  gosub *lisp_test_eval
+
+  ;; List tests
+  mov $sarg0, "(null? '())"
+  mov $sarg1, "ｎｕｌｌ？　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (null? #f))"
+  mov $sarg1, "ｎｕｌｌ？　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(list? '())"
+  mov $sarg1, "ｌｉｓｔ？　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (list? (cons 1 2)))"
+  mov $sarg1, "ｌｉｓｔ？　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(list? (cons 'a '()))"
+  mov $sarg1, "ｌｉｓｔ？　＃３"
+  gosub *lisp_test_eval
+  mov $sarg0, "(equal? '() '())"
+  mov $sarg1, "ｅｑｕａｌ？　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(equal? (cons 1 2) (cons 1 2))"
+  mov $sarg1, "ｅｑｕａｌ？　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (equal? (cons 1 2) (cons 3 4)))"
+  mov $sarg1, "ｅｑｕａｌ？　＃３"
+  gosub *lisp_test_eval
+  mov $sarg0, "(eq? (car (cons 'a 'b)) 'a)"
+  mov $sarg1, "ｃａｒ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(eq? (cdr (cons 'a 'b)) 'b)"
+  mov $sarg1, "ｃｄｒ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(equal? (list 1 2) (cons 1 (cons 2 '())))"
+  mov $sarg1, "ｌｉｓｔ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= (length '(a b c)) 3)"
+  mov $sarg1, "ｌｅｎｇｔｈ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(eq? (list-ref '(a b c) 1) 'b)"
+  mov $sarg1, "ｌｉｓｔ－ｒｅｆ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(equal? (list-tail '(a b c) 1) '(b c))"
+  mov $sarg1, "ｌｉｓｔ－ｔａｉｌ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(equal? (append '(a) '(b c)) '(a b c))"
+  mov $sarg1, "ａｐｐｅｎｄ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(equal? (assoc 'c '((a b) (c d))) '(c d))"
+  mov $sarg1, "ａｓｓｏｃ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(equal? (member 'b '(a b c)) '(b c))"
+  mov $sarg1, "ｍｅｍｂｅｒ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(equal? (map list '(a b c)) '((a) (b) (c)))"
+  mov $sarg1, "ｍａｐ"
+  gosub *lisp_test_eval
+
+  ;; Special form tests
+  mov $sarg0, "(= (begin 1 2 3) 3)"
+  mov $sarg1, "ｂｅｇｉｎ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(and)"
+  mov $sarg1, "ａｎｄ　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(and 1 2)"
+  mov $sarg1, "ａｎｄ　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (and 1 2 #f))"
+  mov $sarg1, "ａｎｄ　＃３"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (or))"
+  mov $sarg1, "ｏｒ　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(not (or  #f))"
+  mov $sarg1, "ｏｒ　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(or #f 1 2))"
+  mov $sarg1, "ｏｒ　＃３"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= (if '() 1 2) 1)"
+  mov $sarg1, "ｉｆ　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= (if #f 1 2) 2)"
+  mov $sarg1, "ｉｆ　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= (cond (#t 1 2) (else 3 4)) 2)"
+  mov $sarg1, "ｃｏｎｄ　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= (cond (#f 1 2) (else 3 4)) 4)"
+  mov $sarg1, "ｃｏｎｄ　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= ((lambda (x y) (+ x y)) 1 2) 3)"
+  mov $sarg1, "ｌａｍｂｄａ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= ((let ((x 1)(y 2)) (let ((x 3) (y x)) (+ x y))) 4)"
+  mov $sarg1, "ｌｅｔ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= ((let ((x 1)(y 2)) (let* ((x 3) (y x)) (+ x y))) 6)"
+  mov $sarg1, "ｌｅｔ＊"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= (letrec ((fact (lambda (x)(if (= x 0) 1 (* x (fact (- x 1))))))) (fact 5)) 120)"
+  mov $sarg1, "ｌｅｔｒｅｃ"
+  gosub *lisp_test_eval
+
+  ;; Definition and mutation tests
+  mov $sarg0, "(define _x 1)"
+  mov $sarg1, "ｄｅｆｉｎｅ　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= _x 1)"
+  mov $sarg1, "ｄｅｆｉｎｅ　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(= (begin (set! _x 99) _x) 99)"
+  mov $sarg1, "ｓｅｔ！　ｇｌｏｂａｌ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(and (= (let ((_x 0)) (set! _x 551) _x) 551) (= _x 99))"
+  mov $sarg1, "ｓｅｔ！　ｌｏｃａｌ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(let ((x (cons 1 2))) (set-car! x 'a) (equal? x (cons 'a 2)))"
+  mov $sarg1, "ｓｅｔ－ｃａｒ！"
+  gosub *lisp_test_eval
+  mov $sarg0, "(let ((x (cons 1 2))) (set-cdr! x 'a) (equal? x (cons 1 'a)))"
+  mov $sarg1, "ｓｅｔ－ｃｄｒ！"
+  gosub *lisp_test_eval
+
+  ;; Error tests
+  ;; HACK: (and X (not X)) => X iff X is a error object.
+  mov $sarg0, "(let ((x (error 'test))) (and x (not x)))"
+  mov $sarg1, "ｅｒｒｏｒ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(let ((x (car))) (and x (not x)))"
+  mov $sarg1, "ｔｏｏ　ｆｅｗ　ａｒｇｕｍｅｎｔｓ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(let ((x (car 1 2))) (and x (not x)))"
+  mov $sarg1, "ｔｏｏ　ｍａｎｙ　ａｒｇｕｍｅｎｔｓ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(let ((x (car 1))) (and x (not x)))"
+  mov $sarg1, "ｗｒｏｎｇ　ｔｙｐｅ"
+  gosub *lisp_test_eval
+  mov $sarg0, "(let ((x (if))) (and x (not x)))"
+  mov $sarg1, "ｉｎｖａｌｉｄ　ｉｆ　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(let ((x (if 1 2 3 4))) (and x (not x)))"
+  mov $sarg1, "ｉｎｖａｌｉｄ　ｉｆ　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(let ((x (cond))) (and x (not x)))"
+  mov $sarg1, "ｉｎｖａｌｉｄ　ｃｏｎｄ　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(let ((x (cond 1))) (and x (not x)))"
+  mov $sarg1, "ｉｎｖａｌｉｄ　ｃｏｎｄ　＃２"
+  gosub *lisp_test_eval
+  mov $sarg0, "(let ((x (lambda))) (and x (not x)))"
+  mov $sarg1, "ｉｎｖａｌｉｄ　ｌａｍｂｄａ　＃１"
+  gosub *lisp_test_eval
+  mov $sarg0, "(let ((x (lambda 1 2))) (and x (not x)))"
+  mov $sarg1, "ｉｎｖａｌｉｄ　ｌａｍｂｄａ　＃２"
+  gosub *lisp_test_eval
   return
