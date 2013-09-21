@@ -697,15 +697,15 @@ nsa
   mov %gc_count, 0
   textclear
 if %gc_silent == 1 goto *gc_sl1
-  ＧＣｉｎｇ・・・
+  !s0ＧＣｉｎｇ・・・!sd
 *gc_sl1
   gosub *gc_mark
   gosub *gc_sweep
 if %gc_silent == 1 goto *gc_sl2
-  Ｕｓｅｄ：%gc_count
+  !s0Ｕｓｅｄ：%gc_count!sd
   mov %gc_count, HEAP_LIMIT - %gc_count
   mov %gc_count, %gc_count - HEAP
-  Ａｖａｉｌａｂｌｅ：%gc_count
+  !s0Ａｖａｉｌａｂｌｅ：%gc_count!sd
 *gc_sl2
   gosub *pop_registers
   return
