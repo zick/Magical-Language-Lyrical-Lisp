@@ -178,6 +178,10 @@ nsa
   numalias DEFAULT_EVAL_LIMIT, 20000
   numalias UNBOUND, 4095
 
+  ;;;
+  ;;; Next variable number: 95
+  ;;;
+
   ; Aliases for numerical variables
   ;; General variables
   numalias tmp, 50
@@ -214,6 +218,7 @@ nsa
   numalias gc_run, 75
   numalias eval_limit, 76
   numalias gc_silent, 77
+  numalias gc_mark_color, 94
 
   ;; Debug
   ;; NOTE: current_proc and current_env are not protected from GC so far.
@@ -627,6 +632,7 @@ nsa
   mid $sLF, $stmp, 2, 1
 
   mov %gc_run, 0
+  mov %gc_mark_color, 1
   mov %eval_limit, DEFAULT_EVAL_LIMIT
   mov %symbol_offset, 0
   mov %symbol_used, SYMBOL_SET
@@ -665,14 +671,15 @@ nsa
 ;;;;;;;;;;
 *next_cell
   ; If there is no cell, then do GC.
-  ; If there is no cell after GC, then quit.
   if %free_lst == HEAP_LIMIT gosub *gc
+  ; If there is no cell after GC, then quit.
   if %free_lst == HEAP_LIMIT mesbox "ƒƒ‚ƒŠ•s‘«", "Error" : end
-  mov %arg0, %free_lst
-  gosub *get_data
-  mov %tmp, %free_lst
+  mov %arg0, %free_lst  ; %arg0 = current cell
+  gosub *get_data       ; %ret = next cell
   mov %free_lst, %ret
-  mov %ret, %tmp
+  mov %arg1, 1 - %gc_mark_color
+  gosub *set_gc         ; set_gc(current cell, unmarked color)
+  mov %ret, %arg0
   return
 
 
@@ -696,18 +703,19 @@ nsa
   gosub *push_registers
   mov %gc_count, 0
   textclear
-if %gc_silent == 1 goto *gc_sl1
+if %gc_silent >= 1 goto *gc_sl1
   !s0‚f‚b‚‰‚‚‡EEE!sd
 *gc_sl1
   gosub *gc_mark
   gosub *gc_sweep
-if %gc_silent == 1 goto *gc_sl2
+if %gc_silent >= 1 goto *gc_sl2
   !s0‚t‚“‚…‚„F%gc_count!sd
   mov %gc_count, HEAP_LIMIT - %gc_count
   mov %gc_count, %gc_count - HEAP
   !s0‚`‚–‚‚‰‚Œ‚‚‚‚Œ‚…F%gc_count!sd
 *gc_sl2
   gosub *pop_registers
+  mov %gc_mark_color, 1 - %gc_mark_color  ; Flip the mark color.
   return
 
 
@@ -716,9 +724,9 @@ if %gc_silent == 1 goto *gc_sl2
 ;;;;;;;;;;
 *gc_mark_lobject
   gosub *get_gc
-  if %ret == 1 return  ; Already marked
-  mov %arg1, 1
-  gosub *set_gc        ; Mark the object
+  if %ret == %gc_mark_color return  ; Already marked
+  mov %arg1, %gc_mark_color
+  gosub *set_gc                     ; Mark the object
   inc %gc_count
   gosub *get_tag
   if %ret == TAG_CONS goto *gc_mark_lobject_cons
@@ -807,39 +815,34 @@ if %gc_silent == 1 goto *gc_sl2
   for %i=HEAP to HEAP_LAST  ; Find the first unused cell.
     mov %arg0, %i
     gosub *get_gc
-    if %ret == 0 mov %free_lst, %i : break
-    mov %arg1, 0
-    gosub *set_gc
+    if %ret != %gc_mark_color mov %free_lst, %i : break
     gosub *get_tag
-    if %ret != TAG_SYMBOL goto *gc_sweep_l0
+    if %ret != TAG_SYMBOL goto *gc_sweep_next0
     mov %arg1, %symbol_lst
     gosub *set_cdr
     mov %symbol_lst, %i
-  *gc_sweep_l0
+  *gc_sweep_next0
   next
   if %free_lst == HEAP_LIMIT return  ; There is no unused cell.
   mov %gc_tmp, %free_lst  ; Keep the first unusd cell.
   for %i=%i+1 to HEAP_LAST
     mov %arg0, %i
     gosub *get_gc
-    if %ret == 1 goto *gc_sweep_l1
-    ; Append the new unused cell to the free-list if GC-bit is 0.
+    if %ret == %gc_mark_color goto *gc_sweep_marked
+    ; Append the new unused cell to the free-list if GC-bit is unmarked.
     mov %arg0, %gc_tmp
     mov %arg1, %i
     gosub *reuse_cell
     mov %gc_tmp, %i
-    goto *gc_sweep_l2
-  *gc_sweep_l1
+    goto *gc_sweep_next1
+  *gc_sweep_marked
     mov %arg0, %i
     gosub *get_tag
-    if %ret != TAG_SYMBOL goto *gc_sweep_l2
+    if %ret != TAG_SYMBOL goto *gc_sweep_next1
     mov %arg1, %symbol_lst
     gosub *set_cdr
     mov %symbol_lst, %i
-  *gc_sweep_l2
-    mov %arg0, %i
-    mov %arg1, 0
-    gosub *set_gc  ; Unmark
+  *gc_sweep_next1
   next
   mov %arg0, %gc_tmp
   mov %arg1, HEAP_LIMIT  ; The end of the free-list.
@@ -895,7 +898,7 @@ if %gc_silent == 1 goto *gc_sl2
   gosub *push_registers
   mov %gc_count, 0
   textclear
-if %gc_silent == 1 goto *symbol_gc_sl1
+if %gc_silent >= 1 goto *symbol_gc_sl1
   ‚r‚™‚‚‚‚‚Œ@‚f‚b‚‰‚‚‡EEE
 *symbol_gc_sl1
   mov %tmp, SYMBOL_SET_HALF_SIZE
@@ -922,7 +925,7 @@ if %gc_silent == 1 goto *symbol_gc_sl1
   inc %gc_count
   goto *symbol_gc_l1
 *symbol_gc_l2
-if %gc_silent == 1 goto *symbol_gc_sl2
+if %gc_silent >= 1 goto *symbol_gc_sl2
   mov %tmp, SYMBOL_SET_HALF_SIZE
   ‚t‚“‚…‚„F%gc_count
   mov %gc_count, %tmp - %gc_count
@@ -3144,6 +3147,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
   return
 
 *syntax_fn_time
+  inc %gc_silent
   mov %arg0, %gc_run
   gosub *push
   gettimer %arg0
@@ -3163,6 +3167,7 @@ if %gc_silent == 1 goto *symbol_gc_sl2
 ‚”‚‰‚‚…F%tmp1‚‚“
 ‚f‚bF%tmp2\
   mov %ret, %tmp
+  dec %gc_silent
   return
 
 
