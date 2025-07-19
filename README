@@ -9,7 +9,7 @@ Lyrical Lisp is consist of text data, graphic data, and sound data. This
 repository has only source code of text data. In order to get all data,
 download ``lyricallisp_free-X.X.zip'' from following URL:
 
-  http://lyrical.bugyo.tk/download.html
+  https://lyrical.zick.run/download.html
 
 If you unzip it, ``lyricallisp_free'' directory is created. You can run Lyrical
 Lisp by double-clicking the ``nsclisper.exe'' in the directory.
